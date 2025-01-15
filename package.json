@@ -1,0 +1,26 @@
+{
+  "name": "asistencia-ue",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoxer25/ASISTENCIA-UE.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yoxer25/ASISTENCIA-UE/issues"
+  },
+  "homepage": "https://github.com/yoxer25/ASISTENCIA-UE#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-handlebars": "^8.0.1",
+    "xlsx-populate": "^1.21.0"
+  }
+}

@@ -6,8 +6,6 @@ import { engine } from "express-handlebars";
 // para establecer la ruta de los archivos handlebars
 import path from "path"; //
 import { fileURLToPath } from "url";
-// para leer archivos .xlsx
-import xlsx from "xlsx-populate"
 
 // desde la carpeta "routes" todos los archivos para poder establecer las rutas de la web
 import homeRoutes from "./routes/home.route.js";
@@ -21,7 +19,7 @@ const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
 
 // para especificar que solo se trabajarán con datos soncillos como datos string
-app.use(express.urlencoded({ extended: false }));
+// app.use(express.urlencoded({ extended: true }));
 
 // estructura para los archivos handlebars donde le especificamos que la extención utilizada para los archivos será ".hbs" y el archivo principal será "main.hbs"
 app.engine('hbs', engine({
@@ -31,8 +29,10 @@ app.engine('hbs', engine({
 app.set("view engine", ".hbs" );
 app.set('views', path.resolve(_dirname + "/views"));
 
-// especificamos la ruta pública
-app.use(express.static(path.resolve(_dirname + "/public")));
+// app.use(express.static(path.resolve(_dirname + "/public")));
+
+// especificamos que se debe ejecutar la constante "upload" y que solo se debe subir un archivo
+
 
 // rutas de la web
 app.use(homeRoutes);

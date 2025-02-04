@@ -1,1 +1,42 @@
 <div>SISTEMA WEB DE ASISTENCIA DE LOS TRABAJADORES DE UGEL HUANCABAMBA</div>
+<br><br>
+<div>
+    <form class="px-3 card card-login" id="userForm" action="/importbd" method="POST" enctype="multipart/form-data">
+        <div class="col-auto">
+            <label class="sr-only" for="inlineFormInputGroup">
+                ARCHIVO EXCEL
+            </label>
+            <input type="file" accept=".xlsx" name="excel" class="input-contact form-control">
+        </div>
+        <br>
+        <button class="btn-log-in form-control mb-3 mt-3">
+            IMPORTAR
+        </button>
+    </form>
+</div>
+<div>
+    <table>
+        <thead>
+            <tr scope="col" colspan="3">
+                <th>nombres</th>
+                <th>entrada</th>
+                <th>salida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each users}}
+            <tr>
+                <td>{{nombres}}</td>
+                <td>{{entrada}}</td>
+                <td>{{salida}}</td>
+            </tr>
+            {{else}}
+            <tr scope="col">
+                <td colspan="3">
+                    <p class="card-text text-center">No hay registros que mostrar</p>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>

@@ -12,7 +12,6 @@ export const getHome = async (req, res) => {
   const users = await pool.query(
     "SELECT u.nombres, a.entrada, a.salida FROM usuariosue u INNER JOIN asistencia a ON u.idusuario = a.idusuario"
   );
-  // console.log(users);
   res.render("home", { users });
 };
 
@@ -27,43 +26,40 @@ export const importBD = async (req, res) => {
   const value = workBook.sheet("COVG231060035_attlog").usedRange().value();
 
   // para subir registro de asistencia
+  // función para convertir números a fecha
+  const numeroAFecha = (numeroDeDias, esExcel = false) => {
+    const diasDesde1900 = esExcel ? 25568 + 1 : 25568;
+    const datafe = new Date((numeroDeDias - diasDesde1900) * 86400000);
+    return new Date(
+      datafe.getFullYear(),
+      datafe.getMonth(),
+      datafe.getDate(),
+      datafe.getHours() + 5,
+      datafe.getMinutes(),
+      datafe.getSeconds(),
+      datafe.getMilliseconds()
+    );
+  };
   // hacemos un for al resultado del excel para ir recorriendo dato por dato y guardarlo en la base de datos
   for (let i = 0; i < value.length - 1; i++) {
-    // constante que almacena un objeto con los datos de un solo usuario
-    const listaUser = value[i];
-    // constante que almacena la primera columna del objeto anterior(hace referencia al nombre según el excel)
-    const ids = listaUser[0];
-    // constante que almacena la segunda columna del objeto anterior(hace referencia al id según el excel)
-    const entrada = listaUser[1];
-    // hacemos otro for para insertar usuario por usuario en la base de datos
-    // console.log(entrada);
-    for (let j = 0; j < value.length - 1; j++) {
-      // función para convertir números a fecha
-      const numeroAFecha = (numeroDeDias, esExcel = false) => {
-        const diasDesde1900 = esExcel ? 25568 + 1 : 25568;
-        const datafe = new Date((numeroDeDias - diasDesde1900) * 86400000);
-        return new Date(
-          datafe.getFullYear(),
-          datafe.getMonth(),
-          datafe.getDate(),
-          datafe.getHours() + 5,
-          datafe.getMinutes(),
-          datafe.getSeconds(),
-          datafe.getMilliseconds()
-        );
-      };
-      const fechas = numeroAFecha(entrada, true);
+    if (i % 2 === 0) {
+      // constante que almacena un objeto con los datos de un solo usuario
+      const datos = value[i];
+
+      const entrada = numeroAFecha(datos[1], true);
+
+      const dato = value[i + 1];
+      const salida = numeroAFecha(dato[1], true);
+
       const newRegister = {
-        idusuario: ids,
-        entrada: fechas,
-        salida: fechas,
+        idusuario: datos[0],
+        entrada,
+        salida,
       };
-      console.log(newRegister);
-      // await pool.query("INSERT INTO asistencia SET ?", [newRegister]);
-      // se le especifica que cuando termine de insertar el usuario, se detenga y salga del bucle
-      break;
+      await pool.query("INSERT INTO asistencia SET ?", [newRegister]);
+    } else {
+      continue;
     }
-    // se le especifica que debe continuar el bucle
     continue;
   }
 

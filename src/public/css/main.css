@@ -73,6 +73,7 @@ body, html{
 	background-color: rgba(0, 0, 0, .7);
 }
 .logInForm p,
+.logInForm input,
 .logInForm label{
 	color: #FFF;
 }

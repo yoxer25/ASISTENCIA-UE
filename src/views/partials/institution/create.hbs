@@ -1,0 +1,40 @@
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group label-floating">
+            <label class="control-label">Código Modular</label>
+            <input class="form-control" type="text" id="modularCode" name="modularCode">
+        </div>
+        <div class="form-group label-floating">
+            <label class="control-label">Nombre II.EE</label>
+            <input class="form-control" type="text" id="nameInstitution" name="nameInstitution">
+        </div>
+        <div class="form-group label-floating">
+            <label class="control-label">Dirección I.E</label>
+            <input class="form-control" type="text" id="address" name="address">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group label-floating">
+            <label class="control-label">Director</label>
+            <input class="form-control" type="text" id="nameDirector" name="nameDirector">
+        </div>
+        <div class="form-group label-floating">
+            <label class="control-label">Nivel</label>
+            <select class="form-control" id="level" name="level">
+                <option value="{{product.idCategoria}}" selected>{{product.categoria}}</option>
+                {{#each educationalLevel}}
+                <option value="{{idNivelEducativo}}">{{nombreNivel}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="form-group label-floating">
+            <label class="control-label">Distrito</label>
+            <select class="form-control" id="district" name="district">
+                <option value="{{product.idCategoria}}" selected>{{product.categoria}}</option>
+                {{#each district}}
+                <option value="{{idDistrito}}">{{nombreDistrito}}</option>
+                {{/each}}
+            </select>
+        </div>
+    </div>
+</div>

@@ -1,8 +1,11 @@
+// para subir archivos a la web
+import multer from "multer";
+
 // importamos lo necesario para poder usar las rutas de la página principal
 import { Router } from "express";
 
 // importamos todas las funciones para asignar cada función a una ruta de la web
-import * as homeCtrl from "../controllers/home.controller.js";
+import * as attendanceRecordCtrl from "../controllers/attendanceRecord.controller.js";
 
 /* para proteger nuestras rutas
 privadas, se verificará el
@@ -15,9 +18,12 @@ caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
+const upload = multer({ dest: "src/archives/" });
 
 // rutas de la página principal
-router.get("/", requireToken, homeCtrl.getHome);
+router.get("/", requireToken, attendanceRecordCtrl.getAttendanceRecord);
+router.get("/importData", requireToken, attendanceRecordCtrl.getImportData);
+router.post("/importData", requireToken, upload.single("excel"), attendanceRecordCtrl.importData);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

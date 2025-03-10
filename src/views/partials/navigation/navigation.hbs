@@ -1,0 +1,96 @@
+{{#if user.user}}
+<section class="full-box cover dashboard-sideBar">
+    <div class="full-box dashboard-sideBar-bg btn-menu-dashboard"></div>
+    <div class="full-box dashboard-sideBar-ct">
+        <!-- SideBar User info -->
+        <div class="full-box dashboard-sideBar-UserInfo">
+            <figure class="full-box">
+                <img src="/assets/img/avatar.jpg" alt="UserIcon">
+                <figcaption class="text-center text-titles">{{user.user.name}}</figcaption>
+            </figure>
+            <ul class="full-box list-unstyled text-center">
+                <li>
+                    <a href="#!">
+                        <i class="zmdi zmdi-settings"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#!" class="btn-exit-system">
+                        <i class="zmdi zmdi-power"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- SideBar Menu -->
+        <ul class="list-unstyled full-box dashboard-sideBar-Menu">
+            <li>
+                <a href="/">
+                    <i class="zmdi zmdi-view-dashboard zmdi-hc-fw"></i> Dashboard
+                </a>
+            </li>
+            <li id="panel">
+                <a href="#!" class="btn-sideBar-SubMenu">
+                    <i class="zmdi zmdi-case zmdi-hc-fw"></i> Administración <i
+                        class="zmdi zmdi-caret-down pull-right"></i>
+                </a>
+                <ul class="list-unstyled full-box">
+                    <li>
+                        <a href="/personals"><i class="zmdi zmdi-male-alt zmdi-hc-fw"></i> Personal</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="/attendanceRecords">
+                    <i class="zmdi zmdi-assignment-o zmdi-hc-fw"></i> Asistencia
+                </a>
+            </li>
+            {{!-- <li>
+                <a href="#!" class="btn-sideBar-SubMenu">
+                    <i class="zmdi zmdi-card zmdi-hc-fw"></i> Payments <i class="zmdi zmdi-caret-down pull-right"></i>
+                </a>
+                <ul class="list-unstyled full-box">
+                    <li>
+                        <a href="registration.html"><i class="zmdi zmdi-money-box zmdi-hc-fw"></i> Registration</a>
+                    </li>
+                    <li>
+                        <a href="payments.html"><i class="zmdi zmdi-money zmdi-hc-fw"></i> Payments</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#!" class="btn-sideBar-SubMenu">
+                    <i class="zmdi zmdi-shield-security zmdi-hc-fw"></i> Settings School <i
+                        class="zmdi zmdi-caret-down pull-right"></i>
+                </a>
+                <ul class="list-unstyled full-box">
+                    <li>
+                        <a href="school.html"><i class="zmdi zmdi-balance zmdi-hc-fw"></i> School Data</a>
+                    </li>
+                </ul>
+            </li> --}}
+        </ul>
+    </div>
+</section>
+{{/if}}
+
+<script>
+    const listUser = ({{{ convertJson user.user }}});
+    const panel = document.getElementById("panel")
+    if(listUser.rol === 1){
+        panel.innerHTML = `<a href="#!" class="btn-sideBar-SubMenu">
+                    <i class="zmdi zmdi-case zmdi-hc-fw"></i> Administración <i
+                        class="zmdi zmdi-caret-down pull-right"></i>
+                </a>
+                <ul class="list-unstyled full-box">
+                    <li>
+                        <a href="/users"><i class="zmdi zmdi-account zmdi-hc-fw"></i> Usuarios</a>
+                    </li>
+                    <li>
+                        <a href="/personals"><i class="zmdi zmdi-male-alt zmdi-hc-fw"></i> Personal</a>
+                    </li>
+                    <li>
+                        <a href="/institutions"><i class="zmdi zmdi-graduation-cap zmdi-hc-fw"></i> II.EE</a>
+                    </li>
+                </ul>`;
+    };
+</script>

@@ -1,0 +1,39 @@
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-account zmdi-hc-fw"></i> Usuarios
+                <small>Crear</small>
+            </h1>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid py-5 px-sm-3 px-lg-5" style="margin-top: 15px;">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="card">
+                    <div class="card-header bg-primary text-center">
+                        <p class="text-white" style="font-size: 40px;">Nuevo Usuario</p>
+                    </div>
+                    <div class="card-body rounded-bottom bg-white p-5">
+                        <form action="/users/create" method="POST">
+                            {{>user/create}}
+                            <p class="text-center">
+                                <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                    <p style="font-size: 20px; margin: auto; color: #fff;"><i
+                                            class="zmdi zmdi-floppy"></i> Registrar</p>
+                                </button>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}

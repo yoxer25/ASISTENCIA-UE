@@ -1,0 +1,65 @@
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-graduation-cap zmdi-hc-fw"></i> Instituciones
+                <small>Listado</small>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-lg-5">
+                <a href="/institutions/create">{{>btn-new}}</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white p-5">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Código Modular</th>
+                                    <th class="text-center">Nombre IE</th>
+                                    <th class="text-center">Nivel</th>
+                                    <th class="text-center">Director</th>
+                                    <th class="text-center">Dirección</th>
+                                    <th class="text-center">Distrito</th>
+                                    <th class="text-center">Editar</th>
+                                    <th class="text-center">Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each institutions}}
+                                <tr>
+                                    <td>{{idInstitucion}}</td>
+                                    <td>{{nombreInstitucion}}</td>
+                                    <td>{{nombreNivel}}</td>
+                                    <td>{{nombreDirector}}</td>
+                                    <td>{{direccion}}</td>
+                                    <td>{{nombreDistrito}}</td>
+                                    <td><a href="#!" class="btn btn-info btn-raised btn-xs"><i
+                                                class="zmdi zmdi-refresh"></i></a></td>
+                                    <td><a href="#!" class="btn btn-danger btn-raised btn-xs"><i
+                                                class="zmdi zmdi-delete"></i></a></td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="8">No hay registros para mostrar</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}

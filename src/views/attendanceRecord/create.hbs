@@ -1,0 +1,90 @@
+{{!-- <div class="container-fluid py-5 px-sm-3 px-lg-5">
+    <div class="row pt-5 pb-5">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <form class="px-3 card card-login" id="userForm" action="/importbd" method="POST"
+                        enctype="multipart/form-data">
+                        <div class="col-auto">
+                            <label class="sr-only" for="inlineFormInputGroup">
+                                ARCHIVO EXCEL
+                            </label>
+                            <input type="file" accept=".xlsx" name="excel" class="input-contact form-control">
+                        </div>
+                        <br>
+                        <button class="btn-log-in form-control mb-3 mt-3">
+                            IMPORTAR
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <table id="datatablesSimple" width="100%">
+                        <thead>
+                            <tr scope='col' colspan='4'>
+                                <th>nombres</th>
+                                <th>Fecha Registro</th>
+                                <th>Hora Registro</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listado">
+                            {{#each attendanceRecord}}
+                            <tr>
+                                <td>{{nombres}}</td>
+                                <td>{{formatDate fechaRegistro}}</td>
+                                <td>{{horaRegistro}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> --}}
+
+
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-assignment-o zmdi-hc-fw"></i> Asistencia
+                <small>Importar</small>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row pt-5 pb-5">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form class="px-3 card card-login" id="userForm" action="/attendanceRecords/importData" method="POST"
+                            enctype="multipart/form-data">
+                            <div class="col-auto">
+                                <label class="sr-only" for="inlineFormInputGroup">
+                                    ARCHIVO EXCEL
+                                </label>
+                                <input type="file" accept=".xlsx" name="excel" class="input-contact form-control">
+                            </div>
+                            <br>
+                            <button class="btn-log-in form-control mb-3 mt-3">
+                                IMPORTAR
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}

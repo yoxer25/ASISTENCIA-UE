@@ -27,7 +27,7 @@ CREATE TABLE `distrito` (
   `nombreDistrito` varchar(45) NOT NULL,
   `estado` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`idDistrito`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -63,7 +63,7 @@ CREATE TABLE `institucion` (
   KEY `fx_idNivel_idx` (`idNivel`),
   CONSTRAINT `fx_idDistrito` FOREIGN KEY (`idDistrito`) REFERENCES `distrito` (`idDistrito`),
   CONSTRAINT `fx_idNivel` FOREIGN KEY (`idNivel`) REFERENCES `nivel_educativo` (`idNivelEducativo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -88,7 +88,7 @@ CREATE TABLE `nivel_educativo` (
   `nombreNivel` varchar(45) NOT NULL,
   `estado` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`idNivelEducativo`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -120,7 +120,7 @@ CREATE TABLE `personal` (
   PRIMARY KEY (`idPersonal`),
   KEY `fx_idInstitucion_idx` (`idInstitucion`),
   CONSTRAINT `fx_idInstitucion_personal` FOREIGN KEY (`idInstitucion`) REFERENCES `institucion` (`idInstitucion`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -144,7 +144,7 @@ CREATE TABLE `rol_usuario` (
   `nombreRol` varchar(45) NOT NULL,
   `estado` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`idRolUsuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -178,7 +178,7 @@ CREATE TABLE `usuarios` (
   KEY `fx_idRol_idx` (`idRol`),
   CONSTRAINT `fx_idInstitucion` FOREIGN KEY (`idInstitucion`) REFERENCES `institucion` (`idInstitucion`),
   CONSTRAINT `fx_idRol` FOREIGN KEY (`idRol`) REFERENCES `rol_usuario` (`idRolUsuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

@@ -56,8 +56,11 @@ export class AttendanceRecord {
     recordDate,
     recordTime
   ) {
+    /* const [attendanceRecord] = await pool.query(
+      `SELECT * FROM registro_asistencia r WHERE (r.idInstitucion = "${institution}" AND r.idPersonal = "${personal}") AND (r.fechaRegistro = "${recordDate}" AND r.horaRegistro = "${recordTime}")`
+    ); */
     const [attendanceRecord] = await pool.query(
-      "SELECT * FROM registro_asistencia r WHERE r.idInstitucion = ? and r.idPersonal = ? and r.fechaRegistro = ? and r.horaRegistro = ?",
+      "SELECT * FROM registro_asistencia r WHERE (r.idInstitucion = ? and r.idPersonal = ?) and (r.fechaRegistro = ? and r.horaRegistro = ?)",
       [institution, personal, recordDate, recordTime]
     );
     return attendanceRecord;
@@ -72,10 +75,9 @@ export class AttendanceRecord {
       recordTime
     );
     newRegister.fechaCreado = await helpers.formatDateTime();
-    console.log(newRegister);
-    /* const resDB = await pool.query("INSERT INTO registro_asistencia SET ?", [
+    const resDB = await pool.query("INSERT INTO registro_asistencia SET ?", [
       newRegister,
     ]);
-    return resDB; */
+    return resDB;
   }
 }

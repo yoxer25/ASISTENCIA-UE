@@ -64,23 +64,19 @@
     <div class="container-fluid">
         <div class="row pt-5 pb-5">
             <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-body">
-                        <form class="px-3 card card-login" id="userForm" action="/attendanceRecords/importData" method="POST"
-                            enctype="multipart/form-data">
-                            <div class="col-auto">
-                                <label class="sr-only" for="inlineFormInputGroup">
-                                    ARCHIVO EXCEL
-                                </label>
-                                <input type="file" accept=".xlsx" name="excel" class="input-contact form-control">
-                            </div>
-                            <br>
-                            <button class="btn-log-in form-control mb-3 mt-3">
-                                IMPORTAR
-                            </button>
-                        </form>
+                <form action="/attendanceRecords/importData" method="POST" enctype="multipart/form-data">
+                    <div class="">
+                        <label class="">ARCHIVO EXCEL</label>
+                        <input class="" type="file" accept=".xlsx" name="excel">
                     </div>
-                </div>
+                    <p class="text-center">
+                        <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                            <p style="font-size: 20px; margin: auto; color: #fff;"><i class="zmdi zmdi-floppy"></i>
+                                Importar</p>
+                        </button>
+                    </p>
+                </form>
+
             </div>
         </div>
     </div>

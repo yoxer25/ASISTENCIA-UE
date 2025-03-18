@@ -15,7 +15,7 @@ import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
 // rutas de la página principal
-router.get("/", requireToken, userCtrl.getUsers);
+router.get("/page:num", requireToken, userCtrl.getUsers);
 router.get("/create", requireToken, userCtrl.getCreate);
 router.post("/create", requireToken, userCtrl.create);
 

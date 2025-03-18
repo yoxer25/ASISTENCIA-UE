@@ -3,16 +3,30 @@ import { User } from "../models/user.model.js";
 import { RolUser } from "../models/rolUser.model.js";
 import { Institution } from "../models/institution.model.js";
 
+/* exportamos todas las funciones para poder llamarlas desde
+la carpeta "routes" que tienen todas las rutas de la web */
+
+// controla lo que se debe mostrar al momento de visitar la página de usuarios
 export const getUsers = async (req, res) => {
+  let forPage = 10;
+  let page = req.params.num || 1;
+  let ofset = page * forPage - forPage;
   const user = req.session;
   try {
-    const users = await User.getUser();
-    res.render("user/index", { user, users });
+    const users = await User.getUser(ofset);
+    const [counts] = await User.countUsers();
+    res.render("user/index", {
+      user,
+      users,
+      current: page,
+      pages: Math.ceil(counts.users / forPage),
+    });
   } catch (error) {
     res.render("user/index", { user });
   }
 };
 
+// controla lo que se debe mostrar al momento de visitar la página de crear nuevo usuario
 export const getCreate = async (req, res) => {
   const user = req.session;
   try {
@@ -24,6 +38,7 @@ export const getCreate = async (req, res) => {
   }
 };
 
+// función para guardar nuevo usuario en la base de datos
 export const create = async (req, res) => {
   const { username, formPassword, rolUser } = req.body;
   try {

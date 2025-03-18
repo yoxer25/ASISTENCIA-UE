@@ -1,11 +1,17 @@
 import { genarateToken } from "../helpers/tokenManager.js";
 import { User } from "../models/user.model.js";
-//función para mostrar la vista del login
+
+/* exportamos todas las funciones para poder llamarlas desde
+la carpeta "routes" que tienen todas las rutas de la web */
+
+// controla lo que se debe mostrar al momento de visitar la página del login
 export const getSignIn = async (req, res) => {
   res.render("login/login");
 };
 
-// función para iniciar sesión
+/* función para iniciar sesión, si las credenciales
+son correctas, se le genera un token y se le
+redirecciona a la página principal */
 export const signIn = async (req, res) => {
   const { userModularCode, userPassword } = req.body;
   try {
@@ -19,7 +25,7 @@ export const signIn = async (req, res) => {
       .cookie("access_token", token, expiresIn, {
         httpOnly: true,
         sameSite: "strict",
-        maxAge: 1000 * 60 * 60,
+        maxAge: 1000 * 60 * 60, // la cookie durará 1h
       })
       .redirect("/");
   } catch (error) {

@@ -2,17 +2,31 @@ import { RolUser } from "../models/rolUser.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Personal } from "../models/personal.model.js";
 
+/* exportamos todas las funciones para poder llamarlas desde
+la carpeta "routes" que tienen todas las rutas de la web */
+
+// controla lo que se debe mostrar al momento de visitar la página de trabajadores
 export const getPersonal = async (req, res) => {
+  let forPage = 10;
+  let page = req.params.num || 1;
+  let ofset = page * forPage - forPage;
   const user = req.session;
   const institution = user.user.name;
   try {
-    const personals = await Personal.getPersonal(institution);
-    res.render("personal/index", { user, personals });
+    const personals = await Personal.getPersonal(institution, ofset);
+    const [counts] = await Personal.countPersonals(institution);
+    res.render("personal/index", {
+      user,
+      personals,
+      current: page,
+      pages: Math.ceil(counts.personals / forPage),
+    });
   } catch (error) {
     res.render("personal/index", { user });
   }
 };
 
+// controla lo que se debe mostrar al momento de visitar la página de crear nuevo trabajador
 export const getCreate = async (req, res) => {
   const user = req.session;
   try {
@@ -24,6 +38,9 @@ export const getCreate = async (req, res) => {
   }
 };
 
+/* función para crear un nuevo trabajador, se consulta
+a la base de datos si existe un registro con el
+número de DNI; si no existe, se guarda en la db */
 export const create = async (req, res) => {
   const user = req.session;
   const institution = user.user.name;

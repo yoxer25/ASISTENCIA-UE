@@ -19,7 +19,7 @@ export class RolUser {
     }
   }
 
-  // para consultar datos de un rol
+  // para consultar datos de un rol por nombre
   static async getByName(nameRolUser) {
     const [rolUser] = await pool.query(
       "SELECT * FROM rol_usuario r WHERE r.nombreRol = ? and r.estado != 0",
@@ -35,7 +35,7 @@ export class RolUser {
   // para consultar datos de un rol por id
   static async getById(idRolUser) {
     const [rolUser] = await pool.query(
-      "SELECT * FROM rol_usuario r WHERE r.idRolUsuario = ? r.estado != 0",
+      "SELECT * FROM rol_usuario r WHERE r.idRolUsuario = ? AND r.estado != 0",
       [idRolUser]
     );
     if (rolUser != "") {

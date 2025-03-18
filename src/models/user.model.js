@@ -5,6 +5,7 @@ password: para comparar la contraseña del usuario */
 import pool from "../database/connection.js";
 import { helpers } from "../helpers/helper.js";
 import { password } from "../helpers/password.js";
+import { RolUser } from "./rolUser.model.js";
 
 /* exportamos nuestra clase "User"
 para poder utilizar sus métodos en otros
@@ -30,9 +31,10 @@ export class User {
   }
 
   // para consultar dotos de todos los usuarios
-  static async getUser() {
+  static async getUser(ofset) {
     const [userDb] = await pool.query(
-      "SELECT u.idUsuario, u.idInstitucion, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0"
+      "SELECT u.idUsuario, u.idInstitucion, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 ORDER BY u.idUsuario lIMIT ?, 10",
+      [ofset]
     );
     if (userDb != "") {
       return userDb;
@@ -62,10 +64,12 @@ export class User {
         userData.contrasena
       );
       if (validPassword) {
+        const rol = await RolUser.getById(userData.idRol);
+        const nameRol = rol[0];
         const usuario = {
           idUser: userData.idUsuario,
           nombre: userData.idInstitucion,
-          rol: userData.idRol,
+          rol: nameRol.nombreRol,
         };
         return usuario;
       }

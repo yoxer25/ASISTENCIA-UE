@@ -132,6 +132,43 @@ LOCK TABLES `personal` WRITE;
 /*!40000 ALTER TABLE `personal` ENABLE KEYS */;
 UNLOCK TABLES;
 
+
+--
+-- Table structure for table `registro_asistencia`
+--
+
+DROP TABLE IF EXISTS `registro_asistencia`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `registro_asistencia` (
+  `idRegistroAsistencia` int NOT NULL AUTO_INCREMENT,
+  `idInstitucion` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `idPersonal` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `fechaRegistro` date NOT NULL,
+  `primeraEntrada` time DEFAULT NULL,
+  `primeraSalida` time DEFAULT NULL,
+  `segundaEntrada` time DEFAULT NULL,
+  `segundaSalida` time DEFAULT NULL,
+  `fechaCreado` datetime DEFAULT NULL,
+  `fechaActualizado` datetime DEFAULT NULL,
+  `fechaEliminado` datetime DEFAULT NULL,
+  PRIMARY KEY (`idRegistroAsistencia`),
+  KEY `fx_idPersonal_idx` (`idPersonal`),
+  KEY `fx_idInstitucion_asistencia_idx` (`idInstitucion`),
+  CONSTRAINT `fx_idInstitucion_asistencia` FOREIGN KEY (`idInstitucion`) REFERENCES `institucion` (`idInstitucion`),
+  CONSTRAINT `fx_idPersonal` FOREIGN KEY (`idPersonal`) REFERENCES `personal` (`idPersonal`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `registro_asistencia`
+--
+
+LOCK TABLES `registro_asistencia` WRITE;
+/*!40000 ALTER TABLE `registro_asistencia` DISABLE KEYS */;
+/*!40000 ALTER TABLE `registro_asistencia` ENABLE KEYS */;
+UNLOCK TABLES;
+
 --
 -- Table structure for table `rol_usuario`
 --

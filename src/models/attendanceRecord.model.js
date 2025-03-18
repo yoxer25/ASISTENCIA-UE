@@ -9,75 +9,102 @@ para poder utilizar sus métodos en otros
 archivos del proyecto. Esta clase hace referencia
 a la tabla "registro_asistencia" de la base de datos */
 export class AttendanceRecord {
-  constructor(institution, personal, recordDate, recordTime) {
+  constructor(
+    institution,
+    personal,
+    registrationDate,
+    firstHourEntry,
+    firstHourDeparture,
+    secondHourEntry,
+    secondDepartureTime
+  ) {
     this.idInstitucion = institution;
     this.idPersonal = personal;
-    this.fechaRegistro = recordDate;
-    this.horaRegistro = recordTime;
+    this.fechaRegistro = registrationDate;
+    this.primeraEntrada = firstHourEntry;
+    this.primeraSalida = firstHourDeparture;
+    this.segundaEntrada = secondHourEntry;
+    this.segundaSalida = secondDepartureTime;
   }
 
-  /* para mostrar el registro de asistencia
-  cuando el usuario que ingresa tiene rol
-  de "administrador", este usuario podrá ver
-  el registro de asistencia de todas las II.EE */
-  static async getAttendanceRecordForAdmin() {
+  // para consultar el número total de registros de asistencia
+  static async countRecords() {
     const [attendanceRecord] = await pool.query(
-      "SELECT p.nombrePersonal, r.idPersonal, r.fechaRegistro, r.horaRegistro FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal"
+      "SELECT COUNT(*) AS records FROM registro_asistencia"
     );
-    if (attendanceRecord != "") {
+    if (attendanceRecord) {
       return attendanceRecord;
     } else {
       throw new Error("Datos no encontrados");
     }
   }
 
-  /* para mostrar el registro de asistencia
-  cuando el usuario que ingresa tiene rol
-  de "directivo", este usuario podrá ver
-  el registro de asistencia solo de su I.E */
-  static async getAttendanceRecord(institution) {
-    const [attendanceRecord] = await pool.query(
-      "SELECT p.nombrePersonal, r.idPersonal, r.fechaRegistro, r.horaRegistro FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE r.idInstitucion = ?",
-      [institution]
-    );
-    if (attendanceRecord != "") {
-      return attendanceRecord;
-    } else {
-      throw new Error("Datos no encontrados");
+  /* para mostrar el registro de asistencia;
+  si el usuario que ingresa tiene rol
+  de "directivo", podrá ver el registro de
+  asistencia solo de su I.E; si el usuario que
+  ingresa tiene rol de "administrador", podrá ver
+  el registro de asistencia de todas las II.EE */
+  static async getAttendanceRecord(institution, ofset) {
+    if (institution) {
+      const [attendanceRecord] = await pool.query(
+        "SELECT p.nombrePersonal, r.idPersonal, r.fechaRegistro, r.primeraEntrada FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE r.idInstitucion = ?",
+        [institution]
+      );
+      if (attendanceRecord != "") {
+        return attendanceRecord;
+      } else {
+        throw new Error("Datos no encontrados");
+      }
+    }
+    if (institution === undefined) {
+      const [attendanceRecord] = await pool.query(
+        "SELECT p.nombrePersonal, r.idPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal ORDER BY r.idRegistroAsistencia lIMIT ?, 10",
+        [ofset]
+      );
+      if (attendanceRecord != "") {
+        return attendanceRecord;
+      } else {
+        throw new Error("Datos no encontrados");
+      }
     }
   }
 
   /* para consultar los datos de un registro_asistencia
   pasándole el idPersonal, idInstitucion, fechaRegistro,
-  horaRegistro */
+  primeraEntrada */
   static async getAttendanceRecordForCreate(
     institution,
     personal,
-    recordDate,
-    recordTime
+    registrationDate
   ) {
-    /* const [attendanceRecord] = await pool.query(
-      `SELECT * FROM registro_asistencia r WHERE (r.idInstitucion = "${institution}" AND r.idPersonal = "${personal}") AND (r.fechaRegistro = "${recordDate}" AND r.horaRegistro = "${recordTime}")`
-    ); */
     const [attendanceRecord] = await pool.query(
-      "SELECT * FROM registro_asistencia r WHERE (r.idInstitucion = ? and r.idPersonal = ?) and (r.fechaRegistro = ? and r.horaRegistro = ?)",
-      [institution, personal, recordDate, recordTime]
+      "SELECT * FROM registro_asistencia r WHERE (r.idInstitucion = ? and r.idPersonal = ?) and (r.fechaRegistro = ?)",
+      [institution, personal, registrationDate]
     );
     return attendanceRecord;
   }
 
   // para crear un nuevo registro de asistencia
-  static async create(institution, personal, recordDate, recordTime) {
+  static async create(
+    institution,
+    personal,
+    registrationDate,
+    firstHourEntry,
+    firstHourDeparture,
+    secondHourEntry,
+    secondDepartureTime
+  ) {
     const newRegister = new AttendanceRecord(
       institution,
       personal,
-      recordDate,
-      recordTime
+      registrationDate,
+      firstHourEntry,
+      firstHourDeparture,
+      secondHourEntry,
+      secondDepartureTime
     );
     newRegister.fechaCreado = await helpers.formatDateTime();
-    const resDB = await pool.query("INSERT INTO registro_asistencia SET ?", [
-      newRegister,
-    ]);
-    return resDB;
+    await pool.query("INSERT INTO registro_asistencia SET ?", [newRegister]);
   }
 }

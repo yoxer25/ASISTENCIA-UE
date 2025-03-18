@@ -1,0 +1,200 @@
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-assignment zmdi-hc-fw"></i> Reportes
+                <small>Listado</small>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-lg-5">
+                <a href="/attendanceRecords/importData">{{>btn-new}}</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white p-5">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Documento</th>
+                                    <th class="text-center">Nombres y Apellidos</th>
+                                    <th class="text-center">Fecha Registro</th>
+                                    <th class="text-center">Primera Entrada</th>
+                                    <th class="text-center">Tardanza</th>
+                                    <th class="text-center">Segunda Entrada</th>
+                                    <th class="text-center">Tardanza</th>
+                                    <th class="text-center">Editar</th>
+                                    <th class="text-center">Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list">
+                            </tbody>
+                        </table>
+                        <ul class="pagination pagination-sm" id="pagination">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}
+
+
+<script>
+    const listRecords = ({{{ convertJson attendanceRecord }}});
+
+    const convertirATotalMinutos = (tiempo) => {
+        if (tiempo !== null) {
+            const [horas, minutos, segundos] = tiempo.split(":").map(Number);
+            const totalMinutos = horas * 60 + minutos + Math.round(segundos / 60);
+            return totalMinutos;
+        } else {
+            return null;
+        }
+    };
+
+    const listProductSale = (lista) => {
+        const horaEntrada = convertirATotalMinutos("08:00:00");
+        const horaEntrada2 = convertirATotalMinutos("14:15:00");
+
+        let stringTable = '';
+        for (const dato of lista) {
+            const minutosPrimeraEntrada = convertirATotalMinutos(dato.primeraEntrada);
+            const minustosSegundaEntrada = convertirATotalMinutos(dato.segundaEntrada);
+
+            const primeraTardanza = minutosPrimeraEntrada - horaEntrada2;
+            const segundaTardanza = minustosSegundaEntrada - horaEntrada2;
+
+            let fechaISO = dato.fechaRegistro;
+            let date = new Date(fechaISO);
+
+            let year = date.getFullYear();
+            let month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses en JavaScript son base 0
+            let day = String(date.getDate()).padStart(2, '0');
+
+            let fechaFormateada = `${year}-${month}-${day}`;
+
+            let fila = '<tbody><tr scope="col"><td>';
+            fila += dato.idPersonal;
+            fila += "</td>";
+            fila += "<td>";
+            fila += dato.nombrePersonal;
+            fila += "</td>";
+            fila += "<td>";
+            fila += fechaFormateada;
+            fila += "</td>";
+            fila += "<td>";
+            if (dato.primeraEntrada !== null) {
+                fila += dato.primeraEntrada;
+            } else {
+                fila += "no marcó";
+            }
+            fila += "</td>";
+            fila += "<td>";
+            if (minutosPrimeraEntrada !== null) {
+                if (primeraTardanza >= 60) {
+                    const hora = Math.floor(primeraTardanza / 60);
+                    const minuto = primeraTardanza % 60;
+                    fila += hora + "h " + minuto + " minutos tarde";
+                    //console.log(hora + "h con " + minuto + " tarde");
+                }
+
+                if (primeraTardanza < 60 && primeraTardanza > 0) {
+                    fila += primeraTardanza + " minutos tarde";
+                }
+
+                if (primeraTardanza <= 0) {
+                    fila += "puntual";
+                }
+            }
+            if (dato.primeraEntrada === null) {
+                fila += "no marcó";
+            }
+
+            fila += "</td>";
+            fila += "<td>";
+            if (dato.segundaEntrada !== null) {
+                fila += dato.segundaEntrada;
+            } else {
+                fila += "no marcó";
+            }
+            fila += "</td>";
+            fila += "<td>";
+            if (minustosSegundaEntrada !== null) {
+                if (segundaTardanza >= 60) {
+                    const hora = Math.floor(segundaTardanza / 60);
+                    const minuto = segundaTardanza % 60;
+                    fila += hora + "h " + minuto + " minutos tarde";
+                    //console.log(hora + "h con " + minuto + " tarde");
+                }
+
+                if (segundaTardanza < 60 && segundaTardanza > 0) {
+                    fila += segundaTardanza + " minutos tarde";
+                }
+
+                if (segundaTardanza <= 0) {
+                    fila += "puntual";
+                }
+            }
+            if (dato.segundaEntrada === null) {
+                fila += "no marcó";
+            }
+
+            fila += "</td>";
+            fila += "<td>";
+            fila += `<a href="#!" class="btn btn-info btn-raised btn-xs"><i
+                                                class="zmdi zmdi-refresh"></i></a>`;
+            fila += "</td>";
+            fila += "<td>";
+            fila += `<a href="#!" class="btn btn-danger btn-raised btn-xs"><i
+                                                class="zmdi zmdi-delete"></i></a>`;
+            fila += "</td>";
+            fila += "</tr></tbody>";
+            stringTable += fila;
+        }
+        return stringTable;
+    };
+    document.getElementById("list").innerHTML =
+        listProductSale(listRecords);
+
+    const current = ({{{ convertJson current }}});
+    const pages = ({{{ convertJson pages }}});
+
+    const numPages = (num) => {
+        let navPages = '';
+
+        if (pages) {
+            var i = (Number(current) > 5 ? Number(current) - 4 : 1);
+            for (; i <= (Number(current) + 4) && i <= pages; i++) {
+                let fila = '<ul class="pagination pagination-sm" id="pagination">';
+                if (i == current) {
+                    fila += '<li class="active">';
+                } else {
+                    fila += '<li>';
+                }
+                if (i === Number(current) - 4 && i < pages) {
+                    fila += `<a href="#">...</a>`;
+                }
+                if (i === Number(current) + 4 && i < pages) {
+                    fila += `<a href="#">...</a>`;
+                }
+                fila += `<a href="/reports/page${i}">${i}</a>`;
+                fila += "</li></ul>";
+                navPages += fila;
+            }
+        }
+        return navPages
+    }
+    document.getElementById("pagination").innerHTML =
+        numPages(pages);
+</script>

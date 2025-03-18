@@ -2,8 +2,10 @@ import { User } from "../models/user.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Personal } from "../models/personal.model.js";
 
-// exportamos todas las constantes para poder llamarlas desde la carpeta "routes" que tienen todas las rutas de la web
-// función que muestra lo que se debe mostrar al momento de vistar la página principal
+/* exportamos todas las funciones para poder llamarlas desde
+la carpeta "routes" que tienen todas las rutas de la web */
+
+// controla lo que se debe mostrar al momento de vistar la página principal
 export const getHome = async (req, res) => {
   const user = req.session;
   const institution = user.user.name;

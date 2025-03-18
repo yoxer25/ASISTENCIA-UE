@@ -19,6 +19,7 @@ import institutionRoutes from "./routes/institution.route.js";
 import userRoutes from "./routes/user.route.js";
 import personalRoutes from "./routes/personal.route.js";
 import attendanceRecordRoutes from "./routes/attendanceRecord.route.js";
+import reportRoutes from "./routes/report.route.js";
 
 //constantes
 // para iniciar el servidor
@@ -54,7 +55,8 @@ app.use("/myaccount", myaccountRoutes);
 app.use("/institutions", institutionRoutes);
 app.use("/users", userRoutes);
 app.use("/personals", personalRoutes);
-app.use('/attendanceRecords',attendanceRecordRoutes);
+app.use("/attendanceRecords", attendanceRecordRoutes);
+app.use("/reports", reportRoutes);
 
 // exportamos la constante "app" para poder utilizarla en otras parte del proyecto
 export default app;

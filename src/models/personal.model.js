@@ -30,10 +30,10 @@ export class Personal {
   }
 
   // para consultar dotos de todos los trabajadores
-  static async getPersonal(institution) {
+  static async getPersonal(institution, ofset) {
     const [personalDb] = await pool.query(
-      "SELECT p.idPersonal, p.nombrePersonal, i.nombreInstitucion FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0",
-      [institution]
+      "SELECT p.idPersonal, p.nombrePersonal, i.nombreInstitucion FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.idPersonal lIMIT ?, 10",
+      [institution, ofset]
     );
     if (personalDb != "") {
       return personalDb;

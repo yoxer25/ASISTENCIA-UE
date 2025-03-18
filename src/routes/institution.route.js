@@ -14,9 +14,10 @@ import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
 // rutas de la página principal
-router.get("/", requireToken, institutionCtrl.getData);
+router.get("/page:num", requireToken, institutionCtrl.getData);
 router.get("/create", requireToken, institutionCtrl.getCreate);
 router.post("/create", requireToken, institutionCtrl.create);
+router.get("/ie:Id", requireToken, institutionCtrl.getById);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

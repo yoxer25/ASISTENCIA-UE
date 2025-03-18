@@ -33,7 +33,7 @@
                                     <th class="text-center">Eliminar</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="list">
                                 {{#each institutions}}
                                 <tr>
                                     <td>{{idInstitucion}}</td>
@@ -42,8 +42,9 @@
                                     <td>{{nombreDirector}}</td>
                                     <td>{{direccion}}</td>
                                     <td>{{nombreDistrito}}</td>
-                                    <td><a href="#!" class="btn btn-info btn-raised btn-xs"><i
-                                                class="zmdi zmdi-refresh"></i></a></td>
+                                    <td><a href="/institutions/ie{{idInstitucion}}"
+                                            class="btn btn-info btn-raised btn-xs"><i class="zmdi zmdi-refresh"></i></a>
+                                    </td>
                                     <td><a href="#!" class="btn btn-danger btn-raised btn-xs"><i
                                                 class="zmdi zmdi-delete"></i></a></td>
                                 </tr>
@@ -54,6 +55,8 @@
                                 {{/each}}
                             </tbody>
                         </table>
+                        <ul class="pagination pagination-sm" id="pagination">
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -63,3 +66,37 @@
 </section>
 
 {{>navigation/navigation}}
+
+<script>
+    const current = ({{{ convertJson current }}});
+    const pages = ({{{ convertJson pages }}});
+
+    const numPages = (num) => {
+        let navPages = '';
+
+        if (pages) {
+            var i = (Number(current) > 5 ? Number(current) - 4 : 1);
+            for (; i <= (Number(current) + 4) && i <= pages; i++) {
+                let fila = '<ul class="pagination pagination-sm" id="pagination">';
+                if (i == current) {
+                    fila += '<li class="active">';
+                } else {
+                    fila += '<li>';
+                }
+                if (i === Number(current) - 4 && i < pages) {
+                    fila += `<a href="#">...</a>`;
+                }
+                if (i === Number(current) + 4 && i < pages) {
+                    fila += `<a href="#">...</a>`;
+                }
+                fila += `<a href="/institutions/page${i}">${i}</a>`;
+                fila += "</li></ul>";
+                navPages += fila;
+            }
+        }
+        return navPages
+    }
+    document.getElementById("pagination").innerHTML =
+        numPages(pages);
+
+</script>

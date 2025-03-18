@@ -38,14 +38,26 @@ export class Institution {
   }
 
   // para consultar datos de las instituciones
-  static async getInstitution() {
-    const [institution] = await pool.query(
-      "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.estado != 0"
-    );
-    if (institution != "") {
-      return institution;
+  static async getInstitution(ofset) {
+    if (ofset >= 0) {
+      const [institution] = await pool.query(
+        "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.estado != 0 ORDER BY i.idInstitucion lIMIT ?, 10",
+        [ofset]
+      );
+      if (institution != "") {
+        return institution;
+      } else {
+        throw new Error("Datos no encontrados");
+      }
     } else {
-      throw new Error("Datos no encontrados");
+      const [institution] = await pool.query(
+        "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.estado != 0"
+      );
+      if (institution != "") {
+        return institution;
+      } else {
+        throw new Error("Datos no encontrados");
+      }
     }
   }
 

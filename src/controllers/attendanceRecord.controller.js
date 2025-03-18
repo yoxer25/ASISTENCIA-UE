@@ -11,21 +11,34 @@ la carpeta "routes" que tienen todas las rutas de la web */
 
 // controla lo que se debe mostrar al momento de visitar la página de asistencia
 export const getAttendanceRecord = async (req, res) => {
+  let forPage = 10;
+  let page = req.params.num || 1;
+  let ofset = page * forPage - forPage;
   const user = req.session;
   const rol = user.user.rol;
   const institution = user.user.name;
   try {
-    if (rol === 1) {
-      const attendanceRecord =
-        await AttendanceRecord.getAttendanceRecordForAdmin();
-      res.render("attendanceRecord/index", { user, attendanceRecord });
+    if (rol === "administrador") {
+      const [counts] = await AttendanceRecord.countRecords();
+      const attendanceRecord = await AttendanceRecord.getAttendanceRecord(
+        undefined,
+        ofset
+      );
+      res.render("attendanceRecord/index", {
+        user,
+        attendanceRecord,
+        current: page,
+        pages: Math.ceil(counts.records / forPage),
+      });
     } else {
       const attendanceRecord = await AttendanceRecord.getAttendanceRecord(
-        institution
+        institution,
+        ofset
       );
       res.render("attendanceRecord/index", { user, attendanceRecord });
     }
   } catch (error) {
+    console.log(error.message);
     res.render("attendanceRecord/index", { user });
   }
 };
@@ -37,73 +50,164 @@ export const getImportData = async (req, res) => {
 };
 
 /* para importar los datos desde el archivo .xlsx;
-se va iterando fila por fila, por cada fila se va
-consultando si todos los datos de esa fila ya han
-sido registrados, si ya existen en la base de datos,
-se pasa a la siguiente fila, caso contrario, se
-agrega el nuevo registro */
+se crea un nuevo objeto a partir de los datos del
+excel y se va guardando en la base datos (solo si
+el usuario no tiene horas agregadas en una
+determinada fecha) */
 export const importData = async (req, res) => {
   const user = req.session;
   const institution = user.user.name;
 
   try {
     saveExcel(req.file);
-    // especificamos el archivo excel que vamos a leer
+    // especificamos el archivo excel del cual vamos a leer los datos
     const workBook = await xlsxPopulate.fromFileAsync(
       "./src/archives/asistencia.xlsx"
     );
-    // constante que contiene todos los datos de una hoja del excel
+    // constante que contiene todos los datos de la hoja del excel
     const value = workBook.sheet("COVG231060035_attlog").usedRange().value();
-    // función para convertir números a fecha
-    const numeroAFecha = (numeroDeDias, esExcel = false) => {
-      const diasDesde1900 = esExcel ? 25568 + 1 : 25568;
-      const datafe = new Date((numeroDeDias - diasDesde1900) * 86400000);
-      return new Date(
-        datafe.getFullYear(),
-        datafe.getMonth(),
-        datafe.getDate(),
-        datafe.getHours() + 5,
-        datafe.getMinutes(),
-        datafe.getSeconds(),
-        datafe.getMilliseconds()
-      );
-    };
+
+    let registers = {};
+
     for (let i = 0; i < value.length; i++) {
-      const datos = value[i];
-      const recordDateTime = numeroAFecha(datos[1], true);
-      if (datos[0] !== undefined) {
-        const [DNIPersonal] = await Personal.getDNI(institution, datos[0]);
-        const [resAttenRec] =
-          await AttendanceRecord.getAttendanceRecordForCreate(
-            institution,
-            DNIPersonal.idPersonal,
-            helpers.formatDate(recordDateTime),
-            helpers.formatTime(recordDateTime)
-          );
-        if (!resAttenRec) {
-          await AttendanceRecord.create(
-            institution,
-            DNIPersonal.idPersonal,
-            helpers.formatDate(recordDateTime),
-            helpers.formatTime(recordDateTime)
-          );
-        } else {
-          continue;
+      const element = value[i];
+      if (element[0] !== undefined) {
+        const [DNIPersonal] = await Personal.getDNI(institution, element[0]);
+        const dni = DNIPersonal.idPersonal;
+        const datetimeExcel = numeroAFecha(element[1], true);
+        const registrationDate = helpers.formatDate(datetimeExcel);
+        const registrationTime = helpers.formatTime(datetimeExcel);
+        if (!registers[dni]) {
+          registers[dni] = {
+            usuario: dni,
+            fechaRegistro: [],
+          };
         }
+        registers[dni].fechaRegistro.push([registrationDate, registrationTime]);
       } else {
         break;
       }
-      continue;
     }
+
+    Object.values(registers).forEach((register) => {
+      const finalRegister = {};
+
+      register.fechaRegistro.forEach((fecha) => {
+        const date = fecha[0];
+        const time = fecha[1];
+
+        if (!finalRegister[date]) {
+          finalRegister[date] = {
+            usuario: register.usuario,
+            fechaRegistro: date,
+            marcas: [],
+          };
+        }
+
+        finalRegister[date].marcas.push(time);
+      });
+
+      const horaEntrada1 = convertirATotalMinutos("08:00:00");
+      const horaEntrada1Hasta = convertirATotalMinutos("10:00:00");
+
+      const horaSalida1 = convertirATotalMinutos("12:00:00");
+
+      const horaEntrada2Desde = convertirATotalMinutos("14:00:00");
+      const horaEntrada2Hasta = convertirATotalMinutos("15:00:00");
+
+      const horaSalida2 = convertirATotalMinutos("17:00:00");
+
+      Object.values(finalRegister).forEach(async (register) => {
+        const attenRec = {
+          institution,
+          personal: `${register.usuario}`,
+          recordDate: `${register.fechaRegistro}`,
+        };
+
+        register.marcas.forEach((registroHora) => {
+          const horaMarco = convertirATotalMinutos(registroHora);
+          if (horaMarco < horaEntrada1 && horaMarco <= horaEntrada1Hasta) {
+            attenRec.firstHourEntry = registroHora;
+          }
+          if (horaMarco >= horaSalida1 && horaMarco < horaEntrada2Desde) {
+            attenRec.firstHourDeparture = registroHora;
+          }
+          if (
+            horaMarco >= horaEntrada2Desde &&
+            horaMarco <= horaEntrada2Hasta
+          ) {
+            attenRec.secondHourEntry = registroHora;
+          }
+          if (horaMarco >= horaSalida2) {
+            attenRec.secondDepartureTime = registroHora;
+          }
+        });
+
+        if (!attenRec.firstHourEntry) {
+          attenRec.firstHourEntry = null;
+        }
+        if (!attenRec.firstHourDeparture) {
+          attenRec.firstHourDeparture = null;
+        }
+        if (!attenRec.secondHourEntry) {
+          attenRec.secondHourEntry = null;
+        }
+        if (!attenRec.secondDepartureTime) {
+          attenRec.secondDepartureTime = null;
+        }
+
+        const [resAttenRec] =
+          await AttendanceRecord.getAttendanceRecordForCreate(
+            attenRec.institution,
+            attenRec.personal,
+            attenRec.recordDate
+          );
+
+        if (!resAttenRec) {
+          await AttendanceRecord.create(
+            attenRec.institution,
+            attenRec.personal,
+            attenRec.recordDate,
+            attenRec.firstHourEntry,
+            attenRec.firstHourDeparture,
+            attenRec.secondHourEntry,
+            attenRec.secondDepartureTime
+          );
+        }
+      });
+    });
     res.redirect("/attendanceRecords");
   } catch (error) {
+    console.log(error.message);
     res.redirect("/attendanceRecords/importData");
   }
 };
 
 // función para que el excel subido se guarde con su nombre original dentro de la carpeta "src/archives"
-function saveExcel(file) {
+const saveExcel = (file) => {
   const newPath = `./src/archives/${file.originalname}`;
   fs.renameSync(file.path, newPath);
   return newPath;
-}
+};
+
+// función para convertir números a fecha
+const numeroAFecha = (numeroDeDias, esExcel = false) => {
+  const diasDesde1900 = esExcel ? 25568 + 1 : 25568;
+  const datafe = new Date((numeroDeDias - diasDesde1900) * 86400000);
+  return new Date(
+    datafe.getFullYear(),
+    datafe.getMonth(),
+    datafe.getDate(),
+    datafe.getHours() + 5,
+    datafe.getMinutes(),
+    datafe.getSeconds(),
+    datafe.getMilliseconds()
+  );
+};
+
+// función para convertir HH:MM:SS a minutos
+const convertirATotalMinutos = (tiempo) => {
+  const [horas, minutos, segundos] = tiempo.split(":").map(Number);
+  const totalMinutos = horas * 60 + minutos + Math.round(segundos / 60);
+  return totalMinutos;
+};

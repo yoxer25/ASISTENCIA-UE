@@ -109,7 +109,8 @@ DROP TABLE IF EXISTS `personal`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `personal` (
-  `idPersonal` varchar(11) NOT NULL,
+  `idPersonal` int NOT NULL AUTO_INCREMENT,
+  `dniPersonal` varchar(8) NOT NULL,
   `idInstitucion` varchar(10) NOT NULL,
   `nombrePersonal` varchar(60) NOT NULL,
   `idReloj` int NOT NULL,

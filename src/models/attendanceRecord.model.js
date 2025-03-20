@@ -27,29 +27,17 @@ export class AttendanceRecord {
     this.segundaSalida = secondDepartureTime;
   }
 
-  // para consultar el número total de registros de asistencia
-  static async countRecords() {
-    const [attendanceRecord] = await pool.query(
-      "SELECT COUNT(*) AS records FROM registro_asistencia"
-    );
-    if (attendanceRecord) {
-      return attendanceRecord;
-    } else {
-      throw new Error("Datos no encontrados");
-    }
-  }
-
   /* para mostrar el registro de asistencia;
   si el usuario que ingresa tiene rol
   de "directivo", podrá ver el registro de
   asistencia solo de su I.E; si el usuario que
   ingresa tiene rol de "administrador", podrá ver
   el registro de asistencia de todas las II.EE */
-  static async getAttendanceRecord(institution, ofset) {
-    if (institution) {
+  static async getAttendanceRecord(institution, startDate, endDate, username, dni) {
+    if (username === undefined && dni !== undefined) {
       const [attendanceRecord] = await pool.query(
-        "SELECT p.nombrePersonal, r.idPersonal, r.fechaRegistro, r.primeraEntrada FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE r.idInstitucion = ?",
-        [institution]
+        "SELECT p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY r.idRegistroAsistencia",
+        [institution, startDate, endDate, dni]
       );
       if (attendanceRecord != "") {
         return attendanceRecord;
@@ -57,10 +45,21 @@ export class AttendanceRecord {
         throw new Error("Datos no encontrados");
       }
     }
-    if (institution === undefined) {
+    if (username !== undefined && dni === undefined) {
       const [attendanceRecord] = await pool.query(
-        "SELECT p.nombrePersonal, r.idPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal ORDER BY r.idRegistroAsistencia lIMIT ?, 10",
-        [ofset]
+        `SELECT p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.nombrePersonal LIKE '%${username}%' ORDER BY r.idRegistroAsistencia`,
+        [institution, startDate, endDate]
+      );
+      if (attendanceRecord != "") {
+        return attendanceRecord;
+      } else {
+        throw new Error("Datos no encontrados");
+      }
+    }
+    if (username === undefined && dni === undefined) {
+      const [attendanceRecord] = await pool.query(
+        "SELECT p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) ORDER BY r.idRegistroAsistencia",
+        [institution, startDate, endDate]
       );
       if (attendanceRecord != "") {
         return attendanceRecord;

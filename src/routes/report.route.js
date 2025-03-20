@@ -18,7 +18,7 @@ const router = Router();
 
 
 // rutas de la página principal
-router.get("/page:num", requireToken, reportCtrl.getReport);
+router.post("/", requireToken, reportCtrl.getReport);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

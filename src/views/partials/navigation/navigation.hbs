@@ -40,12 +40,22 @@
                 </ul>
             </li>
             <li>
-                <a href="/attendanceRecords/page1">
+                <form action="/attendanceRecords" method="post" id="attendanceForm">
+                    <input type="hidden" id="page" name="page">
+                    <input type="hidden" id="startDate" name="startDate">
+                    <input type="hidden" id="endDate" name="endDate">
+                </form>
+                <a id="enlace" href="#" onclick="submitAttendanceForm(1); return false;">
                     <i class="zmdi zmdi-assignment-o zmdi-hc-fw"></i> Asistencia
                 </a>
             </li>
             <li>
-                <a href="/reports/page1">
+                <form action="/reports" method="post" id="reportForm">
+                    <input type="hidden" id="page" name="page">
+                    <input type="hidden" id="startDate" name="startDate">
+                    <input type="hidden" id="endDate" name="endDate">
+                </form>
+                <a id="enlace" href="#" onclick="submitReportForm(1); return false;">
                     <i class="zmdi zmdi-assignment zmdi-hc-fw"></i> Reportes
                 </a>
             </li>
@@ -81,7 +91,7 @@
 <script>
     const listUser = ({{{ convertJson user.user }}});
     const panel = document.getElementById("panel")
-    if(listUser.rol === "administrador"){
+    if (listUser.rol === "administrador") {
         panel.innerHTML = `<a href="#!" class="btn-sideBar-SubMenu">
                     <i class="zmdi zmdi-case zmdi-hc-fw"></i> Administración <i
                         class="zmdi zmdi-caret-down pull-right"></i>
@@ -98,4 +108,16 @@
                     </li>
                 </ul>`;
     };
+
+    function submitAttendanceForm(i) {
+        const page = document.getElementById("page")
+        page.value = 1;
+        document.getElementById('attendanceForm').submit();
+    }
+
+    function submitReportForm(i) {
+        const page = document.getElementById("page")
+        page.value = 1;
+        document.getElementById('reportForm').submit();
+    }
 </script>

@@ -5,48 +5,203 @@ import fs from "node:fs";
 // importamos el módulo "xlsx-populate" para poder leer archivos .xlsx
 import xlsxPopulate from "xlsx-populate";
 import { AttendanceRecord } from "../models/attendanceRecord.model.js";
+import { Institution } from "../models/institution.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
-
-// controla lo que se debe mostrar al momento de visitar la página de asistencia
-export const getAttendanceRecord = async (req, res) => {
-  let forPage = 10;
-  let page = req.params.num || 1;
-  let ofset = page * forPage - forPage;
-  const user = req.session;
-  const rol = user.user.rol;
-  const institution = user.user.name;
-  try {
-    if (rol === "administrador") {
-      const [counts] = await AttendanceRecord.countRecords();
-      const attendanceRecord = await AttendanceRecord.getAttendanceRecord(
-        undefined,
-        ofset
-      );
-      res.render("attendanceRecord/index", {
-        user,
-        attendanceRecord,
-        current: page,
-        pages: Math.ceil(counts.records / forPage),
-      });
-    } else {
-      const attendanceRecord = await AttendanceRecord.getAttendanceRecord(
-        institution,
-        ofset
-      );
-      res.render("attendanceRecord/index", { user, attendanceRecord });
-    }
-  } catch (error) {
-    console.log(error.message);
-    res.render("attendanceRecord/index", { user });
-  }
-};
 
 // controla lo que se debe mostrar al momento de visitar la página de importar data
 export const getImportData = async (req, res) => {
   const user = req.session;
   res.render("attendanceRecord/create", { user });
+};
+
+//controla lo que se debe mostrar al momento de visitar la página de asistencia
+export const getAttendanceRecord = async (req, res) => {
+  let forPage = 10;
+  const user = req.session;
+  const rol = user.user.rol;
+  const institution = user.user.name;
+  const fechaActual = new Date();
+  let year = fechaActual.getFullYear();
+  let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0
+  let day = String(fechaActual.getDate()).padStart(2, "0");
+
+  try {
+    let { startDate, endDate, page, option, username, ie } = req.body;
+    if (startDate !== "") {
+      startDate = startDate;
+    } else {
+      startDate = `${year}-${month}-${day}`;
+    }
+    if (endDate !== "") {
+      endDate = endDate;
+    } else {
+      endDate = `${year}-${month}-${day}`;
+    }
+    if (page !== "") {
+      page = page;
+    } else {
+      page = 1;
+    }
+    if (ie) {
+      ie = ie;
+    } else {
+      const [nameIe] = await Institution.getInstitutionById(institution);
+      ie = nameIe.nombreInstitucion;
+    }
+    const [idIE] = await Institution.getInstitutionByName(ie);
+    [ie] = await Institution.getInstitutionById(idIE.idInstitucion);
+    if (username) {
+      if (rol === "administrador") {
+        [ie] = await Institution.getInstitutionById(idIE.idInstitucion);
+        if (option === "dni") {
+          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+            idIE.idInstitucion,
+            startDate,
+            endDate,
+            undefined,
+            username
+          );
+          let attendanceRecord = attendanceRecordDB.slice(
+            page * forPage - forPage,
+            page * forPage
+          );
+          res.render("attendanceRecord/index", {
+            user,
+            attendanceRecord,
+            current: page,
+            pages: Math.ceil(attendanceRecordDB.length / forPage),
+            ie: ie.nombreInstitucion,
+            username,
+            option,
+            startDate,
+            endDate,
+          });
+        }
+        if (option === "name") {
+          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+            idIE.idInstitucion,
+            startDate,
+            endDate,
+            username,
+            undefined
+          );
+          let attendanceRecord = attendanceRecordDB.slice(
+            page * forPage - forPage,
+            page * forPage
+          );
+          res.render("attendanceRecord/index", {
+            user,
+            attendanceRecord,
+            current: page,
+            pages: Math.ceil(attendanceRecordDB.length / forPage),
+            ie: ie.nombreInstitucion,
+            username,
+            option,
+            startDate,
+            endDate,
+          });
+        }
+      } else {
+        if (option === "dni") {
+          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+            institution,
+            startDate,
+            endDate,
+            undefined,
+            username
+          );
+          let attendanceRecord = attendanceRecordDB.slice(
+            page * forPage - forPage,
+            page * forPage
+          );
+          res.render("attendanceRecord/index", {
+            user,
+            attendanceRecord,
+            current: page,
+            pages: Math.ceil(attendanceRecordDB.length / forPage),
+            ie: ie.nombreInstitucion,
+            username,
+            option,
+            startDate,
+            endDate,
+          });
+        }
+        if (option === "name") {
+          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+            institution,
+            startDate,
+            endDate,
+            username,
+            undefined
+          );
+          let attendanceRecord = attendanceRecordDB.slice(
+            page * forPage - forPage,
+            page * forPage
+          );
+          res.render("attendanceRecord/index", {
+            user,
+            attendanceRecord,
+            current: page,
+            pages: Math.ceil(attendanceRecordDB.length / forPage),
+            ie: ie.nombreInstitucion,
+            username,
+            option,
+            startDate,
+            endDate,
+          });
+        }
+      }
+    } else {
+      if (rol === "administrador") {
+        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+          idIE.idInstitucion,
+          startDate,
+          endDate
+        );
+        let attendanceRecord = attendanceRecordDB.slice(
+          page * forPage - forPage,
+          page * forPage
+        );
+        res.render("attendanceRecord/index", {
+          user,
+          attendanceRecord,
+          current: page,
+          pages: Math.ceil(attendanceRecordDB.length / forPage),
+          ie: ie.nombreInstitucion,
+          username,
+          option,
+          startDate,
+          endDate,
+        });
+      } else {
+        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+          idIE.idInstitucion,
+          startDate,
+          endDate
+        );
+        let attendanceRecord = attendanceRecordDB.slice(
+          page * forPage - forPage,
+          page * forPage
+        );
+        res.render("attendanceRecord/index", {
+          user,
+          attendanceRecord,
+          current: page,
+          pages: Math.ceil(attendanceRecordDB.length / forPage),
+          ie: ie.nombreInstitucion,
+          username,
+          option,
+          startDate,
+          endDate,
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.render("attendanceRecord/index", { user });
+  }
 };
 
 /* para importar los datos desde el archivo .xlsx;
@@ -72,7 +227,7 @@ export const importData = async (req, res) => {
     for (let i = 0; i < value.length; i++) {
       const element = value[i];
       if (element[0] !== undefined) {
-        const [DNIPersonal] = await Personal.getDNI(institution, element[0]);
+        const [DNIPersonal] = await Personal.getId(institution, element[0]);
         const dni = DNIPersonal.idPersonal;
         const datetimeExcel = numeroAFecha(element[1], true);
         const registrationDate = helpers.formatDate(datetimeExcel);
@@ -176,9 +331,12 @@ export const importData = async (req, res) => {
         }
       });
     });
-    res.redirect("/attendanceRecords");
+
+    function redireccionarPagina() {
+      res.redirect("/attendanceRecords/page1");
+    }
+    setTimeout(redireccionarPagina, 2000);
   } catch (error) {
-    console.log(error.message);
     res.redirect("/attendanceRecords/importData");
   }
 };

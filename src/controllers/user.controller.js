@@ -45,12 +45,12 @@ export const create = async (req, res) => {
     const passwordHash = await password.encryptPassword(formPassword);
     const resDb = await User.create(username, rolUser, passwordHash);
     if (resDb.affectedRows > 0) {
-      res.redirect("/users");
+      res.redirect("/users/page1");
     } else {
       res.redirect("/users/create");
       throw new Error("Error al agregar registro");
     }
   } catch (error) {
-    res.redirect("/institutions/create");
+    res.redirect("/users/create");
   }
 };

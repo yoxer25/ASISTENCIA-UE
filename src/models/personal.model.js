@@ -10,7 +10,7 @@ archivos del proyecto. Esta clase hace referencia
 a la tabla "usuarios" de la base de datos */
 export class Personal {
   constructor(documentNumber, institution, fullName, idReloj) {
-    this.idPersonal = documentNumber;
+    this.dniPersonal = documentNumber;
     this.idInstitucion = institution;
     this.nombrePersonal = fullName;
     this.idReloj = idReloj;
@@ -32,7 +32,7 @@ export class Personal {
   // para consultar dotos de todos los trabajadores
   static async getPersonal(institution, ofset) {
     const [personalDb] = await pool.query(
-      "SELECT p.idPersonal, p.nombrePersonal, i.nombreInstitucion FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.idPersonal lIMIT ?, 10",
+      "SELECT p.dniPersonal, p.nombrePersonal, i.nombreInstitucion FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
       [institution, ofset]
     );
     if (personalDb != "") {
@@ -42,17 +42,35 @@ export class Personal {
     }
   }
 
-  // para consultar el DNI de un trabajador por idReloj e institucion
-  static async getDNI(institution, idReloj) {
-    const [DNI] = await pool.query(
-      "SELECT p.idPersonal FROM personal p WHERE P.idInstitucion = ? and P.idReloj = ? and p.estado != 0",
+  // para consultar el idPersonal de un trabajador por idReloj e institucion
+  static async getId(institution, idReloj) {
+    const [id] = await pool.query(
+      "SELECT p.idPersonal FROM personal p WHERE p.idInstitucion = ? and p.idReloj = ? and p.estado != 0",
       [institution, idReloj]
     );
-    if (DNI != "") {
-      return DNI;
+    if (id != "") {
+      return id;
     } else {
       throw new Error("Datos no encontrados");
     }
+  }
+
+  // para consultar por DNI si un trabajador ya está registrado en dicha institución
+  static async getForCreate(dni, institution) {
+    const [DNI] = await pool.query(
+      "SELECT * FROM personal p WHERE p.dniPersonal = ? and p.idInstitucion = ?",
+      [dni, institution]
+    );
+    return DNI;
+  }
+
+  // para consultar si el idReloj de un trabajador ya está registrado en dicha institución
+  static async getIdReloj(institution, idReloj) {
+    const [reloj] = await pool.query(
+      "SELECT * FROM personal p WHERE p.idInstitucion = ? and p.idReloj = ?",
+      [institution, idReloj]
+    );
+    return reloj;
   }
 
   // para crear un nuevo trabajador

@@ -66,7 +66,7 @@ export const create = async (req, res) => {
         address
       );
       if (resDb.affectedRows > 0) {
-        res.redirect("/institutions");
+        res.redirect("/institutions/page1");
       } else {
         res.redirect("/institutions/create");
         throw new Error("Error al agregar registro");

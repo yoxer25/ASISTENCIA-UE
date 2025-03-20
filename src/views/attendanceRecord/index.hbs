@@ -13,14 +13,29 @@
     <div class="container-fluid">
         <div class="row" style="margin-bottom: 20px;">
             <div class="col-lg-5">
-                <a href="/attendanceRecords/importData">{{>btn-new}}</a>
+                <a href="/attendanceRecords/importData"><button class="btn btn-raised btn-sm"
+                        style="background-color: #01579B;">
+                        <p style="font-size: 15px; margin: auto; color: #fff;"><i class="zmdi zmdi-upload"></i> Importar
+                            Excel</p>
+                    </button></a>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white">
+                        <form action="/attendanceRecords" method="POST" id="attendanceForm">
+                            {{>consultaFechas/frm}}
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-12 text-center">
-                <div class="card">
+                <div class="card table-wrapper">
                     <div class="card-body rounded-bottom bg-white p-5">
-                        <table class="table table-hover text-center">
+                        <table class="table table-hover text-center" width="100%">
                             <thead>
                                 <tr>
                                     <th class="text-center">Documento</th>
@@ -30,28 +45,25 @@
                                     <th class="text-center">Primera Salida</th>
                                     <th class="text-center">Segunda Entrada</th>
                                     <th class="text-center">Segunda Salida</th>
-                                    <th class="text-center">Editar</th>
                                     <th class="text-center">Eliminar</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {{#each attendanceRecord}}
                                 <tr>
-                                    <td>{{idPersonal}}</td>
+                                    <td>{{dniPersonal}}</td>
                                     <td>{{nombrePersonal}}</td>
                                     <td>{{formatDate fechaRegistro}}</td>
                                     <td>{{primeraEntrada}}</td>
                                     <td>{{primeraSalida}}</td>
                                     <td>{{segundaEntrada}}</td>
                                     <td>{{segundaSalida}}</td>
-                                    <td><a href="#!" class="btn btn-info btn-raised btn-xs"><i
-                                                class="zmdi zmdi-refresh"></i></a></td>
                                     <td><a href="#!" class="btn btn-danger btn-raised btn-xs"><i
                                                 class="zmdi zmdi-delete"></i></a></td>
                                 </tr>
                                 {{else}}
                                 <tr>
-                                    <td colspan="9">No hay registros para mostrar</td>
+                                    <td colspan="8">No hay registros para mostrar</td>
                                 </tr>
                                 {{/each}}
                             </tbody>
@@ -71,12 +83,18 @@
 <script>
     const current = ({{{ convertJson current }}});
     const pages = ({{{ convertJson pages }}});
-    
+    const option = ({{{ convertJson option }}});
+
+    const ie = document.getElementById("ie");
+
+    if (listUser.rol === "directivo") {
+        document.getElementById('ie').readOnly = true;
+    };
     const numPages = (num) => {
         let navPages = '';
 
         if (pages) {
-            var i = (Number(current) > 5 ? Number(current) - 4 : 1);
+            let i = (Number(current) > 5 ? Number(current) - 4 : 1);
             for (; i <= (Number(current) + 4) && i <= pages; i++) {
                 let fila = '<ul class="pagination pagination-sm" id="pagination">';
                 if (i == current) {
@@ -90,7 +108,7 @@
                 if (i === Number(current) + 4 && i < pages) {
                     fila += `<a href="#">...</a>`;
                 }
-                fila += `<a href="/attendanceRecords/page${i}">${i}</a>`;
+                fila += `<a id="enlace href="#" onclick="submitAttendanceForm(${i}); return false;">${i}</a>`;
                 fila += "</li></ul>";
                 navPages += fila;
             }
@@ -99,5 +117,13 @@
     }
     document.getElementById("pagination").innerHTML =
         numPages(pages);
+
+    function submitAttendanceForm(i) {
+        const page = document.getElementById("page")
+        page.value = i;
+        document.getElementById('attendanceForm').submit();
+    }
+
+    document.querySelector(`#${option}`).checked = true;
 
 </script>

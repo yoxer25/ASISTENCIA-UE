@@ -13,7 +13,21 @@
     <div class="container-fluid">
         <div class="row" style="margin-bottom: 20px;">
             <div class="col-lg-5">
-                <a href="/attendanceRecords/importData">{{>btn-new}}</a>
+                <a href="#"><button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                        <p style="font-size: 15px; margin: auto; color: #fff;"><i class="zmdi zmdi-download"></i>
+                            Descargar Reporte</p>
+                    </button></a>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white">
+                        <form action="/reports" method="POST" id="consultForm">
+                            {{>consultaFechas/frm}}
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -63,7 +77,7 @@
         }
     };
 
-    const listProductSale = (lista) => {
+    const tableRecord = (lista) => {
         const horaEntrada = convertirATotalMinutos("08:00:00");
         const horaEntrada2 = convertirATotalMinutos("14:15:00");
 
@@ -85,7 +99,7 @@
             let fechaFormateada = `${year}-${month}-${day}`;
 
             let fila = '<tbody><tr scope="col"><td>';
-            fila += dato.idPersonal;
+            fila += dato.dniPersonal;
             fila += "</td>";
             fila += "<td>";
             fila += dato.nombrePersonal;
@@ -165,16 +179,23 @@
         return stringTable;
     };
     document.getElementById("list").innerHTML =
-        listProductSale(listRecords);
+        tableRecord(listRecords);
+
 
     const current = ({{{ convertJson current }}});
     const pages = ({{{ convertJson pages }}});
+    const option = ({{{ convertJson option }}});
 
+    const ie = document.getElementById("ie");
+
+    if (listUser.rol === "directivo") {
+        document.getElementById('ie').readOnly = true;
+    };
     const numPages = (num) => {
         let navPages = '';
 
         if (pages) {
-            var i = (Number(current) > 5 ? Number(current) - 4 : 1);
+            let i = (Number(current) > 5 ? Number(current) - 4 : 1);
             for (; i <= (Number(current) + 4) && i <= pages; i++) {
                 let fila = '<ul class="pagination pagination-sm" id="pagination">';
                 if (i == current) {
@@ -188,7 +209,7 @@
                 if (i === Number(current) + 4 && i < pages) {
                     fila += `<a href="#">...</a>`;
                 }
-                fila += `<a href="/reports/page${i}">${i}</a>`;
+                fila += `<a id="enlace href="#" onclick="enviar_formulario(${i}); return false;">${i}</a>`;
                 fila += "</li></ul>";
                 navPages += fila;
             }
@@ -197,4 +218,12 @@
     }
     document.getElementById("pagination").innerHTML =
         numPages(pages);
+
+    function enviar_formulario(i) {
+        const page = document.getElementById("page")
+        page.value = i;
+        document.getElementById('consultForm').submit();
+    }
+
+    document.querySelector(`#${option}`).checked = true;
 </script>

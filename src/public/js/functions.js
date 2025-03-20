@@ -14,3 +14,17 @@ const solonumeros = (e) => {
     return false;
   }
 };
+
+// función para que el input solo deje escribir letras
+const soloLetras = (e) => {
+  var letra = e.keyCode;
+  if (
+    (letra > 64 && letra < 91) ||
+    (letra > 96 && letra < 123) ||
+    letra == 32
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};

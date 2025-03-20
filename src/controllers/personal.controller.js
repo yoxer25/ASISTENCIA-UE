@@ -46,19 +46,32 @@ export const create = async (req, res) => {
   const institution = user.user.name;
   const { documentNumber, fullName, idReloj } = req.body;
   try {
-    const resDb = await Personal.create(
-      documentNumber,
-      institution,
-      fullName,
-      idReloj
-    );
-    if (resDb.affectedRows > 0) {
-      res.redirect("/personals");
+    const [relojId] = await Personal.getIdReloj(institution, idReloj);
+    if (!relojId) {
+      const [personal] = await Personal.getForCreate(
+        documentNumber,
+        institution
+      );
+      if (!personal) {
+        const resDb = await Personal.create(
+        documentNumber,
+        institution,
+        fullName,
+        idReloj
+      );
+      if (resDb.affectedRows > 0) {
+        res.redirect("/personals/page1");
+      } else {
+        throw new Error("Error al agregar registro");
+      }
+      } else {
+        throw new Error("Registro ya existe");
+      }
     } else {
-      res.redirect("/personals/create");
-      throw new Error("Error al agregar registro");
+      throw new Error("Registro ya existe");
     }
   } catch (error) {
+    console.log(error.message);
     res.redirect("/personals/create");
   }
 };

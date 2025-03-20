@@ -1,0 +1,42 @@
+<div class="row">
+    <input type="hidden" class="form-control" name="page" id="page">
+    <div class="col-lg-3">
+        <div class="form-group label-floating">
+            <label class="control-label">Nombre I.E</label>
+            <input class="form-control" type="text" id="ie" name="ie" value="{{ie}}">
+        </div>
+    </div>
+    <div class="col-lg-2">
+        <div class="form-group">
+            <input type="radio" id="dni" name="option" value="dni" checked>
+            <label for="dni">DNI</label><br>
+            <input type="radio" id="name" name="option" value="name">
+            <label for="name">Nombres</label><br>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="form-group label-floating">
+            <label class="control-label">Usuario</label>
+            <input class="form-control" type="text" id="username" name="username" value="{{username}}">
+        </div>
+    </div>
+    <div class="col-lg-2">
+        <div class="form-group" style="margin: auto;">
+            <label class="control-label">Desde</label>
+            <input class="form-control" type="date" id="startDate" name="startDate" value="{{startDate}}">
+        </div>
+    </div>
+    <div class="col-lg-2">
+        <div class="form-group" style="margin: auto;">
+            <label class="control-label">Hasta</label>
+            <input class="form-control" type="date" id="endDate" name="endDate" value="{{endDate}}">
+        </div>
+    </div>
+    <div class="col-lg-2">
+        <div class="form-group" style="margin: auto; text-align: center;">
+            <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                <p style="font-size: 20px; margin: auto; color: #fff;"><i class="zmdi zmdi-floppy"></i> Consultar</p>
+            </button>
+        </div>
+    </div>
+</div>

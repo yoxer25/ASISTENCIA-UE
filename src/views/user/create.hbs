@@ -19,10 +19,10 @@
                         <p class="text-white" style="font-size: 40px;">Nuevo Usuario</p>
                     </div>
                     <div class="card-body rounded-bottom bg-white p-5">
-                        <form action="/users/create" method="POST">
+                        <form id="formUser" action="/users/create" method="POST">
                             {{>user/create}}
                             <p class="text-center">
-                                <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                <button class="btn btn-raised btn-sm" style="background-color: #01579B;" type="submit">
                                     <p style="font-size: 20px; margin: auto; color: #fff;"><i
                                             class="zmdi zmdi-floppy"></i> Registrar</p>
                                 </button>
@@ -37,3 +37,26 @@
 </section>
 
 {{>navigation/navigation}}
+
+<script>
+
+    document.getElementById('formUser').addEventListener('submit', function (event) {
+        // Prevenir el envío por defecto del formulario
+        event.preventDefault();
+        const rolUser = document.querySelector("#rolUser");
+        const optionRol = rolUser.options[rolUser.selectedIndex];
+
+        const username = document.querySelector("#username");
+        const optionUser = username.options[username.selectedIndex];
+
+        const formPassword = document.getElementById("formPassword").value;
+
+        if (optionRol.value === "" || optionUser.value === "" || formPassword === "") {
+            alert("FORMULARIO INCOMPLETO");
+            return;
+        } else {
+            this.submit();
+        }
+    });
+
+</script>

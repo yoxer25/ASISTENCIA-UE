@@ -5,7 +5,6 @@ import fs from "node:fs";
 // importamos el módulo "xlsx-populate" para poder leer archivos .xlsx
 import xlsxPopulate from "xlsx-populate";
 import { AttendanceRecord } from "../models/attendanceRecord.model.js";
-import { Institution } from "../models/institution.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -47,17 +46,13 @@ export const getAttendanceRecord = async (req, res) => {
     if (ie) {
       ie = ie;
     } else {
-      const [nameIe] = await Institution.getInstitutionById(institution);
-      ie = nameIe.nombreInstitucion;
+      ie = institution;
     }
-    const [idIE] = await Institution.getInstitutionByName(ie);
-    [ie] = await Institution.getInstitutionById(idIE.idInstitucion);
     if (username) {
       if (rol === "administrador") {
-        [ie] = await Institution.getInstitutionById(idIE.idInstitucion);
         if (option === "dni") {
           const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-            idIE.idInstitucion,
+            ie,
             startDate,
             endDate,
             undefined,
@@ -72,7 +67,7 @@ export const getAttendanceRecord = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: ie.nombreInstitucion,
+            ie,
             username,
             option,
             startDate,
@@ -81,7 +76,7 @@ export const getAttendanceRecord = async (req, res) => {
         }
         if (option === "name") {
           const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-            idIE.idInstitucion,
+            ie,
             startDate,
             endDate,
             username,
@@ -96,7 +91,7 @@ export const getAttendanceRecord = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: ie.nombreInstitucion,
+            ie,
             username,
             option,
             startDate,
@@ -121,7 +116,7 @@ export const getAttendanceRecord = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: ie.nombreInstitucion,
+            ie,
             username,
             option,
             startDate,
@@ -145,7 +140,7 @@ export const getAttendanceRecord = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: ie.nombreInstitucion,
+            ie,
             username,
             option,
             startDate,
@@ -156,7 +151,7 @@ export const getAttendanceRecord = async (req, res) => {
     } else {
       if (rol === "administrador") {
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          idIE.idInstitucion,
+          ie,
           startDate,
           endDate
         );
@@ -169,7 +164,7 @@ export const getAttendanceRecord = async (req, res) => {
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie: ie.nombreInstitucion,
+          ie,
           username,
           option,
           startDate,
@@ -177,7 +172,7 @@ export const getAttendanceRecord = async (req, res) => {
         });
       } else {
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          idIE.idInstitucion,
+          ie,
           startDate,
           endDate
         );
@@ -190,7 +185,7 @@ export const getAttendanceRecord = async (req, res) => {
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie: ie.nombreInstitucion,
+          ie,
           username,
           option,
           startDate,
@@ -199,7 +194,6 @@ export const getAttendanceRecord = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error.message);
     res.render("attendanceRecord/index", { user });
   }
 };
@@ -265,12 +259,9 @@ export const importData = async (req, res) => {
       const horaEntrada1 = convertirATotalMinutos("08:00:00");
       const horaEntrada1Hasta = convertirATotalMinutos("10:00:00");
 
-      const horaSalida1 = convertirATotalMinutos("12:00:00");
-
       const horaEntrada2Desde = convertirATotalMinutos("14:00:00");
       const horaEntrada2Hasta = convertirATotalMinutos("15:00:00");
 
-      const horaSalida2 = convertirATotalMinutos("17:00:00");
 
       Object.values(finalRegister).forEach(async (register) => {
         const attenRec = {
@@ -284,7 +275,7 @@ export const importData = async (req, res) => {
           if (horaMarco < horaEntrada1 && horaMarco <= horaEntrada1Hasta) {
             attenRec.firstHourEntry = registroHora;
           }
-          if (horaMarco >= horaSalida1 && horaMarco < horaEntrada2Desde) {
+          if (horaMarco > horaEntrada1Hasta && horaMarco < horaEntrada2Desde) {
             attenRec.firstHourDeparture = registroHora;
           }
           if (
@@ -293,7 +284,7 @@ export const importData = async (req, res) => {
           ) {
             attenRec.secondHourEntry = registroHora;
           }
-          if (horaMarco >= horaSalida2) {
+          if (horaMarco > horaEntrada2Hasta) {
             attenRec.secondDepartureTime = registroHora;
           }
         });
@@ -332,10 +323,10 @@ export const importData = async (req, res) => {
       });
     });
 
-    function redireccionarPagina() {
+    function redirectPage() {
       res.redirect("/attendanceRecords/page1");
     }
-    setTimeout(redireccionarPagina, 2000);
+    setTimeout(redirectPage, 2000);
   } catch (error) {
     res.redirect("/attendanceRecords/importData");
   }

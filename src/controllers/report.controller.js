@@ -1,9 +1,11 @@
+import { helpers } from "../helpers/helper.js";
 import { AttendanceRecord } from "../models/attendanceRecord.model.js";
+import XlsxPopulate from "xlsx-populate"; // para crear el excel del reporte
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
 
-// controla lo que se debe mostrar al momento de visitar la página de reportes
+//controla lo que se debe mostrar al momento de visitar la página de asistencia
 export const getReport = async (req, res) => {
   let forPage = 10;
   const user = req.session;
@@ -34,17 +36,13 @@ export const getReport = async (req, res) => {
     if (ie) {
       ie = ie;
     } else {
-      const [nameIe] = await Institution.getInstitutionById(institution);
-      ie = nameIe.nombreInstitucion;
+      ie = institution;
     }
-    const [idIE] = await Institution.getInstitutionByName(ie);
-    [ie] = await Institution.getInstitutionById(idIE.idInstitucion);
     if (username) {
       if (rol === "administrador") {
-        [ie] = await Institution.getInstitutionById(idIE.idInstitucion);
         if (option === "dni") {
           const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-            idIE.idInstitucion,
+            ie,
             startDate,
             endDate,
             undefined,
@@ -59,7 +57,7 @@ export const getReport = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: ie.nombreInstitucion,
+            ie,
             username,
             option,
             startDate,
@@ -68,7 +66,7 @@ export const getReport = async (req, res) => {
         }
         if (option === "name") {
           const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-            idIE.idInstitucion,
+            ie,
             startDate,
             endDate,
             username,
@@ -83,7 +81,7 @@ export const getReport = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: ie.nombreInstitucion,
+            ie,
             username,
             option,
             startDate,
@@ -108,7 +106,7 @@ export const getReport = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: ie.nombreInstitucion,
+            ie,
             username,
             option,
             startDate,
@@ -132,7 +130,7 @@ export const getReport = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: ie.nombreInstitucion,
+            ie,
             username,
             option,
             startDate,
@@ -141,10 +139,9 @@ export const getReport = async (req, res) => {
         }
       }
     } else {
-      console.log(req.body);
       if (rol === "administrador") {
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          idIE.idInstitucion,
+          ie,
           startDate,
           endDate
         );
@@ -157,7 +154,7 @@ export const getReport = async (req, res) => {
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie: ie.nombreInstitucion,
+          ie,
           username,
           option,
           startDate,
@@ -165,7 +162,7 @@ export const getReport = async (req, res) => {
         });
       } else {
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          idIE.idInstitucion,
+          ie,
           startDate,
           endDate
         );
@@ -178,7 +175,7 @@ export const getReport = async (req, res) => {
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie: ie.nombreInstitucion,
+          ie,
           username,
           option,
           startDate,
@@ -188,5 +185,494 @@ export const getReport = async (req, res) => {
     }
   } catch (error) {
     res.render("report/index", { user });
+  }
+};
+
+// para generar el archivo excel del reporte
+export const generateExcel = async (req, res, next) => {
+  try {
+    const { ie, option, username, startDate, endDate } = req.body;
+
+    const horaEntrada = convertirATotalMinutos("08:00:00");
+    const horaSalida = convertirATotalMinutos("13:00:00");
+    const horaEntrada2 = convertirATotalMinutos("14:15:00");
+    const horaSalida2 = convertirATotalMinutos("17:00:00");
+
+    if (username) {
+      if (option === "dni") {
+        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+          ie,
+          startDate,
+          endDate,
+          undefined,
+          username
+        );
+
+        const workbook = await XlsxPopulate.fromBlankAsync();
+        workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
+        workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
+        workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
+        workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");
+        workbook.sheet("Sheet1").cell("E1").value("PRIMERA SALIDA");
+        workbook.sheet("Sheet1").cell("F1").value("SEGUNDA ENTRADA");
+        workbook.sheet("Sheet1").cell("G1").value("SEGUNDA SALIDA");
+        workbook.sheet("Sheet1").cell("H1").value("TIEMPO NO TRABAJADO");
+        workbook.sheet("Sheet1").cell("I1").value("OBSERVACIONES");
+
+        for (let i = 0; i < attendanceRecordDB.length; i++) {
+          const element = attendanceRecordDB[i];
+          const dateTimeFormat = helpers.formatDate(element.fechaRegistro);
+
+          let minutosPrimeraEntrada = convertirATotalMinutos(
+            element.primeraEntrada
+          );
+          let minustosPrimeraSalida = convertirATotalMinutos(
+            element.primeraSalida
+          );
+          let minustosSegundaEntrada = convertirATotalMinutos(
+            element.segundaEntrada
+          );
+          let minustosSegundaSalida = convertirATotalMinutos(
+            element.segundaSalida
+          );
+
+          if (
+            minutosPrimeraEntrada === null ||
+            minutosPrimeraEntrada <= horaEntrada
+          ) {
+            minutosPrimeraEntrada = 0;
+          }
+          if (
+            minustosPrimeraSalida === null ||
+            minustosPrimeraSalida > horaSalida
+          ) {
+            minustosPrimeraSalida = 0;
+          }
+          if (
+            minustosSegundaEntrada === null ||
+            minustosSegundaEntrada <= horaEntrada2
+          ) {
+            minustosSegundaEntrada = 0;
+          }
+          if (
+            minustosSegundaSalida === null ||
+            minustosSegundaSalida > horaSalida2
+          ) {
+            minustosSegundaSalida = 0;
+          }
+          let primeraTardanza = minutosPrimeraEntrada - horaEntrada;
+          let segundaTardanza = minustosSegundaEntrada - horaEntrada2;
+          let primeraFalta = horaSalida - minustosPrimeraSalida;
+          let segundaFalta = horaSalida2 - minustosSegundaSalida;
+
+          if (minutosPrimeraEntrada <= 0) {
+            primeraTardanza = 0;
+          }
+          if (minustosPrimeraSalida <= 0) {
+            primeraFalta = 0;
+          }
+          if (minustosSegundaEntrada <= 0) {
+            segundaTardanza = 0;
+          }
+          if (minustosSegundaSalida <= 0) {
+            segundaFalta = 0;
+          }
+
+          let message = "";
+          if (
+            element.primeraEntrada === null ||
+            element.primeraSalida === null ||
+            element.segundaEntrada === null ||
+            element.segundaSalida === null
+          ) {
+            message = "Tiene horas sin marcar";
+          }
+
+          let minNoTrabajados = 0;
+
+          workbook
+            .sheet("Sheet1")
+            .cell("A" + (i + 2))
+            .value(element.dniPersonal);
+          workbook
+            .sheet("Sheet1")
+            .cell("B" + (i + 2))
+            .value(element.nombrePersonal);
+          workbook
+            .sheet("Sheet1")
+            .cell("C" + (i + 2))
+            .value(dateTimeFormat);
+          workbook
+            .sheet("Sheet1")
+            .cell("D" + (i + 2))
+            .value(element.primeraEntrada);
+          workbook
+            .sheet("Sheet1")
+            .cell("E" + (i + 2))
+            .value(element.primeraSalida);
+          workbook
+            .sheet("Sheet1")
+            .cell("F" + (i + 2))
+            .value(element.segundaEntrada);
+          workbook
+            .sheet("Sheet1")
+            .cell("G" + (i + 2))
+            .value(element.segundaSalida);
+
+          minNoTrabajados =
+            primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
+          if (minNoTrabajados >= 60) {
+            const hora = Math.floor(minNoTrabajados / 60);
+            const minuto = minNoTrabajados % 60;
+            workbook
+              .sheet("Sheet1")
+              .cell("H" + (i + 2))
+              .value(hora + "h " + minuto + " minutos");
+          }
+          if (minNoTrabajados < 60 && minNoTrabajados > 0) {
+            workbook
+              .sheet("Sheet1")
+              .cell("H" + (i + 2))
+              .value(minNoTrabajados + " minutos");
+          }
+          if (minNoTrabajados <= 0) {
+            workbook
+              .sheet("Sheet1")
+              .cell("H" + (i + 2))
+              .value(minNoTrabajados + " minutos");
+          }
+
+          workbook
+            .sheet("Sheet1")
+            .cell("I" + (i + 2))
+            .value(message);
+        }
+
+        workbook.toFileAsync("./src/archives/reporte.xlsx");
+      }
+      if (option === "name") {
+        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+          ie,
+          startDate,
+          endDate,
+          username,
+          undefined
+        );
+
+        const workbook = await XlsxPopulate.fromBlankAsync();
+        workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
+        workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
+        workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
+        workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");
+        workbook.sheet("Sheet1").cell("E1").value("PRIMERA SALIDA");
+        workbook.sheet("Sheet1").cell("F1").value("SEGUNDA ENTRADA");
+        workbook.sheet("Sheet1").cell("G1").value("SEGUNDA SALIDA");
+        workbook.sheet("Sheet1").cell("H1").value("TIEMPO NO TRABAJADO");
+        workbook.sheet("Sheet1").cell("I1").value("OBSERVACIONES");
+
+        for (let i = 0; i < attendanceRecordDB.length; i++) {
+          const element = attendanceRecordDB[i];
+          const dateTimeFormat = helpers.formatDate(element.fechaRegistro);
+
+          let minutosPrimeraEntrada = convertirATotalMinutos(
+            element.primeraEntrada
+          );
+          let minustosPrimeraSalida = convertirATotalMinutos(
+            element.primeraSalida
+          );
+          let minustosSegundaEntrada = convertirATotalMinutos(
+            element.segundaEntrada
+          );
+          let minustosSegundaSalida = convertirATotalMinutos(
+            element.segundaSalida
+          );
+
+          if (
+            minutosPrimeraEntrada === null ||
+            minutosPrimeraEntrada <= horaEntrada
+          ) {
+            minutosPrimeraEntrada = 0;
+          }
+          if (
+            minustosPrimeraSalida === null ||
+            minustosPrimeraSalida > horaSalida
+          ) {
+            minustosPrimeraSalida = 0;
+          }
+          if (
+            minustosSegundaEntrada === null ||
+            minustosSegundaEntrada <= horaEntrada2
+          ) {
+            minustosSegundaEntrada = 0;
+          }
+          if (
+            minustosSegundaSalida === null ||
+            minustosSegundaSalida > horaSalida2
+          ) {
+            minustosSegundaSalida = 0;
+          }
+          let primeraTardanza = minutosPrimeraEntrada - horaEntrada;
+          let segundaTardanza = minustosSegundaEntrada - horaEntrada2;
+          let primeraFalta = horaSalida - minustosPrimeraSalida;
+          let segundaFalta = horaSalida2 - minustosSegundaSalida;
+
+          if (minutosPrimeraEntrada <= 0) {
+            primeraTardanza = 0;
+          }
+          if (minustosPrimeraSalida <= 0) {
+            primeraFalta = 0;
+          }
+          if (minustosSegundaEntrada <= 0) {
+            segundaTardanza = 0;
+          }
+          if (minustosSegundaSalida <= 0) {
+            segundaFalta = 0;
+          }
+
+          let message = "";
+          if (
+            element.primeraEntrada === null ||
+            element.primeraSalida === null ||
+            element.segundaEntrada === null ||
+            element.segundaSalida === null
+          ) {
+            message = "Tiene horas sin marcar";
+          }
+
+          let minNoTrabajados = 0;
+
+          workbook
+            .sheet("Sheet1")
+            .cell("A" + (i + 2))
+            .value(element.dniPersonal);
+          workbook
+            .sheet("Sheet1")
+            .cell("B" + (i + 2))
+            .value(element.nombrePersonal);
+          workbook
+            .sheet("Sheet1")
+            .cell("C" + (i + 2))
+            .value(dateTimeFormat);
+          workbook
+            .sheet("Sheet1")
+            .cell("D" + (i + 2))
+            .value(element.primeraEntrada);
+          workbook
+            .sheet("Sheet1")
+            .cell("E" + (i + 2))
+            .value(element.primeraSalida);
+          workbook
+            .sheet("Sheet1")
+            .cell("F" + (i + 2))
+            .value(element.segundaEntrada);
+          workbook
+            .sheet("Sheet1")
+            .cell("G" + (i + 2))
+            .value(element.segundaSalida);
+
+          minNoTrabajados =
+            primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
+          if (minNoTrabajados >= 60) {
+            const hora = Math.floor(minNoTrabajados / 60);
+            const minuto = minNoTrabajados % 60;
+            workbook
+              .sheet("Sheet1")
+              .cell("H" + (i + 2))
+              .value(hora + "h " + minuto + " minutos");
+          }
+          if (minNoTrabajados < 60 && minNoTrabajados > 0) {
+            workbook
+              .sheet("Sheet1")
+              .cell("H" + (i + 2))
+              .value(minNoTrabajados + " minutos");
+          }
+          if (minNoTrabajados <= 0) {
+            workbook
+              .sheet("Sheet1")
+              .cell("H" + (i + 2))
+              .value(minNoTrabajados + " minutos");
+          }
+
+          workbook
+            .sheet("Sheet1")
+            .cell("I" + (i + 2))
+            .value(message);
+        }
+
+        workbook.toFileAsync("./src/archives/reporte.xlsx");
+      }
+    } else {
+      const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+        ie,
+        startDate,
+        endDate
+      );
+
+      const workbook = await XlsxPopulate.fromBlankAsync();
+      workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
+      workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
+      workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
+      workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");
+      workbook.sheet("Sheet1").cell("E1").value("PRIMERA SALIDA");
+      workbook.sheet("Sheet1").cell("F1").value("SEGUNDA ENTRADA");
+      workbook.sheet("Sheet1").cell("G1").value("SEGUNDA SALIDA");
+      workbook.sheet("Sheet1").cell("H1").value("TIEMPO NO TRABAJADO");
+      workbook.sheet("Sheet1").cell("I1").value("OBSERVACIONES");
+
+      for (let i = 0; i < attendanceRecordDB.length; i++) {
+        const element = attendanceRecordDB[i];
+        const dateTimeFormat = helpers.formatDate(element.fechaRegistro);
+
+        let minutosPrimeraEntrada = convertirATotalMinutos(
+          element.primeraEntrada
+        );
+        let minustosPrimeraSalida = convertirATotalMinutos(
+          element.primeraSalida
+        );
+        let minustosSegundaEntrada = convertirATotalMinutos(
+          element.segundaEntrada
+        );
+        let minustosSegundaSalida = convertirATotalMinutos(
+          element.segundaSalida
+        );
+
+        if (
+          minutosPrimeraEntrada === null ||
+          minutosPrimeraEntrada <= horaEntrada
+        ) {
+          minutosPrimeraEntrada = 0;
+        }
+        if (
+          minustosPrimeraSalida === null ||
+          minustosPrimeraSalida > horaSalida
+        ) {
+          minustosPrimeraSalida = 0;
+        }
+        if (
+          minustosSegundaEntrada === null ||
+          minustosSegundaEntrada <= horaEntrada2
+        ) {
+          minustosSegundaEntrada = 0;
+        }
+        if (
+          minustosSegundaSalida === null ||
+          minustosSegundaSalida > horaSalida2
+        ) {
+          minustosSegundaSalida = 0;
+        }
+        let primeraTardanza = minutosPrimeraEntrada - horaEntrada;
+        let segundaTardanza = minustosSegundaEntrada - horaEntrada2;
+        let primeraFalta = horaSalida - minustosPrimeraSalida;
+        let segundaFalta = horaSalida2 - minustosSegundaSalida;
+
+        if (minutosPrimeraEntrada <= 0) {
+          primeraTardanza = 0;
+        }
+        if (minustosPrimeraSalida <= 0) {
+          primeraFalta = 0;
+        }
+        if (minustosSegundaEntrada <= 0) {
+          segundaTardanza = 0;
+        }
+        if (minustosSegundaSalida <= 0) {
+          segundaFalta = 0;
+        }
+
+        let message = "";
+        if (
+          element.primeraEntrada === null ||
+          element.primeraSalida === null ||
+          element.segundaEntrada === null ||
+          element.segundaSalida === null
+        ) {
+          message = "Tiene horas sin marcar";
+        }
+
+        let minNoTrabajados = 0;
+
+        workbook
+          .sheet("Sheet1")
+          .cell("A" + (i + 2))
+          .value(element.dniPersonal);
+        workbook
+          .sheet("Sheet1")
+          .cell("B" + (i + 2))
+          .value(element.nombrePersonal);
+        workbook
+          .sheet("Sheet1")
+          .cell("C" + (i + 2))
+          .value(dateTimeFormat);
+        workbook
+          .sheet("Sheet1")
+          .cell("D" + (i + 2))
+          .value(element.primeraEntrada);
+        workbook
+          .sheet("Sheet1")
+          .cell("E" + (i + 2))
+          .value(element.primeraSalida);
+        workbook
+          .sheet("Sheet1")
+          .cell("F" + (i + 2))
+          .value(element.segundaEntrada);
+        workbook
+          .sheet("Sheet1")
+          .cell("G" + (i + 2))
+          .value(element.segundaSalida);
+
+        minNoTrabajados =
+          primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
+        if (minNoTrabajados >= 60) {
+          const hora = Math.floor(minNoTrabajados / 60);
+          const minuto = minNoTrabajados % 60;
+          workbook
+            .sheet("Sheet1")
+            .cell("H" + (i + 2))
+            .value(hora + "h " + minuto + " minutos");
+        }
+        if (minNoTrabajados < 60 && minNoTrabajados > 0) {
+          workbook
+            .sheet("Sheet1")
+            .cell("H" + (i + 2))
+            .value(minNoTrabajados + " minutos");
+        }
+        if (minNoTrabajados <= 0) {
+          workbook
+            .sheet("Sheet1")
+            .cell("H" + (i + 2))
+            .value(minNoTrabajados + " minutos");
+        }
+
+        workbook
+          .sheet("Sheet1")
+          .cell("I" + (i + 2))
+          .value(message);
+      }
+
+      workbook.toFileAsync("./src/archives/reporte.xlsx");
+    }
+  } catch (error) {}
+  next();
+};
+
+// para descargar el reporte
+export const download = async (req, res) => {
+  try {
+    function downloadExcel() {
+      res.download("./src/archives/reporte.xlsx");
+    }
+    setTimeout(downloadExcel, 2000);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+// para convertir HH:MM:SS a minutos
+const convertirATotalMinutos = (tiempo) => {
+  if (tiempo !== null) {
+    const [horas, minutos, segundos] = tiempo.split(":").map(Number);
+    const totalMinutos = horas * 60 + minutos + Math.round(segundos / 60);
+    return totalMinutos;
+  } else {
+    return null;
   }
 };

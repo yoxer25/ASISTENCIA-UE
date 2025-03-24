@@ -16,9 +16,9 @@ caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
-
 // rutas de la página principal
 router.post("/", requireToken, reportCtrl.getReport);
+router.post("/download", requireToken, reportCtrl.generateExcel, reportCtrl.download);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

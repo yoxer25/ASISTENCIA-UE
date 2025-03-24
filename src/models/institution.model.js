@@ -72,16 +72,6 @@ export class Institution {
     }
   }
 
-  // para consultar datos de una institución por nombre
-  static async getInstitutionByName(name) {
-    const [institution] = await pool.query(
-      `SELECT * FROM institucion i WHERE i.nombreInstitucion = "${name}"`
-    );
-    if (institution) {
-      return institution;
-    }
-  }
-
   // para crear una nueva institución
   static async create(
     modularCode,

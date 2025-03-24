@@ -13,7 +13,18 @@
     <div class="container-fluid">
         <div class="row" style="margin-bottom: 20px;">
             <div class="col-lg-5">
-                <a href="#"><button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                <form action="/reports/download" method="POST" id="downloadForm">
+                                <input class="form-control" type="hidden" id="ie" name="ie" value="{{ie}}">
+                                <input type="hidden" id="option" name="option" value="{{option}}">
+                                <input class="form-control" type="hidden" id="username" name="username"
+                                    value="{{username}}">
+                                <input class="form-control" type="hidden" id="startDate" name="startDate"
+                                    value="{{startDate}}">
+                                <input class="form-control" type="hidden" id="endDate" name="endDate" value="{{endDate}}">
+
+                </form>
+                <a id="enlaceDownload" href="#" onclick="enviar_formulario_download(); return false;"><button
+                        class="btn btn-raised btn-sm" style="background-color: #01579B;">
                         <p style="font-size: 15px; margin: auto; color: #fff;"><i class="zmdi zmdi-download"></i>
                             Descargar Reporte</p>
                     </button></a>
@@ -32,7 +43,7 @@
         </div>
         <div class="row">
             <div class="col-lg-12 text-center">
-                <div class="card">
+                <div class="card table-wrapper">
                     <div class="card-body rounded-bottom bg-white p-5">
                         <table class="table table-hover text-center">
                             <thead>
@@ -41,14 +52,17 @@
                                     <th class="text-center">Nombres y Apellidos</th>
                                     <th class="text-center">Fecha Registro</th>
                                     <th class="text-center">Primera Entrada</th>
-                                    <th class="text-center">Tardanza</th>
+                                    <th class="text-center">Primera Salida</th>
                                     <th class="text-center">Segunda Entrada</th>
-                                    <th class="text-center">Tardanza</th>
-                                    <th class="text-center">Editar</th>
-                                    <th class="text-center">Eliminar</th>
+                                    <th class="text-center">Segunda Salida</th>
+                                    <th class="text-center">Tiempo no trabajado</th>
+                                    <th class="text-center">Observaciones</th>
                                 </tr>
                             </thead>
                             <tbody id="list">
+                                <tr>
+                                    <td colspan="9">No hay registros para mostrar</td>
+                                </tr>
                             </tbody>
                         </table>
                         <ul class="pagination pagination-sm" id="pagination">
@@ -79,15 +93,53 @@
 
     const tableRecord = (lista) => {
         const horaEntrada = convertirATotalMinutos("08:00:00");
+        const horaSalida = convertirATotalMinutos("13:00:00");
         const horaEntrada2 = convertirATotalMinutos("14:15:00");
+        const horaSalida2 = convertirATotalMinutos("17:00:00");
 
         let stringTable = '';
         for (const dato of lista) {
-            const minutosPrimeraEntrada = convertirATotalMinutos(dato.primeraEntrada);
-            const minustosSegundaEntrada = convertirATotalMinutos(dato.segundaEntrada);
+            let minutosPrimeraEntrada = convertirATotalMinutos(dato.primeraEntrada);
+            let minustosPrimeraSalida = convertirATotalMinutos(dato.primeraSalida);
+            let minustosSegundaEntrada = convertirATotalMinutos(dato.segundaEntrada);
+            let minustosSegundaSalida = convertirATotalMinutos(dato.segundaSalida);
 
-            const primeraTardanza = minutosPrimeraEntrada - horaEntrada2;
-            const segundaTardanza = minustosSegundaEntrada - horaEntrada2;
+            if (minutosPrimeraEntrada === null || minutosPrimeraEntrada <= horaEntrada) {
+                minutosPrimeraEntrada = 0;
+            }
+            if (minustosPrimeraSalida === null || minustosPrimeraSalida > horaSalida) {
+                minustosPrimeraSalida = 0;
+            }
+            if (minustosSegundaEntrada === null || minustosSegundaEntrada <= horaEntrada2) {
+                minustosSegundaEntrada = 0;
+            }
+            if (minustosSegundaSalida === null || minustosSegundaSalida > horaSalida2) {
+                minustosSegundaSalida = 0;
+            }
+            let primeraTardanza = minutosPrimeraEntrada - horaEntrada;
+            let segundaTardanza = minustosSegundaEntrada - horaEntrada2;
+            let primeraFalta = horaSalida - minustosPrimeraSalida;
+            let segundaFalta = horaSalida2 - minustosSegundaSalida;
+
+            if (minutosPrimeraEntrada <= 0) {
+                primeraTardanza = 0;
+            }
+            if (minustosPrimeraSalida <= 0) {
+                primeraFalta = 0;
+            }
+            if (minustosSegundaEntrada <= 0) {
+                segundaTardanza = 0;
+            }
+            if (minustosSegundaSalida <= 0) {
+                segundaFalta = 0;
+            }
+
+            let message = "";
+            if (dato.primeraEntrada === null || dato.primeraSalida === null || dato.segundaEntrada === null || dato.segundaSalida === null) {
+                message = "Tiene horas sin marcar";
+            }
+
+            let minNoTrabajados = 0;
 
             let fechaISO = dato.fechaRegistro;
             let date = new Date(fechaISO);
@@ -115,26 +167,11 @@
             }
             fila += "</td>";
             fila += "<td>";
-            if (minutosPrimeraEntrada !== null) {
-                if (primeraTardanza >= 60) {
-                    const hora = Math.floor(primeraTardanza / 60);
-                    const minuto = primeraTardanza % 60;
-                    fila += hora + "h " + minuto + " minutos tarde";
-                    //console.log(hora + "h con " + minuto + " tarde");
-                }
-
-                if (primeraTardanza < 60 && primeraTardanza > 0) {
-                    fila += primeraTardanza + " minutos tarde";
-                }
-
-                if (primeraTardanza <= 0) {
-                    fila += "puntual";
-                }
-            }
-            if (dato.primeraEntrada === null) {
+            if (dato.primeraSalida !== null) {
+                fila += dato.primeraSalida;
+            } else {
                 fila += "no marcó";
             }
-
             fila += "</td>";
             fila += "<td>";
             if (dato.segundaEntrada !== null) {
@@ -144,34 +181,28 @@
             }
             fila += "</td>";
             fila += "<td>";
-            if (minustosSegundaEntrada !== null) {
-                if (segundaTardanza >= 60) {
-                    const hora = Math.floor(segundaTardanza / 60);
-                    const minuto = segundaTardanza % 60;
-                    fila += hora + "h " + minuto + " minutos tarde";
-                    //console.log(hora + "h con " + minuto + " tarde");
-                }
-
-                if (segundaTardanza < 60 && segundaTardanza > 0) {
-                    fila += segundaTardanza + " minutos tarde";
-                }
-
-                if (segundaTardanza <= 0) {
-                    fila += "puntual";
-                }
-            }
-            if (dato.segundaEntrada === null) {
+            if (dato.segundaSalida !== null) {
+                fila += dato.segundaSalida;
+            } else {
                 fila += "no marcó";
             }
-
             fila += "</td>";
             fila += "<td>";
-            fila += `<a href="#!" class="btn btn-info btn-raised btn-xs"><i
-                                                class="zmdi zmdi-refresh"></i></a>`;
+            minNoTrabajados = primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
+            if (minNoTrabajados >= 60) {
+                const hora = Math.floor(minNoTrabajados / 60);
+                const minuto = minNoTrabajados % 60;
+                fila += hora + "h " + minuto + " minutos";
+            }
+            if (minNoTrabajados < 60 && minNoTrabajados > 0) {
+                fila += minNoTrabajados + " minutos";
+            }
+            if (minNoTrabajados <= 0) {
+                fila += minNoTrabajados + " minutos";
+            }
             fila += "</td>";
             fila += "<td>";
-            fila += `<a href="#!" class="btn btn-danger btn-raised btn-xs"><i
-                                                class="zmdi zmdi-delete"></i></a>`;
+            fila += message;
             fila += "</td>";
             fila += "</tr></tbody>";
             stringTable += fila;
@@ -223,6 +254,10 @@
         const page = document.getElementById("page")
         page.value = i;
         document.getElementById('consultForm').submit();
+    }
+
+    function enviar_formulario_download() {
+        document.getElementById('downloadForm').submit();
     }
 
     document.querySelector(`#${option}`).checked = true;

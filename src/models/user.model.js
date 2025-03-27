@@ -43,6 +43,18 @@ export class User {
     }
   }
 
+  // para consultar dotos de usuarios por nombre de I.E
+  static async search(name) {
+    const [userDb] = await pool.query(
+      `SELECT u.idUsuario, u.idInstitucion, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND i.nombreInstitucion LIKE '%${name}%' ORDER BY u.idUsuario`
+    );
+    if (userDb != "") {
+      return userDb;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
+  }
+
   // para crear un nuevo usuario
   static async create(username, rolUser, password) {
     const newUser = new User(username, rolUser, password);
@@ -77,6 +89,7 @@ export class User {
     }
     throw new Error("Datos Incorrectos");
   }
+
   // para cambiar contraseña del usuario
   /* static async updatePass({ id, newPassword }) {
     const [user] = await pool.query(

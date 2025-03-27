@@ -33,13 +33,14 @@ export const getReport = async (req, res) => {
     } else {
       page = 1;
     }
-    if (ie) {
-      ie = ie;
-    } else {
-      ie = institution;
-    }
+
     if (username) {
       if (rol === "administrador") {
+        if (ie) {
+          ie = ie;
+        } else {
+          ie = institution;
+        }
         if (option === "dni") {
           const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
             ie,
@@ -106,7 +107,7 @@ export const getReport = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie,
+            ie: institution,
             username,
             option,
             startDate,
@@ -130,7 +131,7 @@ export const getReport = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie,
+            ie: institution,
             username,
             option,
             startDate,
@@ -140,6 +141,11 @@ export const getReport = async (req, res) => {
       }
     } else {
       if (rol === "administrador") {
+        if (ie) {
+          ie = ie;
+        } else {
+          ie = institution;
+        }
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
           ie,
           startDate,
@@ -162,7 +168,7 @@ export const getReport = async (req, res) => {
         });
       } else {
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          ie,
+          institution,
           startDate,
           endDate
         );
@@ -175,7 +181,7 @@ export const getReport = async (req, res) => {
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie,
+          ie: institution,
           username,
           option,
           startDate,
@@ -198,6 +204,17 @@ export const generateExcel = async (req, res, next) => {
     const horaEntrada2 = convertirATotalMinutos("14:15:00");
     const horaSalida2 = convertirATotalMinutos("17:00:00");
 
+    const workbook = await XlsxPopulate.fromBlankAsync();
+    workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
+    workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
+    workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
+    workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");
+    workbook.sheet("Sheet1").cell("E1").value("PRIMERA SALIDA");
+    workbook.sheet("Sheet1").cell("F1").value("SEGUNDA ENTRADA");
+    workbook.sheet("Sheet1").cell("G1").value("SEGUNDA SALIDA");
+    workbook.sheet("Sheet1").cell("H1").value("TIEMPO NO TRABAJADO");
+    workbook.sheet("Sheet1").cell("I1").value("OBSERVACIONES");
+
     if (username) {
       if (option === "dni") {
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
@@ -208,17 +225,6 @@ export const generateExcel = async (req, res, next) => {
           username
         );
 
-        const workbook = await XlsxPopulate.fromBlankAsync();
-        workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
-        workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
-        workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
-        workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");
-        workbook.sheet("Sheet1").cell("E1").value("PRIMERA SALIDA");
-        workbook.sheet("Sheet1").cell("F1").value("SEGUNDA ENTRADA");
-        workbook.sheet("Sheet1").cell("G1").value("SEGUNDA SALIDA");
-        workbook.sheet("Sheet1").cell("H1").value("TIEMPO NO TRABAJADO");
-        workbook.sheet("Sheet1").cell("I1").value("OBSERVACIONES");
-
         for (let i = 0; i < attendanceRecordDB.length; i++) {
           const element = attendanceRecordDB[i];
           const dateTimeFormat = helpers.formatDate(element.fechaRegistro);
@@ -347,8 +353,6 @@ export const generateExcel = async (req, res, next) => {
             .cell("I" + (i + 2))
             .value(message);
         }
-
-        workbook.toFileAsync("./src/archives/reporte.xlsx");
       }
       if (option === "name") {
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
@@ -359,17 +363,6 @@ export const generateExcel = async (req, res, next) => {
           undefined
         );
 
-        const workbook = await XlsxPopulate.fromBlankAsync();
-        workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
-        workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
-        workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
-        workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");
-        workbook.sheet("Sheet1").cell("E1").value("PRIMERA SALIDA");
-        workbook.sheet("Sheet1").cell("F1").value("SEGUNDA ENTRADA");
-        workbook.sheet("Sheet1").cell("G1").value("SEGUNDA SALIDA");
-        workbook.sheet("Sheet1").cell("H1").value("TIEMPO NO TRABAJADO");
-        workbook.sheet("Sheet1").cell("I1").value("OBSERVACIONES");
-
         for (let i = 0; i < attendanceRecordDB.length; i++) {
           const element = attendanceRecordDB[i];
           const dateTimeFormat = helpers.formatDate(element.fechaRegistro);
@@ -498,8 +491,6 @@ export const generateExcel = async (req, res, next) => {
             .cell("I" + (i + 2))
             .value(message);
         }
-
-        workbook.toFileAsync("./src/archives/reporte.xlsx");
       }
     } else {
       const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
@@ -507,17 +498,6 @@ export const generateExcel = async (req, res, next) => {
         startDate,
         endDate
       );
-
-      const workbook = await XlsxPopulate.fromBlankAsync();
-      workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
-      workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
-      workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
-      workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");
-      workbook.sheet("Sheet1").cell("E1").value("PRIMERA SALIDA");
-      workbook.sheet("Sheet1").cell("F1").value("SEGUNDA ENTRADA");
-      workbook.sheet("Sheet1").cell("G1").value("SEGUNDA SALIDA");
-      workbook.sheet("Sheet1").cell("H1").value("TIEMPO NO TRABAJADO");
-      workbook.sheet("Sheet1").cell("I1").value("OBSERVACIONES");
 
       for (let i = 0; i < attendanceRecordDB.length; i++) {
         const element = attendanceRecordDB[i];
@@ -647,9 +627,8 @@ export const generateExcel = async (req, res, next) => {
           .cell("I" + (i + 2))
           .value(message);
       }
-
-      workbook.toFileAsync("./src/archives/reporte.xlsx");
     }
+    workbook.toFileAsync("./src/archives/reporte.xlsx");
   } catch (error) {}
   next();
 };
@@ -661,9 +640,7 @@ export const download = async (req, res) => {
       res.download("./src/archives/reporte.xlsx");
     }
     setTimeout(downloadExcel, 2000);
-  } catch (error) {
-    console.log(error.message);
-  }
+  } catch (error) {}
 };
 
 // para convertir HH:MM:SS a minutos

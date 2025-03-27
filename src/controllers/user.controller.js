@@ -54,3 +54,22 @@ export const create = async (req, res) => {
     res.redirect("/users/create");
   }
 };
+
+// para buscar usuarios por nombre de I.E
+export const search = async (req, res) => {
+  const user = req.session;
+  try {
+    const { ie } = req.body;
+    if (ie) {
+      const users = await User.search(ie);
+      res.render("user/index", {
+        user,
+        users,
+      });
+    } else {
+      res.redirect("/users/page1");
+    }
+  } catch (error) {
+    res.render("user/index", { user });
+  }
+};

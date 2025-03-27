@@ -14,13 +14,11 @@
         <div class="row" style="margin-bottom: 20px;">
             <div class="col-lg-5">
                 <form action="/reports/download" method="POST" id="downloadForm">
-                                <input class="form-control" type="hidden" id="ie" name="ie" value="{{ie}}">
-                                <input type="hidden" id="option" name="option" value="{{option}}">
-                                <input class="form-control" type="hidden" id="username" name="username"
-                                    value="{{username}}">
-                                <input class="form-control" type="hidden" id="startDate" name="startDate"
-                                    value="{{startDate}}">
-                                <input class="form-control" type="hidden" id="endDate" name="endDate" value="{{endDate}}">
+                    <input class="form-control" type="hidden" id="ie" name="ie" value="{{ie}}">
+                    <input type="hidden" id="option" name="option" value="{{option}}">
+                    <input class="form-control" type="hidden" id="username" name="username" value="{{username}}">
+                    <input class="form-control" type="hidden" id="startDate" name="startDate" value="{{startDate}}">
+                    <input class="form-control" type="hidden" id="endDate" name="endDate" value="{{endDate}}">
 
                 </form>
                 <a id="enlaceDownload" href="#" onclick="enviar_formulario_download(); return false;"><button
@@ -77,6 +75,7 @@
 
 {{>navigation/navigation}}
 
+<script src="/js/functions.js"></script>
 
 <script>
     const listRecords = ({{{ convertJson attendanceRecord }}});

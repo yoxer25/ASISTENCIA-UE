@@ -44,4 +44,18 @@ export class EducationalLevel {
       throw new Error("Datos no encontrados");
     }
   }
+
+  /* para consultar datos de todos los niveles educativos que sean
+    diferentes al nivel educativo que tiene registrado la I.E. */
+  static async getSelectEducationalLevel(Id) {
+    const [categories] = await pool.query(
+      "SELECT * FROM nivel_educativo n WHERE NOT EXISTS (SELECT * FROM institucion i WHERE n.idNivelEducativo = i.idNivel AND n.estado != 0 AND i.idInstitucion = ?)",
+      [Id]
+    );
+    if (categories) {
+      return categories;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
+  }
 }

@@ -43,13 +43,14 @@ export const getAttendanceRecord = async (req, res) => {
     } else {
       page = 1;
     }
-    if (ie) {
-      ie = ie;
-    } else {
-      ie = institution;
-    }
+
     if (username) {
       if (rol === "administrador") {
+        if (ie) {
+          ie = ie;
+        } else {
+          ie = institution;
+        }
         if (option === "dni") {
           const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
             ie,
@@ -116,7 +117,7 @@ export const getAttendanceRecord = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie,
+            ie: institution,
             username,
             option,
             startDate,
@@ -140,7 +141,7 @@ export const getAttendanceRecord = async (req, res) => {
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie,
+            ie: institution,
             username,
             option,
             startDate,
@@ -150,6 +151,11 @@ export const getAttendanceRecord = async (req, res) => {
       }
     } else {
       if (rol === "administrador") {
+        if (ie) {
+          ie = ie;
+        } else {
+          ie = institution;
+        }
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
           ie,
           startDate,
@@ -172,7 +178,7 @@ export const getAttendanceRecord = async (req, res) => {
         });
       } else {
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          ie,
+          institution,
           startDate,
           endDate
         );
@@ -185,7 +191,7 @@ export const getAttendanceRecord = async (req, res) => {
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie,
+          ie: institution,
           username,
           option,
           startDate,
@@ -261,7 +267,6 @@ export const importData = async (req, res) => {
 
       const horaEntrada2Desde = convertirATotalMinutos("14:00:00");
       const horaEntrada2Hasta = convertirATotalMinutos("15:00:00");
-
 
       Object.values(finalRegister).forEach(async (register) => {
         const attenRec = {
@@ -359,4 +364,12 @@ const convertirATotalMinutos = (tiempo) => {
   const [horas, minutos, segundos] = tiempo.split(":").map(Number);
   const totalMinutos = horas * 60 + minutos + Math.round(segundos / 60);
   return totalMinutos;
+};
+
+export const deleteById = async (req, res) => {
+  try {
+    console.log("eliminando");
+  } catch (error) {
+    console.log(error.message);
+  }
 };

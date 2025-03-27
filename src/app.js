@@ -6,6 +6,8 @@ import express from "express";
 import { engine } from "express-handlebars";
 // facilitar la posibilidad de modificar las cookies
 import cookieParser from "cookie-parser";
+// para peoder usar todos los métodos HTTP (GET, POST, PUT, PATCH, DELETE)
+import methodOverride from "method-override";
 // para establecer la ruta de los archivos handlebars
 import path from "path"; //
 import { fileURLToPath } from "url";
@@ -49,6 +51,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 // modificar cookies
 app.use(cookieParser());
+// para peoder usar todos los métodos HTTP (GET, POST, PUT, PATCH, DELETE)
+app.use(methodOverride("_method"));
 // rutas de la web
 app.use(homeRoutes);
 app.use("/myaccount", myaccountRoutes);

@@ -1,0 +1,68 @@
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-graduation-cap zmdi-hc-fw"></i> Instituciones
+                <small>Actualizar</small>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid py-5 px-sm-3 px-lg-5" style="margin-top: 15px;">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="card">
+                    <div class="card-header bg-primary text-center">
+                        <p class="text-white" style="font-size: 40px;">Actualizar Institución</p>
+                    </div>
+                    <div class="card-body rounded-bottom bg-white p-5">
+                        <form id="ieForm" action="/institutions/ie{{institution.idInstitucion}}?_method=PUT" method="POST">
+                            <input type="hidden" name="_method" value="PUT">
+                            {{>institution/create}}
+                            <p class="text-center">
+                                <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                    <p style="font-size: 20px; margin: auto; color: #fff;"><i
+                                            class="zmdi zmdi-floppy"></i> Registrar</p>
+                                </button>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}
+
+<script src="/js/functions.js"></script>
+<script>
+
+    document.getElementById('ieForm').addEventListener('submit', function (event) {
+        // Prevenir el envío por defecto del formulario
+        event.preventDefault();
+
+        const modularCode = document.getElementById("modularCode").value;
+        const nameInstitution = document.getElementById("nameInstitution").value;
+        const address = document.getElementById("address").value;
+        const nameDirector = document.getElementById("nameDirector").value;
+
+        const level = document.querySelector("#level");
+        const optionLevel = level.options[level.selectedIndex];
+
+        const district = document.querySelector("#district");
+        const optionDistrict = district.options[district.selectedIndex];
+
+        if (modularCode === "" || nameInstitution === "" || address === "" || nameDirector === "" || optionLevel
+            .value === "" || optionDistrict.value === "") {
+            alert("FORMULARIO INCOMPLETO");
+            return;
+        } else {
+            this.submit();
+        }
+    });
+
+</script>

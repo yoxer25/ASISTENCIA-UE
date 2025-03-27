@@ -36,10 +36,22 @@
                                     <td>{{dniPersonal}}</td>
                                     <td>{{nombreInstitucion}}</td>
                                     <td>{{nombrePersonal}}</td>
-                                    <td><a href="#!" class="btn btn-info btn-raised btn-xs"><i
-                                                class="zmdi zmdi-refresh"></i></a></td>
-                                    <td><a href="#!" class="btn btn-danger btn-raised btn-xs"><i
-                                                class="zmdi zmdi-delete"></i></a></td>
+                                    <td><a href="/personals/{{idPersonal}}" class="btn btn-info btn-raised btn-xs"><i
+                                                class="zmdi zmdi-refresh"></i></a>
+                                    </td>
+                                    <td>
+                                        <form action="/personals/{{idPersonal}}?_method=PATCH" method="POST">
+                                            <input type="hidden" name="_method" value="PATCH">
+                                            <input class="form-control" type="hidden" id="documentNumber"
+                                                name="documentNumber" value="{{dniPersonal}}">
+                                            <input class="form-control" type="hidden" id="fullName" name="fullName"
+                                                value="{{nombrePersonal}}">
+                                            <input class="form-control" type="hidden" id="idReloj" name="idReloj"
+                                                value="{{idReloj}}">
+                                            <button type="submit" class="btn btn-danger btn-raised btn-xs"><i
+                                                    class="zmdi zmdi-delete"></i></button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 {{else}}
                                 <tr>
@@ -82,7 +94,7 @@
                 if (i === Number(current) + 4 && i < pages) {
                     fila += `<a href="#">...</a>`;
                 }
-                fila += `<a href="/institutions/page${i}">${i}</a>`;
+                fila += `<a href="/personals/page${i}">${i}</a>`;
                 fila += "</li></ul>";
                 navPages += fila;
             }

@@ -15,6 +15,30 @@
             <div class="col-lg-5">
                 <a href="/institutions/create">{{>btn-new}}</a>
             </div>
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white">
+                        <form action="/institutions" method="POST">
+                            <div class="row">
+                                <div class="col-lg-9">
+                                    <div class="form-group label-floating" style="margin: auto;">
+                                        <label class="control-label">Nombre I.E</label>
+                                        <input class="form-control" type="text" id="ie" name="ie" value="{{ie}}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="form-group" style="margin: auto; text-align: center;">
+                                        <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                            <p style="font-size: 20px; margin: auto; color: #fff;"><i
+                                                    class="zmdi zmdi-search"></i> Buscar</p>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="row">
             <div class="col-lg-12 text-center">
@@ -45,8 +69,25 @@
                                     <td><a href="/institutions/ie{{idInstitucion}}"
                                             class="btn btn-info btn-raised btn-xs"><i class="zmdi zmdi-refresh"></i></a>
                                     </td>
-                                    <td><a href="#!" class="btn btn-danger btn-raised btn-xs"><i
-                                                class="zmdi zmdi-delete"></i></a></td>
+                                    <td>
+                                        <form action="/institutions/ie{{idInstitucion}}?_method=PATCH" method="POST">
+                                            <input type="hidden" name="_method" value="PATCH">
+                                            <input class="form-control" type="hidden" id="modularCode"
+                                                name="modularCode" value="{{idInstitucion}}">
+                                            <input class="form-control" type="hidden" id="nameInstitution"
+                                                name="nameInstitution" value="{{nombreInstitucion}}">
+                                            <input class="form-control" type="hidden" id="address" name="address"
+                                                value="{{direccion}}">
+                                            <input class="form-control" type="hidden" id="nameDirector"
+                                                name="nameDirector" value="{{nombreDirector}}">
+                                            <input class="form-control" type="hidden" id="level" name="level"
+                                                value="{{idNivel}}">
+                                            <input class="form-control" type="hidden" id="district" name="district"
+                                                value="{{idDistrito}}">
+                                            <button type="submit" class="btn btn-danger btn-raised btn-xs"><i
+                                                    class="zmdi zmdi-delete"></i></button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 {{else}}
                                 <tr>

@@ -38,12 +38,14 @@ export const getCreate = async (req, res) => {
   }
 };
 
-/* para guardar en la base de datos la nueva IE,
-se consulta a la db, si el código modular no
-existe, se guarda y redirecciona al listao de
-IIEE, caso contrario se redirecciona a la
-pestaña de crear nueva IE */
-export const create = async (req, res) => {
+/* para guardar en la DB los datos de la IE,
+si la ruta tiene el id de la I.E como parámetro,
+se actualizará los datos de dicha I.E; caso contrario
+se crea una nueva I.E. En ambos casos se consulta a
+la db, si el código modular no existe, se guarda y
+redirecciona al listado de IIEE, caso contrario se
+redirecciona a la pestaña de crear y/o actualizar IE */
+export const set = async (req, res) => {
   const {
     modularCode,
     district,
@@ -51,38 +53,140 @@ export const create = async (req, res) => {
     level,
     nameDirector,
     address,
+    _method,
   } = req.body;
+
+  const { Id } = req.params;
   try {
+    validationInput(
+      modularCode,
+      district,
+      nameInstitution,
+      level,
+      nameDirector,
+      address
+    );
     const [resModularCodeDB] = await Institution.getInstitutionById(
       modularCode
     );
-    if (resModularCodeDB === undefined) {
-      const resDb = await Institution.create(
-        modularCode,
-        district,
-        level,
-        nameInstitution,
-        nameDirector,
-        address
-      );
-      if (resDb.affectedRows > 0) {
-        res.redirect("/institutions/page1");
+    if (_method) {
+      if (resModularCodeDB) {
+        if (resModularCodeDB.idInstitucion === Id) {
+          const resDb = await Institution.set(
+            modularCode,
+            district,
+            level,
+            nameInstitution,
+            nameDirector,
+            address,
+            Id,
+            _method
+          );
+          if (resDb.affectedRows > 0) {
+            res.redirect("/institutions/page1");
+          } else {
+            throw new Error("Error al agregar registro");
+          }
+        } else {
+          throw new Error("Registro ya existe");
+        }
       } else {
-        res.redirect("/institutions/create");
-        throw new Error("Error al agregar registro");
+        const resDb = await Institution.set(
+          modularCode,
+          district,
+          level,
+          nameInstitution,
+          nameDirector,
+          address,
+          Id,
+          _method
+        );
+        if (resDb.affectedRows > 0) {
+          res.redirect("/institutions/page1");
+        } else {
+          throw new Error("Error al agregar registro");
+        }
       }
     } else {
-      res.redirect("/institutions/create");
-      throw new Error("Registro ya existe");
+      if (resModularCodeDB === undefined) {
+        const resDb = await Institution.set(
+          modularCode,
+          district,
+          level,
+          nameInstitution,
+          nameDirector,
+          address
+        );
+        if (resDb.affectedRows > 0) {
+          res.redirect("/institutions/page1");
+        } else {
+          throw new Error("Error al agregar registro");
+        }
+      } else {
+        throw new Error("Registro ya existe");
+      }
     }
   } catch (error) {
     res.redirect("/institutions/create");
   }
 };
 
-export const getById = async (req, res) => {
-  const { Id } = req.params;
-  console.log(Id);
-  const [resModularCodeDB] = await Institution.getInstitutionById(Id);
-  console.log(resModularCodeDB);
+// para buscar I.E por nombre
+export const search = async (req, res) => {
+  const user = req.session;
+  try {
+    const { ie } = req.body;
+    if (ie) {
+      const institutions = await Institution.getInstitutionByName(ie);
+      res.render("institution/index", {
+        user,
+        institutions,
+      });
+    } else {
+      res.redirect("/institutions/page1");
+    }
+  } catch (error) {
+    res.render("institution/index", { user });
+  }
 };
+
+// para buscar I.E por ID
+export const getById = async (req, res) => {
+  const user = req.session;
+  try {
+    const { Id } = req.params;
+    const [institution] = await Institution.getInstitutionById(Id);
+    const district = await District.getSelectDistrict(Id);
+    const educationalLevel = await EducationalLevel.getSelectEducationalLevel(
+      Id
+    );
+    res.render("institution/update", {
+      user,
+      institution,
+      district,
+      educationalLevel,
+    });
+  } catch (error) {
+    res.redirect("/institutions/page1");
+  }
+};
+
+// función para validar que el usuario llene completamente el formulario de crear y actualizar II.EE
+function validationInput(
+  modularCode,
+  district,
+  nameInstitution,
+  level,
+  nameDirector,
+  address
+) {
+  if (
+    modularCode === "" ||
+    district === "" ||
+    nameInstitution === "" ||
+    level === "" ||
+    nameDirector === "" ||
+    address === ""
+  )
+    throw new Error("Todos los campos son obligatorios");
+}

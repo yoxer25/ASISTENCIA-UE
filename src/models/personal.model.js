@@ -32,7 +32,7 @@ export class Personal {
   // para consultar dotos de todos los trabajadores
   static async getPersonal(institution, ofset) {
     const [personalDb] = await pool.query(
-      "SELECT p.dniPersonal, p.nombrePersonal, i.nombreInstitucion FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
+      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
       [institution, ofset]
     );
     if (personalDb != "") {
@@ -74,15 +74,57 @@ export class Personal {
   }
 
   // para crear un nuevo trabajador
-  static async create(documentNumber, institution, fullName, idReloj) {
+  static async set(
+    documentNumber,
+    institution,
+    fullName,
+    idReloj,
+    Id,
+    _method
+  ) {
     const newPersonal = new Personal(
       documentNumber,
       institution,
       fullName,
       idReloj
     );
-    newPersonal.fechaCreado = await helpers.formatDateTime();
-    const [res] = await pool.query("INSERT INTO personal SET ?", [newPersonal]);
-    return res;
+    if (!_method) {
+      newPersonal.fechaCreado = await helpers.formatDateTime();
+      const [res] = await pool.query("INSERT INTO personal SET ?", [
+        newPersonal,
+      ]);
+      return res;
+    }
+    if (_method === "PUT") {
+      newPersonal.fechaActualizado = await helpers.formatDateTime();
+      const [res] = await pool.query(
+        "UPDATE personal p SET ? WHERE p.idPersonal = ?",
+        [newPersonal, Id]
+      );
+      return res;
+    }
+
+    if (_method === "PATCH") {
+      newPersonal.estado = 0;
+      newPersonal.fechaEliminado = await helpers.formatDateTime();
+      const [res] = await pool.query(
+        "UPDATE personal p SET ? WHERE p.idPersonal = ?",
+        [newPersonal, Id]
+      );
+      return res;
+    }
+  }
+
+  // para consultar dotos de todos de un trabajador por ID
+  static async getPersonalById(Id) {
+    const [personalDb] = await pool.query(
+      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj FROM personal p WHERE p.idPersonal = ?",
+      [Id]
+    );
+    if (personalDb != "") {
+      return personalDb;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
   }
 }

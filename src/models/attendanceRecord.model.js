@@ -36,7 +36,7 @@ export class AttendanceRecord {
   static async getAttendanceRecord(institution, startDate, endDate, username, dni) {
     if (username === undefined && dni !== undefined) {
       const [attendanceRecord] = await pool.query(
-        "SELECT p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY r.idRegistroAsistencia",
+        "SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY r.idRegistroAsistencia",
         [institution, startDate, endDate, dni]
       );
       if (attendanceRecord != "") {
@@ -47,7 +47,7 @@ export class AttendanceRecord {
     }
     if (username !== undefined && dni === undefined) {
       const [attendanceRecord] = await pool.query(
-        `SELECT p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.nombrePersonal LIKE '%${username}%' ORDER BY r.idRegistroAsistencia`,
+        `SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.nombrePersonal LIKE '%${username}%' ORDER BY r.idRegistroAsistencia`,
         [institution, startDate, endDate]
       );
       if (attendanceRecord != "") {
@@ -58,7 +58,7 @@ export class AttendanceRecord {
     }
     if (username === undefined && dni === undefined) {
       const [attendanceRecord] = await pool.query(
-        "SELECT p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) ORDER BY r.idRegistroAsistencia",
+        "SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) ORDER BY r.idRegistroAsistencia",
         [institution, startDate, endDate]
       );
       if (attendanceRecord != "") {

@@ -44,4 +44,18 @@ export class District {
       throw new Error("Datos no encontrados");
     }
   }
+
+  /* para consultar datos de todos los distritos que sean
+  diferentes al distrito que tiene registrado la I.E. */
+  static async getSelectDistrict(Id) {
+    const [categories] = await pool.query(
+      "SELECT * FROM distrito d WHERE NOT EXISTS (SELECT * FROM institucion i WHERE d.idDistrito = i.idDistrito AND d.estado != 0 AND i.idInstitucion = ?)",
+      [Id]
+    );
+    if (categories) {
+      return categories;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
+  }
 }

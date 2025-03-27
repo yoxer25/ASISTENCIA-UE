@@ -41,37 +41,136 @@ export const getCreate = async (req, res) => {
 /* función para crear un nuevo trabajador, se consulta
 a la base de datos si existe un registro con el
 número de DNI; si no existe, se guarda en la db */
-export const create = async (req, res) => {
+export const set = async (req, res) => {
   const user = req.session;
   const institution = user.user.name;
-  const { documentNumber, fullName, idReloj } = req.body;
+  const { documentNumber, fullName, idReloj, _method } = req.body;
+  const { Id } = req.params;
   try {
-    const [relojId] = await Personal.getIdReloj(institution, idReloj);
-    if (!relojId) {
+    if (_method) {
+      const [relojId] = await Personal.getIdReloj(institution, idReloj);
       const [personal] = await Personal.getForCreate(
         documentNumber,
         institution
       );
-      if (!personal) {
-        const resDb = await Personal.create(
-        documentNumber,
-        institution,
-        fullName,
-        idReloj
-      );
-      if (resDb.affectedRows > 0) {
-        res.redirect("/personals/page1");
+      if (relojId) {
+        if (personal) {
+          if (
+            personal.idPersonal === Number(Id) &&
+            relojId.idPersonal === Number(Id)
+          ) {
+            const resDb = await Personal.set(
+              documentNumber,
+              institution,
+              fullName,
+              idReloj,
+              Id,
+              _method
+            );
+            if (resDb.affectedRows > 0) {
+              res.redirect("/personals/page1");
+            } else {
+              throw new Error("Error al agregar registro");
+            }
+          } else {
+            throw new Error("Registro ya existe");
+          }
+        } else {
+          if (relojId.idPersonal === Number(Id)) {
+            const resDb = await Personal.set(
+              documentNumber,
+              institution,
+              fullName,
+              idReloj,
+              Id,
+              _method
+            );
+            if (resDb.affectedRows > 0) {
+              res.redirect("/personals/page1");
+            } else {
+              throw new Error("Error al agregar registro");
+            }
+          } else {
+            throw new Error("Registro ya existe");
+          }
+        }
       } else {
-        throw new Error("Error al agregar registro");
+        if (personal) {
+          if (personal.idPersonal === Number(Id)) {
+            const resDb = await Personal.set(
+              documentNumber,
+              institution,
+              fullName,
+              idReloj,
+              Id,
+              _method
+            );
+            if (resDb.affectedRows > 0) {
+              res.redirect("/personals/page1");
+            } else {
+              throw new Error("Error al agregar registro");
+            }
+          } else {
+            throw new Error("Registro ya existe");
+          }
+        } else {
+          const resDb = await Personal.set(
+            documentNumber,
+            institution,
+            fullName,
+            idReloj,
+            Id,
+            _method
+          );
+          if (resDb.affectedRows > 0) {
+            res.redirect("/personals/page1");
+          } else {
+            throw new Error("Error al agregar registro");
+          }
+        }
       }
+    } else {
+      const [relojId] = await Personal.getIdReloj(institution, idReloj);
+      if (!relojId) {
+        const [personal] = await Personal.getForCreate(
+          documentNumber,
+          institution
+        );
+        if (!personal) {
+          const resDb = await Personal.set(
+            documentNumber,
+            institution,
+            fullName,
+            idReloj
+          );
+          if (resDb.affectedRows > 0) {
+            res.redirect("/personals/page1");
+          } else {
+            throw new Error("Error al agregar registro");
+          }
+        } else {
+          throw new Error("Registro ya existe");
+        }
       } else {
         throw new Error("Registro ya existe");
       }
-    } else {
-      throw new Error("Registro ya existe");
     }
   } catch (error) {
-    console.log(error.message);
     res.redirect("/personals/create");
+  }
+};
+
+// controla lo que se debe mostrar al momento de visitar la página de actualizar datos de un trabajador
+export const getById = async (req, res) => {
+  const user = req.session;
+  try {
+    const { Id } = req.params;
+    const [personal] = await Personal.getPersonalById(Id);
+    res.render("personal/update", {
+      user,
+      personal,
+    });
+  } catch (error) {
+    res.render("personal/update", { user });
   }
 };

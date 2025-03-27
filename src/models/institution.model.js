@@ -64,7 +64,7 @@ export class Institution {
   // para consultar datos de una institución por id
   static async getInstitutionById(id) {
     const [institution] = await pool.query(
-      "SELECT * FROM institucion i WHERE i.idInstitucion = ?",
+      "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.idInstitucion = ?",
       id
     );
     if (institution) {
@@ -72,14 +72,29 @@ export class Institution {
     }
   }
 
-  // para crear una nueva institución
-  static async create(
+  // para consultar datos de una institución por nombre
+  static async getInstitutionByName(name) {
+    const [institution] = await pool.query(
+      `SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.nombreInstitucion LIKE '%${name}%' AND i.estado != 0 ORDER BY i.idInstitucion`
+    );
+    if (institution) {
+      return institution;
+    }
+  }
+
+  /* para guardar datos de una institución, si se recibe
+  un "id", se actualiza la información de la institución
+  que corresponda según el método de la ruta; caso contrario,
+  se crea una nueva I.E */
+  static async set(
     modularCode,
     district,
     level,
     nameInstitution,
     nameDirector,
-    address
+    address,
+    Id,
+    _method
   ) {
     const newInstitution = new Institution(
       modularCode,
@@ -89,10 +104,30 @@ export class Institution {
       nameDirector,
       address
     );
-    newInstitution.fechaCreado = await helpers.formatDateTime();
-    const [res] = await pool.query("INSERT INTO institucion SET ?", [
-      newInstitution,
-    ]);
-    return res;
+    if (!_method) {
+      newInstitution.fechaCreado = await helpers.formatDateTime();
+      const [res] = await pool.query("INSERT INTO institucion SET ?", [
+        newInstitution,
+      ]);
+      return res;
+    }
+    if (_method === "PUT") {
+      newInstitution.fechaActualizado = await helpers.formatDateTime();
+      const [res] = await pool.query(
+        "UPDATE institucion i SET ? WHERE i.idInstitucion = ?",
+        [newInstitution, Id]
+      );
+      return res;
+    }
+
+    if (_method === "PATCH") {
+      newInstitution.estado = 0;
+      newInstitution.fechaEliminado = await helpers.formatDateTime();
+      const [res] = await pool.query(
+        "UPDATE institucion i SET ? WHERE i.idInstitucion = ?",
+        [newInstitution, Id]
+      );
+      return res;
+    }
   }
 }

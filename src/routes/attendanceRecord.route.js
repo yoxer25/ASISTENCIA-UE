@@ -24,6 +24,7 @@ const upload = multer({ dest: "src/archives/" });
 router.get("/importData", requireToken, attendanceRecordCtrl.getImportData);
 router.post("/importData", requireToken, upload.single("excel"), attendanceRecordCtrl.importData);
 router.post("/", requireToken, attendanceRecordCtrl.getAttendanceRecord);
+router.delete("/:Id", requireToken, attendanceRecordCtrl.deleteById);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

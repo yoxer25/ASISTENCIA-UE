@@ -2,26 +2,26 @@
     <div class="col-md-6">
         <div class="form-group label-floating">
             <label class="control-label">Código Modular</label>
-            <input class="form-control" type="text" id="modularCode" name="modularCode" onkeypress="return solonumeros(event)">
+            <input class="form-control" type="text" id="modularCode" name="modularCode" onkeypress="return solonumeros(event)" value="{{institution.idInstitucion}}">
         </div>
         <div class="form-group label-floating">
             <label class="control-label">Nombre II.EE</label>
-            <input class="form-control" type="text" id="nameInstitution" name="nameInstitution">
+            <input class="form-control" type="text" id="nameInstitution" name="nameInstitution" value="{{institution.nombreInstitucion}}">
         </div>
         <div class="form-group label-floating">
             <label class="control-label">Dirección I.E</label>
-            <input class="form-control" type="text" id="address" name="address">
+            <input class="form-control" type="text" id="address" name="address" value="{{institution.direccion}}">
         </div>
     </div>
     <div class="col-md-6">
         <div class="form-group label-floating">
             <label class="control-label">Director</label>
-            <input class="form-control" type="text" id="nameDirector" name="nameDirector" onkeypress="return soloLetras(event)">
+            <input class="form-control" type="text" id="nameDirector" name="nameDirector" onkeypress="return soloLetras(event)" value="{{institution.nombreDirector}}">
         </div>
         <div class="form-group label-floating">
             <label class="control-label">Nivel</label>
             <select class="form-control" id="level" name="level">
-                <option value="{{product.idCategoria}}" selected>{{product.categoria}}</option>
+                <option value="{{institution.idNivel}}" selected>{{institution.nombreNivel}}</option>
                 {{#each educationalLevel}}
                 <option value="{{idNivelEducativo}}">{{nombreNivel}}</option>
                 {{/each}}
@@ -30,7 +30,7 @@
         <div class="form-group label-floating">
             <label class="control-label">Distrito</label>
             <select class="form-control" id="district" name="district">
-                <option value="{{product.idCategoria}}" selected>{{product.categoria}}</option>
+                <option value="{{institution.idDistrito}}" selected>{{institution.nombreDistrito}}</option>
                 {{#each district}}
                 <option value="{{idDistrito}}">{{nombreDistrito}}</option>
                 {{/each}}

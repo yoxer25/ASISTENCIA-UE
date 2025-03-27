@@ -58,8 +58,13 @@
                                     <td>{{primeraSalida}}</td>
                                     <td>{{segundaEntrada}}</td>
                                     <td>{{segundaSalida}}</td>
-                                    <td><a href="#!" class="btn btn-danger btn-raised btn-xs"><i
-                                                class="zmdi zmdi-delete"></i></a></td>
+                                    <td>
+                                        <form action="/attendanceRecords/{{idRegistroAsistencia}}?_method=DELETE" method="POST">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="btn btn-danger btn-raised btn-xs"><i
+                                                    class="zmdi zmdi-delete"></i></button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 {{else}}
                                 <tr>
@@ -79,6 +84,8 @@
 </section>
 
 {{>navigation/navigation}}
+
+<script src="/js/functions.js"></script>
 
 <script>
     const current = ({{{ convertJson current }}});

@@ -17,6 +17,7 @@ const router = Router();
 // rutas de la página principal
 router.get("/page:num", requireToken, userCtrl.getUsers);
 router.get("/create", requireToken, userCtrl.getCreate);
+router.post("/", requireToken, userCtrl.search);
 router.post("/create", requireToken, userCtrl.create);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web

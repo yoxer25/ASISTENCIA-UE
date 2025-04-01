@@ -39,27 +39,3 @@
 {{>navigation/navigation}}
 
 <script src="/js/functions.js"></script>
-<script>
-
-    document.getElementById('personalForm').addEventListener('submit', function (event) {
-        // Prevenir el envío por defecto del formulario
-        event.preventDefault();
-
-        const documentNumber = document.getElementById("documentNumber").value;
-        const fullName = document.getElementById("fullName").value;
-        const idReloj = document.getElementById("idReloj").value;
-
-        if (documentNumber.length > 8 || documentNumber.length < 8) {
-            alert("DNI INVÁLIDO");
-            return;
-        }
-
-        if (documentNumber === "" || fullName === "" || idReloj === "") {
-            alert("FORMULARIO INCOMPLETO");
-            return;
-        } else {
-            this.submit();
-        }
-    });
-
-</script>

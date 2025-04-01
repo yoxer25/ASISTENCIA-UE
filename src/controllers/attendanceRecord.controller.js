@@ -16,6 +16,31 @@ export const getImportData = async (req, res) => {
 };
 
 //controla lo que se debe mostrar al momento de visitar la página de asistencia
+export const getData = async (req, res) => {
+  let forPage = 10;
+  let page = req.params.num || 1;
+  const user = req.session;
+  const institution = user.user.name;
+  try {
+    const attendanceRecordDB = await AttendanceRecord.getData(institution);
+    let attendanceRecord = attendanceRecordDB.slice(
+      page * forPage - forPage,
+      page * forPage
+    );
+    res.render("attendanceRecord/index", {
+      user,
+      ie: institution,
+      attendanceRecord,
+      current: page,
+      pages: Math.ceil(attendanceRecordDB.length / forPage),
+      option: null,
+    });
+  } catch (error) {
+    res.render("attendanceRecord/index", { user });
+  }
+};
+
+//controla lo que se debe mostrar al momento de visitar la página de asistencia por fechas o usuarios
 export const getAttendanceRecord = async (req, res) => {
   let forPage = 10;
   const user = req.session;
@@ -214,124 +239,166 @@ export const importData = async (req, res) => {
   const institution = user.user.name;
 
   try {
-    saveExcel(req.file);
-    // especificamos el archivo excel del cual vamos a leer los datos
-    const workBook = await xlsxPopulate.fromFileAsync(
-      "./src/archives/asistencia.xlsx"
-    );
-    // constante que contiene todos los datos de la hoja del excel
-    const value = workBook.sheet("COVG231060035_attlog").usedRange().value();
+    if (req.file) {
+      const { mimetype } = req.file;
+      if (
+        mimetype ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        saveExcel(req.file);
+        // especificamos el archivo excel del cual vamos a leer los datos
+        const workBook = await xlsxPopulate.fromFileAsync(
+          "./src/archives/asistencia.xlsx"
+        );
+        // constante que contiene todos los datos de la hoja del excel
+        const value = workBook
+          .sheet("COVG231060035_attlog")
+          .usedRange()
+          .value();
 
-    let registers = {};
+        let registers = {};
 
-    for (let i = 0; i < value.length; i++) {
-      const element = value[i];
-      if (element[0] !== undefined) {
-        const [DNIPersonal] = await Personal.getId(institution, element[0]);
-        const dni = DNIPersonal.idPersonal;
-        const datetimeExcel = numeroAFecha(element[1], true);
-        const registrationDate = helpers.formatDate(datetimeExcel);
-        const registrationTime = helpers.formatTime(datetimeExcel);
-        if (!registers[dni]) {
-          registers[dni] = {
-            usuario: dni,
-            fechaRegistro: [],
-          };
-        }
-        registers[dni].fechaRegistro.push([registrationDate, registrationTime]);
-      } else {
-        break;
-      }
-    }
-
-    Object.values(registers).forEach((register) => {
-      const finalRegister = {};
-
-      register.fechaRegistro.forEach((fecha) => {
-        const date = fecha[0];
-        const time = fecha[1];
-
-        if (!finalRegister[date]) {
-          finalRegister[date] = {
-            usuario: register.usuario,
-            fechaRegistro: date,
-            marcas: [],
-          };
+        for (let i = 0; i < value.length; i++) {
+          const element = value[i];
+          if (element[0] !== undefined) {
+            const [DNIPersonal] = await Personal.getId(institution, element[0]);
+            const dni = DNIPersonal.idPersonal;
+            const datetimeExcel = numeroAFecha(element[1], true);
+            const registrationDate = helpers.formatDate(datetimeExcel);
+            const registrationTime = helpers.formatTime(datetimeExcel);
+            if (!registers[dni]) {
+              registers[dni] = {
+                usuario: dni,
+                fechaRegistro: [],
+              };
+            }
+            registers[dni].fechaRegistro.push([
+              registrationDate,
+              registrationTime,
+            ]);
+          } else {
+            break;
+          }
         }
 
-        finalRegister[date].marcas.push(time);
-      });
+        Object.values(registers).forEach((register) => {
+          const finalRegister = {};
 
-      const horaEntrada1 = convertirATotalMinutos("08:00:00");
-      const horaEntrada1Hasta = convertirATotalMinutos("10:00:00");
+          register.fechaRegistro.forEach((fecha) => {
+            const date = fecha[0];
+            const time = fecha[1];
 
-      const horaEntrada2Desde = convertirATotalMinutos("14:00:00");
-      const horaEntrada2Hasta = convertirATotalMinutos("15:00:00");
+            if (!finalRegister[date]) {
+              finalRegister[date] = {
+                usuario: register.usuario,
+                fechaRegistro: date,
+                marcas: [],
+              };
+            }
 
-      Object.values(finalRegister).forEach(async (register) => {
-        const attenRec = {
-          institution,
-          personal: `${register.usuario}`,
-          recordDate: `${register.fechaRegistro}`,
-        };
+            finalRegister[date].marcas.push(time);
+          });
 
-        register.marcas.forEach((registroHora) => {
-          const horaMarco = convertirATotalMinutos(registroHora);
-          if (horaMarco < horaEntrada1 && horaMarco <= horaEntrada1Hasta) {
-            attenRec.firstHourEntry = registroHora;
-          }
-          if (horaMarco > horaEntrada1Hasta && horaMarco < horaEntrada2Desde) {
-            attenRec.firstHourDeparture = registroHora;
-          }
-          if (
-            horaMarco >= horaEntrada2Desde &&
-            horaMarco <= horaEntrada2Hasta
-          ) {
-            attenRec.secondHourEntry = registroHora;
-          }
-          if (horaMarco > horaEntrada2Hasta) {
-            attenRec.secondDepartureTime = registroHora;
-          }
+          const horaEntrada1 = convertirATotalMinutos("08:00:00");
+          const horaEntrada1Hasta = convertirATotalMinutos("10:00:00");
+
+          const horaEntrada2Desde = convertirATotalMinutos("14:00:00");
+          const horaEntrada2Hasta = convertirATotalMinutos("15:00:00");
+
+          Object.values(finalRegister).forEach(async (register) => {
+            const attenRec = {
+              institution,
+              personal: `${register.usuario}`,
+              recordDate: `${register.fechaRegistro}`,
+            };
+            console.log(register.marcas);
+
+            register.marcas.forEach((registroHora) => {
+              const horaMarco = convertirATotalMinutos(registroHora);
+              if (horaMarco < horaEntrada1 && horaMarco <= horaEntrada1Hasta) {
+                if (!attenRec.firstHourEntry) {
+                  attenRec.firstHourEntry = registroHora;
+                }
+              }
+              if (
+                horaMarco > horaEntrada1Hasta &&
+                horaMarco < horaEntrada2Desde
+              ) {
+                if (!attenRec.firstHourDeparture) {
+                  attenRec.firstHourDeparture = registroHora;
+                }
+              }
+              if (
+                horaMarco >= horaEntrada2Desde &&
+                horaMarco <= horaEntrada2Hasta
+              ) {
+                if (!attenRec.secondHourEntry) {
+                  attenRec.secondHourEntry = registroHora;
+                }
+              }
+              if (horaMarco > horaEntrada2Hasta) {
+                if (!attenRec.secondDepartureTime) {
+                  attenRec.secondDepartureTime = registroHora;
+                }
+              }
+            });
+
+            if (!attenRec.firstHourEntry) {
+              attenRec.firstHourEntry = null;
+            }
+            if (!attenRec.firstHourDeparture) {
+              attenRec.firstHourDeparture = null;
+            }
+            if (!attenRec.secondHourEntry) {
+              attenRec.secondHourEntry = null;
+            }
+            if (!attenRec.secondDepartureTime) {
+              attenRec.secondDepartureTime = null;
+            }
+
+            const [resAttenRec] =
+              await AttendanceRecord.getAttendanceRecordForCreate(
+                attenRec.institution,
+                attenRec.personal,
+                attenRec.recordDate
+              );
+
+            if (!resAttenRec) {
+              await AttendanceRecord.create(
+                attenRec.institution,
+                attenRec.personal,
+                attenRec.recordDate,
+                attenRec.firstHourEntry,
+                attenRec.firstHourDeparture,
+                attenRec.secondHourEntry,
+                attenRec.secondDepartureTime
+              );
+            }
+          });
         });
 
-        if (!attenRec.firstHourEntry) {
-          attenRec.firstHourEntry = null;
+        function redirectPage() {
+          res.redirect("/attendanceRecords/page1");
         }
-        if (!attenRec.firstHourDeparture) {
-          attenRec.firstHourDeparture = null;
-        }
-        if (!attenRec.secondHourEntry) {
-          attenRec.secondHourEntry = null;
-        }
-        if (!attenRec.secondDepartureTime) {
-          attenRec.secondDepartureTime = null;
-        }
-
-        const [resAttenRec] =
-          await AttendanceRecord.getAttendanceRecordForCreate(
-            attenRec.institution,
-            attenRec.personal,
-            attenRec.recordDate
-          );
-
-        if (!resAttenRec) {
-          await AttendanceRecord.create(
-            attenRec.institution,
-            attenRec.personal,
-            attenRec.recordDate,
-            attenRec.firstHourEntry,
-            attenRec.firstHourDeparture,
-            attenRec.secondHourEntry,
-            attenRec.secondDepartureTime
-          );
-        }
-      });
-    });
-
-    function redirectPage() {
-      res.redirect("/attendanceRecords/page1");
+        res.cookie("success", ["¡Registro exitoso!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        setTimeout(redirectPage, 2000);
+      } else {
+        res.cookie("error", ["¡Seleccione un archivo excel!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        throw new Error("Seleccione un archivo .xlsx");
+      }
+    } else {
+      res.cookie("error", ["¡Seleccione un archivo excel!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      throw new Error("Seleccione un archivo .xlsx");
     }
-    setTimeout(redirectPage, 2000);
   } catch (error) {
     res.redirect("/attendanceRecords/importData");
   }

@@ -17,10 +17,10 @@
     <div class="col-md-6">
         <div class="form-group label-floating">
             <label class="control-label">I.E</label>
-            <select class="form-control" id="username" name="username">
+            <select class="form-control" id="username" name="username" style="width: 100%;">
                 <option value="{{product.idCategoria}}" selected>{{product.categoria}}</option>
                 {{#each institution}}
-                <option value="{{idInstitucion}}">{{nombreInstitucion}}</option>
+                <option value="{{idInstitucion}}">{{nombreNivel}} - {{nombreInstitucion}}</option>
                 {{/each}}
             </select>
         </div>

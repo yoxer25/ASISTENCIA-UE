@@ -20,6 +20,7 @@
   "homepage": "https://github.com/yoxer25/ASISTENCIA-UE#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.7",
     "dayjs": "^1.11.13",
     "express": "^4.21.2",

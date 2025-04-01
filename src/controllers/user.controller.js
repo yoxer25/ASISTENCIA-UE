@@ -42,12 +42,22 @@ export const getCreate = async (req, res) => {
 export const create = async (req, res) => {
   const { username, formPassword, rolUser } = req.body;
   try {
+    validationInput(username, formPassword, rolUser, res);
     const passwordHash = await password.encryptPassword(formPassword);
     const resDb = await User.create(username, rolUser, passwordHash);
     if (resDb.affectedRows > 0) {
+      // Si el registro es exitoso
+      res.cookie("success", ["¡Registro exitoso!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
       res.redirect("/users/page1");
     } else {
-      res.redirect("/users/create");
+      // Si el registro falla
+      res.cookie("error", ["¡Error al agregar registro!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
       throw new Error("Error al agregar registro");
     }
   } catch (error) {
@@ -71,5 +81,16 @@ export const search = async (req, res) => {
     }
   } catch (error) {
     res.render("user/index", { user });
+  }
+};
+
+// función para validar que el usuario llene completamente el formulario de crear y actualizar productos
+const validationInput = (username, formPassword, rolUser, res) => {
+  if (username === "" || formPassword === "" || rolUser === "") {
+    res.cookie("error", ["¡Todos los campos son obligatorios!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
+    throw new Error("Todos los campos son obligatorios");
   }
 };

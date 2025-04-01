@@ -6,6 +6,30 @@ import XlsxPopulate from "xlsx-populate"; // para crear el excel del reporte
 la carpeta "routes" que tienen todas las rutas de la web */
 
 //controla lo que se debe mostrar al momento de visitar la página de asistencia
+export const getData = async (req, res) => {
+  let forPage = 10;
+  let page = req.params.num || 1;
+  const user = req.session;
+  const institution = user.user.name;
+  try {
+    const attendanceRecordDB = await AttendanceRecord.getData(institution);
+    let attendanceRecord = attendanceRecordDB.slice(
+      page * forPage - forPage,
+      page * forPage
+    );
+    res.render("report/index", {
+      user,
+      ie: institution,
+      attendanceRecord,
+      current: page,
+      pages: Math.ceil(attendanceRecordDB.length / forPage),
+      option: null,
+    });
+  } catch (error) {
+    res.render("report/index", { user });
+  }
+};
+
 export const getReport = async (req, res) => {
   let forPage = 10;
   const user = req.session;

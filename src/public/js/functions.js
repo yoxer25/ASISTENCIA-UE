@@ -17,14 +17,11 @@ const solonumeros = (e) => {
 
 // función para que el input solo deje escribir letras
 const soloLetras = (e) => {
-  var letra = e.keyCode;
-  if (
-    (letra > 64 && letra < 91) ||
-    (letra > 96 && letra < 123) ||
-    letra == 32
-  ) {
-    return true;
-  } else {
-    return false;
+  const tecla = e.key; // Obtener la tecla presionada
+  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]$/; // Expresión regular que permite letras, vocales con tildes, ñ y espacio
+
+  // Si la tecla no coincide con la expresión regular, evitamos que se ingrese
+  if (!regex.test(tecla)) {
+    e.preventDefault(); // Evitar que la tecla sea registrada
   }
 };

@@ -37,26 +37,3 @@
 </section>
 
 {{>navigation/navigation}}
-
-<script>
-
-    document.getElementById('formUser').addEventListener('submit', function (event) {
-        // Prevenir el envío por defecto del formulario
-        event.preventDefault();
-        const rolUser = document.querySelector("#rolUser");
-        const optionRol = rolUser.options[rolUser.selectedIndex];
-
-        const username = document.querySelector("#username");
-        const optionUser = username.options[username.selectedIndex];
-
-        const formPassword = document.getElementById("formPassword").value;
-
-        if (optionRol.value === "" || optionUser.value === "" || formPassword === "") {
-            alert("FORMULARIO INCOMPLETO");
-            return;
-        } else {
-            this.submit();
-        }
-    });
-
-</script>

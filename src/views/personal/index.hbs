@@ -15,6 +15,40 @@
             <div class="col-lg-5">
                 <a href="/personals/create">{{>btn-new}}</a>
             </div>
+            <div class="col-lg-7" id="formSearchPersonal">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white">
+                        <div class="card-header bg-primary text-center">
+                            <p class="text-white" style="font-size: 30px;">Buscar Personal por IE</p>
+                        </div>
+                        <form action="/personals" id="consultPersonal" method="POST">
+                            <input type="hidden" class="form-control" name="page" id="page">
+                            <div class="row">
+                                <div class="col-lg-7">
+                                    <div class="form-group" style="margin: auto;">
+                                        <select class="form-control" id="username" name="username" style="width: 100%;">
+                                            <option value="{{username}}" selected>{{ie}}</option>
+                                            {{#each institutions}}
+                                            <option value="{{idInstitucion}}">{{nombreNivel}} - {{nombreInstitucion}}
+                                            </option>
+                                            {{/each}}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-5">
+                                    <div class="form-group" style="margin: auto; text-align: right;">
+                                        <button class="btn btn-raised btn-sm"
+                                            style="background-color: #01579B; margin: auto;">
+                                            <p style="font-size: 20px; margin: auto; color: #fff;"><i
+                                                    class="zmdi zmdi-search"></i> Consultar</p>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="row">
             <div class="col-lg-12 text-center">
@@ -67,6 +101,7 @@
             </div>
         </div>
     </div>
+
     {{>footer/footer}}
 </section>
 
@@ -75,6 +110,8 @@
 <script>
     const current = ({{{ convertJson current }}});
     const pages = ({{{ convertJson pages }}});
+    const username = document.querySelector("#username");
+    const option = username.options[username.selectedIndex];
 
     const numPages = (num) => {
         let navPages = '';
@@ -94,7 +131,11 @@
                 if (i === Number(current) + 4 && i < pages) {
                     fila += `<a href="#">...</a>`;
                 }
-                fila += `<a href="/personals/page${i}">${i}</a>`;
+                if (option.value === "") {
+                    fila += `<a href="/personals/page${i}">${i}</a>`;
+                } else {
+                    fila += `<a id="enlace href="#" onclick="submitConsultPersonal(${i}); return false;">${i}</a>`;
+                }
                 fila += "</li></ul>";
                 navPages += fila;
             }
@@ -103,5 +144,16 @@
     }
     document.getElementById("pagination").innerHTML =
         numPages(pages);
+
+    const formSearchPersonal = document.getElementById("formSearchPersonal");
+    if (listUser.rol !== "administrador") {
+        formSearchPersonal.innerHTML = ``;
+    };
+
+    function submitConsultPersonal(i) {
+        const page = document.getElementById("page")
+        page.value = i;
+        document.getElementById('consultPersonal').submit();
+    }
 
 </script>

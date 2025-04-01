@@ -27,13 +27,31 @@ export class AttendanceRecord {
     this.segundaSalida = secondDepartureTime;
   }
 
+  static async getData(institution) {
+    const [attendanceRecord] = await pool.query(
+      "SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE r.idInstitucion = ? AND r.fechaRegistro >= CURDATE() - INTERVAL 5 DAY ORDER BY r.idRegistroAsistencia",
+      [institution]
+    );
+    if (attendanceRecord != "") {
+      return attendanceRecord;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
+  }
+
   /* para mostrar el registro de asistencia;
   si el usuario que ingresa tiene rol
   de "directivo", podrá ver el registro de
   asistencia solo de su I.E; si el usuario que
   ingresa tiene rol de "administrador", podrá ver
   el registro de asistencia de todas las II.EE */
-  static async getAttendanceRecord(institution, startDate, endDate, username, dni) {
+  static async getAttendanceRecord(
+    institution,
+    startDate,
+    endDate,
+    username,
+    dni
+  ) {
     if (username === undefined && dni !== undefined) {
       const [attendanceRecord] = await pool.query(
         "SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY r.idRegistroAsistencia",

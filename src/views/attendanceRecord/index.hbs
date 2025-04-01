@@ -59,7 +59,8 @@
                                     <td>{{segundaEntrada}}</td>
                                     <td>{{segundaSalida}}</td>
                                     <td>
-                                        <form action="/attendanceRecords/{{idRegistroAsistencia}}?_method=DELETE" method="POST">
+                                        <form action="/attendanceRecords/{{idRegistroAsistencia}}?_method=DELETE"
+                                            method="POST">
                                             <input type="hidden" name="_method" value="DELETE">
                                             <button type="submit" class="btn btn-danger btn-raised btn-xs"><i
                                                     class="zmdi zmdi-delete"></i></button>
@@ -115,7 +116,12 @@
                 if (i === Number(current) + 4 && i < pages) {
                     fila += `<a href="#">...</a>`;
                 }
-                fila += `<a id="enlace href="#" onclick="submitAttendanceForm(${i}); return false;">${i}</a>`;
+                if (option !== null) {
+                    fila += `<a id="enlace href="#" onclick="submitAttendanceForm(${i}); return false;">${i}</a>`;
+                } else {
+                    fila += `<a href="/attendanceRecords/page${i}">${i}</a>`;
+
+                }
                 fila += "</li></ul>";
                 navPages += fila;
             }

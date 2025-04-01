@@ -17,6 +17,7 @@ const router = Router();
 // rutas de la página principal
 router.get("/page:num", requireToken, personalCtrl.getPersonal);
 router.get("/create", requireToken, personalCtrl.getCreate);
+router.post("/", requireToken, personalCtrl.getPersonalByIE);
 router.post("/create", requireToken, personalCtrl.set);
 router.get("/:Id", requireToken, personalCtrl.getById);
 router.put("/:Id", requireToken, personalCtrl.set);

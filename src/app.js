@@ -6,6 +6,8 @@ import express from "express";
 import { engine } from "express-handlebars";
 // facilitar la posibilidad de modificar las cookies
 import cookieParser from "cookie-parser";
+// para mostrar mensajes
+import flash from "connect-flash";
 // para peoder usar todos los métodos HTTP (GET, POST, PUT, PATCH, DELETE)
 import methodOverride from "method-override";
 // para establecer la ruta de los archivos handlebars
@@ -50,9 +52,23 @@ app.use(express.static(path.resolve(_dirname + "/public")));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 // modificar cookies
-app.use(cookieParser());
+app.use(cookieParser(process.env.SECRET_JWT_KEY));
 // para peoder usar todos los métodos HTTP (GET, POST, PUT, PATCH, DELETE)
 app.use(methodOverride("_method"));
+app.use(flash()); // Conectar connect-flash después de session
+
+// Middleware para manejar los mensajes flash
+app.use((req, res, next) => {
+  // Recuperar los mensajes flash desde las cookies
+  res.locals.success_messages = req.cookies.success || [];
+  res.locals.error_messages = req.cookies.error || [];
+
+  // Limpiar los mensajes flash después de ser mostrados
+  res.clearCookie("success");
+  res.clearCookie("error");
+
+  next();
+});
 // rutas de la web
 app.use(homeRoutes);
 app.use("/myaccount", myaccountRoutes);

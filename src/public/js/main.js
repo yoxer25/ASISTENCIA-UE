@@ -83,3 +83,31 @@ $(document).ready(function(){
         });
     });
 })(jQuery);
+
+// Función para mostrar el Toast
+function showToast(id) {
+	const toast = document.getElementById(id);
+	if (toast) {
+		toast.classList.add('show');  // Mostrar el toast
+		setTimeout(() => {
+			toast.classList.remove('show');  // Ocultar el toast después de 4 segundos
+		}, 4000);
+	}
+}
+
+// Llamamos a la función para mostrar el toast si hay mensajes
+window.onload = function () {
+	// Mostrar toast de éxito
+	if (document.getElementById('toast-success')) {
+		showToast('toast-success');
+	}
+	// Mostrar toast de error
+	if (document.getElementById('toast-error')) {
+		showToast('toast-error');
+	}
+};
+
+// Iniciar Select2 en el select
+$(document).ready(function () {
+	$('#username').select2();
+});

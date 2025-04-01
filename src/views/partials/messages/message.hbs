@@ -1,0 +1,18 @@
+
+  <!-- Si hay mensajes de éxito, mostrar el Toast -->
+  {{#if success_messages}}
+    {{#each success_messages}}
+      <div id="toast-success" class="toast">
+        {{this}}
+      </div>
+    {{/each}}
+  {{/if}}
+
+  <!-- Si hay mensajes de error, mostrar el Toast -->
+  {{#if error_messages}}
+    {{#each error_messages}}
+      <div id="toast-error" class="toast toast-error">
+        {{this}}
+      </div>
+    {{/each}}
+  {{/if}}

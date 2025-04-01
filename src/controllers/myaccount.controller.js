@@ -16,19 +16,21 @@ export const signIn = async (req, res) => {
   const { userModularCode, userPassword } = req.body;
   try {
     const user = await User.login(userModularCode, userPassword);
-    const { token, expiresIn } = genarateToken(
-      user.idUser,
-      user.nombre,
-      user.rol
-    );
+    const { token } = genarateToken(user.idUser, user.nombre, user.rol);
     res
-      .cookie("access_token", token, expiresIn, {
+      .cookie("access_token", token, {
         httpOnly: true,
+        //secure: true,
         sameSite: "strict",
-        maxAge: 1000 * 60 * 60, // la cookie durará 1h
+        //maxAge: 1000 * 60 * 60, // la cookie durará 1h
       })
       .redirect("/");
   } catch (error) {
+    // Si el registro falla
+    res.cookie("error", ["¡Datos Incorrectos!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
     res.redirect("/myaccount/signIn");
   }
 };

@@ -7,11 +7,16 @@
     <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <link rel="stylesheet" href="/css/main.css">
+    <link href="/css/select2.min.css" rel="stylesheet" />
 </head>
 
 <body>
+    {{>messages/message}}
     {{{body}}}
-    <script src="/js/jquery-3.1.1.min.js"></script>
+    <!-- Incluye el archivo JS de jQuery desde un CDN -->
+    <script src="/js/jquery-3.6.0.min.js"></script>
+    <!-- Incluye el archivo JS de Select2 desde un CDN -->
+    <script src="/js/select2.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/material.min.js"></script>
     <script src="/js/ripples.min.js"></script>

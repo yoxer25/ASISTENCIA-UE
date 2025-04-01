@@ -8,7 +8,7 @@ export const genarateToken = (id, name, rol) => {
     const token = jwt.sign({ id, name, rol }, process.env.SECRET_JWT_KEY, {
       expiresIn,
     });
-    return { token, expiresIn };
+    return { token };
   } catch (error) {
     const msg = error.message;
   }

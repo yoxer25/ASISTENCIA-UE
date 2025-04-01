@@ -5,6 +5,48 @@ import { Personal } from "../models/personal.model.js";
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
 
+// controla lo que se debe mostrar al momento de visitar la página de trabajadores por II.EE
+export const getPersonalByIE = async (req, res) => {
+  let forPage = 10;
+  const user = req.session;
+  let { username, page } = req.body;
+  if (page !== "") {
+    page = page;
+  } else {
+    page = 1;
+  }
+  try {
+    if (username) {
+      const personalsDB = await Personal.getPersonal(username);
+      const institutions = await Institution.getInstitution();
+      const [ieDB] = await Institution.getInstitutionById(username);
+      const ie = `${ieDB.nombreNivel} - ${ieDB.nombreInstitucion}`;
+      let personals = personalsDB.slice(
+        page * forPage - forPage,
+        page * forPage
+      );
+      res.render("personal/index", {
+        user,
+        institutions,
+        username,
+        ie,
+        personals,
+        current: page,
+        pages: Math.ceil(personalsDB.length / forPage),
+      });
+    } else {
+      // Si el registro falla
+      res.cookie("error", ["¡Seleccione una IE para buscar!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      throw new Error("Seleccione una IE para buscar");
+    }
+  } catch (error) {
+    res.redirect("/personals/page1");
+  }
+};
+
 // controla lo que se debe mostrar al momento de visitar la página de trabajadores
 export const getPersonal = async (req, res) => {
   let forPage = 10;
@@ -14,9 +56,13 @@ export const getPersonal = async (req, res) => {
   const institution = user.user.name;
   try {
     const personals = await Personal.getPersonal(institution, ofset);
+    console.log(personals)
     const [counts] = await Personal.countPersonals(institution);
+    const institutions = await Institution.getInstitution();
+
     res.render("personal/index", {
       user,
+      institutions,
       personals,
       current: page,
       pages: Math.ceil(counts.personals / forPage),
@@ -47,6 +93,7 @@ export const set = async (req, res) => {
   const { documentNumber, fullName, idReloj, _method } = req.body;
   const { Id } = req.params;
   try {
+    validationInput(documentNumber, fullName, idReloj, res);
     if (_method) {
       const [relojId] = await Personal.getIdReloj(institution, idReloj);
       const [personal] = await Personal.getForCreate(
@@ -68,11 +115,26 @@ export const set = async (req, res) => {
               _method
             );
             if (resDb.affectedRows > 0) {
+              // Si el registro es exitoso
+              res.cookie("success", ["¡Actualización exitosa!"], {
+                httpOnly: true,
+                maxAge: 6000,
+              }); // 6 segundos
               res.redirect("/personals/page1");
             } else {
+              // Si el registro falla
+              res.cookie("error", ["¡Error al agregar registro!"], {
+                httpOnly: true,
+                maxAge: 6000,
+              }); // 6 segundos
               throw new Error("Error al agregar registro");
             }
           } else {
+            // Si el registro falla
+            res.cookie("error", ["¡Registro ya existe!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             throw new Error("Registro ya existe");
           }
         } else {
@@ -86,11 +148,26 @@ export const set = async (req, res) => {
               _method
             );
             if (resDb.affectedRows > 0) {
+              // Si el registro es exitoso
+              res.cookie("success", ["¡Actualización exitosa!"], {
+                httpOnly: true,
+                maxAge: 6000,
+              }); // 6 segundos
               res.redirect("/personals/page1");
             } else {
+              // Si el registro falla
+              res.cookie("error", ["¡Error al agregar registro!"], {
+                httpOnly: true,
+                maxAge: 6000,
+              }); // 6 segundos
               throw new Error("Error al agregar registro");
             }
           } else {
+            // Si el registro falla
+            res.cookie("error", ["¡Registro ya existe!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             throw new Error("Registro ya existe");
           }
         }
@@ -106,11 +183,26 @@ export const set = async (req, res) => {
               _method
             );
             if (resDb.affectedRows > 0) {
+              // Si el registro es exitoso
+              res.cookie("success", ["¡Actualización exitosa!"], {
+                httpOnly: true,
+                maxAge: 6000,
+              }); // 6 segundos
               res.redirect("/personals/page1");
             } else {
+              // Si el registro falla
+              res.cookie("error", ["¡Error al agregar registro!"], {
+                httpOnly: true,
+                maxAge: 6000,
+              }); // 6 segundos
               throw new Error("Error al agregar registro");
             }
           } else {
+            // Si el registro falla
+            res.cookie("error", ["¡Registro ya existe!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             throw new Error("Registro ya existe");
           }
         } else {
@@ -123,8 +215,18 @@ export const set = async (req, res) => {
             _method
           );
           if (resDb.affectedRows > 0) {
+            // Si el registro es exitoso
+            res.cookie("success", ["¡Actualización exitosa!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             res.redirect("/personals/page1");
           } else {
+            // Si el registro falla
+            res.cookie("error", ["¡Error al agregar registro!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             throw new Error("Error al agregar registro");
           }
         }
@@ -144,18 +246,39 @@ export const set = async (req, res) => {
             idReloj
           );
           if (resDb.affectedRows > 0) {
+            // Si el registro es exitoso
+            res.cookie("success", ["¡Registro exitoso!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             res.redirect("/personals/page1");
           } else {
+            // Si el registro falla
+            res.cookie("error", ["¡Error al agregar registro!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             throw new Error("Error al agregar registro");
           }
         } else {
+          // Si el registro falla
+          res.cookie("error", ["¡Registro ya existe!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           throw new Error("Registro ya existe");
         }
       } else {
+        // Si el registro falla
+        res.cookie("error", ["¡Registro ya existe!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
         throw new Error("Registro ya existe");
       }
     }
   } catch (error) {
+    console.log(error.message);
     res.redirect("/personals/create");
   }
 };
@@ -172,5 +295,23 @@ export const getById = async (req, res) => {
     });
   } catch (error) {
     res.render("personal/update", { user });
+  }
+};
+
+// función para validar que el usuario llene completamente el formulario de crear y actualizar productos
+const validationInput = (documentNumber, fullName, idReloj, res) => {
+  if (documentNumber === "" || fullName === "" || idReloj === "") {
+    res.cookie("error", ["¡Todos los campos son obligatorios!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
+    throw new Error("Todos los campos son obligatorios");
+  }
+  if (documentNumber.length < 8 || documentNumber.length > 8) {
+    res.cookie("error", ["¡DNI Inválido!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
+    throw new Error("DNI Inválido");
   }
 };

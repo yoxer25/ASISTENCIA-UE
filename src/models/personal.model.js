@@ -31,14 +31,23 @@ export class Personal {
 
   // para consultar dotos de todos los trabajadores
   static async getPersonal(institution, ofset) {
-    const [personalDb] = await pool.query(
-      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
-      [institution, ofset]
-    );
-    if (personalDb != "") {
+    if (ofset === undefined) {
+      const [personalDb] = await pool.query(
+        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal",
+        [institution]
+      );
+
       return personalDb;
     } else {
-      throw new Error("Datos no encontrados");
+      const [personalDb] = await pool.query(
+        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
+        [institution, ofset]
+      );
+      if (personalDb != "") {
+        return personalDb;
+      } else {
+        throw new Error("Datos no encontrados");
+      }
     }
   }
 

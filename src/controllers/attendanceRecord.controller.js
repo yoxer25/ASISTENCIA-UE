@@ -311,7 +311,6 @@ export const importData = async (req, res) => {
               personal: `${register.usuario}`,
               recordDate: `${register.fechaRegistro}`,
             };
-            console.log(register.marcas);
 
             register.marcas.forEach((registroHora) => {
               const horaMarco = convertirATotalMinutos(registroHora);
@@ -434,9 +433,26 @@ const convertirATotalMinutos = (tiempo) => {
 };
 
 export const deleteById = async (req, res) => {
+  const { Id } = req.params;
+  const { institution, personal } = req.body;
   try {
-    console.log("eliminando");
+    const resDB = await AttendanceRecord.deleteById(Id, institution, personal);
+    if (resDB.affectedRows > 0) {
+      // Si el registro es exitoso
+      res.cookie("success", ["¡Se eliminó correctamente!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      res.redirect("/attendanceRecords/page1");
+    } else {
+      // Si el registro falla
+      res.cookie("error", ["¡Error al agregar registro!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      throw new Error("Error al agregar registro");
+    }
   } catch (error) {
-    console.log(error.message);
+    res.redirect("/attendanceRecords/page1");
   }
 };

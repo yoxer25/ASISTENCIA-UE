@@ -60,6 +60,7 @@
                                     <th class="text-center">Documento</th>
                                     <th class="text-center">Nombre I.E</th>
                                     <th class="text-center">Nombres y Apellidos</th>
+                                    <th class="text-center">Id Reloj</th>
                                     <th class="text-center">Editar</th>
                                     <th class="text-center">Eliminar</th>
                                 </tr>
@@ -70,6 +71,7 @@
                                     <td>{{dniPersonal}}</td>
                                     <td>{{nombreInstitucion}}</td>
                                     <td>{{nombrePersonal}}</td>
+                                    <td>{{idReloj}}</td>
                                     <td><a href="/personals/{{idPersonal}}" class="btn btn-info btn-raised btn-xs"><i
                                                 class="zmdi zmdi-refresh"></i></a>
                                     </td>
@@ -81,7 +83,7 @@
                                 </tr>
                                 {{else}}
                                 <tr>
-                                    <td colspan="5">No hay registros para mostrar</td>
+                                    <td colspan="6">No hay registros para mostrar</td>
                                 </tr>
                                 {{/each}}
                             </tbody>

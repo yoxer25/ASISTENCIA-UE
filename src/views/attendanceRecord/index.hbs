@@ -48,9 +48,9 @@
                                     <th class="text-center">Eliminar</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="tablaRegistros">
                                 {{#each attendanceRecord}}
-                                <tr>
+                                <tr data-fecha="{{formatDateTimeIso fechaCreado}}">
                                     <td>{{dniPersonal}}</td>
                                     <td>{{nombrePersonal}}</td>
                                     <td>{{formatDate fechaRegistro}}</td>
@@ -58,13 +58,9 @@
                                     <td>{{primeraSalida}}</td>
                                     <td>{{segundaEntrada}}</td>
                                     <td>{{segundaSalida}}</td>
-                                    <td>
-                                        <form action="/attendanceRecords/{{idRegistroAsistencia}}?_method=DELETE"
-                                            method="POST">
-                                            <input type="hidden" name="_method" value="DELETE">
-                                            <button type="submit" class="btn btn-danger btn-raised btn-xs"><i
-                                                    class="zmdi zmdi-delete"></i></button>
-                                        </form>
+                                    <td><a href="#!" id="myButton" class="btn-delete-attendanceRecord btn btn-danger btn-raised btn-xs"
+                                            data-id="{{idRegistroAsistencia}}" data-personal="{{idPersonal}}"
+                                            data-institucion="{{idInstitucion}}"><i class="zmdi zmdi-delete"></i></a>
                                     </td>
                                 </tr>
                                 {{else}}
@@ -87,6 +83,28 @@
 {{>navigation/navigation}}
 
 <script src="/js/functions.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filas = document.querySelectorAll("#tablaRegistros tr");
+
+        filas.forEach(fila => {
+            const fechaRegistroStr = fila.getAttribute("data-fecha");
+            if (fechaRegistroStr) {
+                const fechaRegistro = new Date(fechaRegistroStr);
+                const ahora = new Date();
+                const diferenciaHoras = (ahora - fechaRegistro) / (1000 * 60 * 60); // Convertir ms a horas
+
+                if (diferenciaHoras > 24) {
+                    const botonEliminar = fila.querySelector(".btn-delete-attendanceRecord");
+                    if (botonEliminar) {
+                        botonEliminar.style.display = "none"; // Ocultar el botón
+                    }
+                }
+            }
+        });
+    });
+</script>
 
 <script>
     const current = ({{{ convertJson current }}});

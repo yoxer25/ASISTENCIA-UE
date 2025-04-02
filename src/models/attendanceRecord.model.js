@@ -29,7 +29,7 @@ export class AttendanceRecord {
 
   static async getData(institution) {
     const [attendanceRecord] = await pool.query(
-      "SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE r.idInstitucion = ? AND r.fechaRegistro >= CURDATE() - INTERVAL 5 DAY ORDER BY r.idRegistroAsistencia",
+      "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND r.fechaRegistro >= CURDATE() - INTERVAL 5 DAY ORDER BY r.idRegistroAsistencia",
       [institution]
     );
     if (attendanceRecord != "") {
@@ -54,7 +54,7 @@ export class AttendanceRecord {
   ) {
     if (username === undefined && dni !== undefined) {
       const [attendanceRecord] = await pool.query(
-        "SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY r.idRegistroAsistencia",
+        "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY r.idRegistroAsistencia",
         [institution, startDate, endDate, dni]
       );
       if (attendanceRecord != "") {
@@ -65,7 +65,7 @@ export class AttendanceRecord {
     }
     if (username !== undefined && dni === undefined) {
       const [attendanceRecord] = await pool.query(
-        `SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.nombrePersonal LIKE '%${username}%' ORDER BY r.idRegistroAsistencia`,
+        `SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.nombrePersonal LIKE '%${username}%' ORDER BY r.idRegistroAsistencia`,
         [institution, startDate, endDate]
       );
       if (attendanceRecord != "") {
@@ -76,7 +76,7 @@ export class AttendanceRecord {
     }
     if (username === undefined && dni === undefined) {
       const [attendanceRecord] = await pool.query(
-        "SELECT r.idRegistroAsistencia, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) ORDER BY r.idRegistroAsistencia",
+        "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) ORDER BY r.idRegistroAsistencia",
         [institution, startDate, endDate]
       );
       if (attendanceRecord != "") {
@@ -123,5 +123,20 @@ export class AttendanceRecord {
     );
     newRegister.fechaCreado = await helpers.formatDateTime();
     await pool.query("INSERT INTO registro_asistencia SET ?", [newRegister]);
+  }
+
+  // para elimiunar un registro de asistencia
+  static async deleteById(Id, institution, personal) {
+    const newRegister = {
+      idInstitucion: institution,
+      idPersonal: personal,
+    };
+    newRegister.estado = 0;
+    newRegister.fechaEliminado = await helpers.formatDateTime();
+    const [res] = await pool.query(
+      "UPDATE registro_asistencia r SET ? WHERE r.idRegistroAsistencia = ?",
+      [newRegister, Id]
+    );
+    return res;
   }
 }

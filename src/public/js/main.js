@@ -16,13 +16,13 @@ $(document).ready(function () {
   $(".btn-update-password").on("click", function () {
     swal({
       title: "¿Estás seguro de actualizar tu contraseña?",
-      text: ` <form id="passwordForm" action="/myaccount/update${listUser.id}?_method=PUT" method="POST">
-                <input type="hidden" name="_method" value="PUT">
-                        <div class="form-group label-floating"">
-                            <label class="control-label">Nueva Contraseña</label>
-                            <input class="form-control" type="password" id="newPassword" name="newPassword">
-                        </div>
-                    </form>`,
+      text: `<form id="passwordForm" action="/myaccount/update${listUser.id}?_method=PUT" method="POST">
+              <input type="hidden" name="_method" value="PUT">
+              <div class="form-group">
+                <label class="control-label">Nueva Contraseña</label>
+                <input class="form-control" type="password" id="newPassword" name="newPassword">
+              </div>
+            </form>`,
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#03A9F4",
@@ -147,6 +147,31 @@ $(".btn-delete-personal").on("click", function () {
   }).then(function () {
     // Realiza el envío del formulario
     $("#deleteFormPersonal").submit();
+  });
+});
+
+// modal para confirmar si se desea eliminar un el registro de asistencia
+$(".btn-delete-attendanceRecord").on("click", function () {
+  // Obtener los datos del trabajador desde los atributos `data-*` del enlace
+  var idRegistroAsistencia = $(this).data("id");
+  var idInstitucion = $(this).data("institucion");
+  var idPersonal = $(this).data("personal");
+  swal({
+    title: "¿Estás seguro de eliminar sus datos?",
+    text: `<form id="deleteFormAttendanceRecord" action="/attendanceRecords/${idRegistroAsistencia}?_method=PATCH" method="POST">
+              <input type="hidden" name="_method" value="PATCH">
+              <input class="form-control" type="hidden" id="institution" name="institution" value="${idInstitucion}">
+              <input class="form-control" type="hidden" id="personal" name="personal" value="${idPersonal}">
+          </form>`,
+    type: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#03A9F4",
+    cancelButtonColor: "#F44336",
+    confirmButtonText: '<i class="zmdi zmdi-badge-check"></i> ¡Sí, Eliminar!',
+    cancelButtonText: '<i class="zmdi zmdi-close-circle"></i> ¡No, Cancelar!',
+  }).then(function () {
+    // Realiza el envío del formulario
+    $("#deleteFormAttendanceRecord").submit();
   });
 });
 

@@ -3,9 +3,3 @@ USERDB="",
 PASSWORDDB="",
 NAMEDB="",
 SECRET_JWT_KEY=""
-
-HOSTDB="localhost",
-USERDB="ugelhuan_db",
-PASSWORDDB="Un8myJv9CHcBnL2dggzC",
-NAMEDB="ugelhuan_asistencia",
-SECRET_JWT_KEY="palabra.secreta-para_generar.el.token_del_usuario"

@@ -12,10 +12,9 @@ para poder utilizar sus métodos en otros
 archivos del proyecto. Esta clase hace referencia
 a la tabla "usuarios" de la base de datos */
 export class User {
-  constructor(username, rolUser, password) {
+  constructor(username, rolUser) {
     this.idInstitucion = username;
     this.idRol = rolUser;
-    this.contrasena = password;
   }
 
   // para consultar el número total de usuarios
@@ -33,8 +32,21 @@ export class User {
   // para consultar dotos de todos los usuarios
   static async getUser(ofset) {
     const [userDb] = await pool.query(
-      "SELECT u.idUsuario, u.idInstitucion, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 ORDER BY u.idUsuario lIMIT ?, 10",
+      "SELECT u.idUsuario, u.idInstitucion, u.idRol, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND u.idUsuario != 1 ORDER BY u.idUsuario lIMIT ?, 10",
       [ofset]
+    );
+    if (userDb != "") {
+      return userDb;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
+  }
+
+  // para consultar dotos de un usuario por id
+  static async getUserById(Id) {
+    const [userDb] = await pool.query(
+      "SELECT u.idUsuario, u.idInstitucion, u.idRol, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND u.idUsuario = ?",
+      [Id]
     );
     if (userDb != "") {
       return userDb;
@@ -58,15 +70,39 @@ export class User {
   // para crear un nuevo usuario
   static async create(username, rolUser, password) {
     const newUser = new User(username, rolUser, password);
+    newUser.contrasena = password;
     newUser.fechaCreado = await helpers.formatDateTime();
     const [res] = await pool.query("INSERT INTO usuarios SET ?", [newUser]);
     return res;
   }
 
+  // para actualizar datos de un nuevo usuario
+  static async set(username, rolUser, Id, _method) {
+    const newUser = new User(username, rolUser);
+    if (_method === "PUT") {
+      newUser.fechaActualizado = await helpers.formatDateTime();
+      const [res] = await pool.query(
+        "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",
+        [newUser, Id]
+      );
+      return res;
+    }
+
+    if (_method === "PATCH") {
+      newUser.estado = 0;
+      newUser.fechaEliminado = await helpers.formatDateTime();
+      const [res] = await pool.query(
+        "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",
+        [newUser, Id]
+      );
+      return res;
+    }
+  }
+
   // para iniciar sesión
   static async login(userModularCode, userpassword) {
     const [user] = await pool.query(
-      "SELECT * FROM usuarios u WHERE u.idInstitucion = ?",
+      "SELECT * FROM usuarios u WHERE u.idInstitucion = ? AND u.estado != 0",
       [userModularCode]
     );
     if (user.length > 0) {
@@ -91,26 +127,13 @@ export class User {
   }
 
   // para cambiar contraseña del usuario
-  /* static async updatePass({ id, newPassword }) {
-    const [user] = await pool.query(
-      "SELECT * FROM usuarios u WHERE u.idUsuario = ?",
-      [id]
+  static async updatePassword(id, username, rolUser, password) {
+    const newUser = new User(username, rolUser, password);
+    newUser.fechaActualizado = await helpers.formatDateTime();
+    const [res] = await pool.query(
+      "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",
+      [newUser, id]
     );
-    if (user.length > 0) {
-      const userData = user[0];
-      const password = await bcrytp.hash(newPassword, 10);
-      const userUpdate = new SchemaUser(
-        userData.idUsuario,
-        userData.nombreUsuario,
-        userData.dni,
-        password,
-        userData.estado
-      );
-      await pool.query("UPDATE usuarios u set ? WHERE u.idUsuario = ?", [
-        userUpdate,
-        userData.idUsuario,
-      ]);
-    }
-    throw new Error("Datos Incorrectos");
-  } */
+    return res;
+  }
 }

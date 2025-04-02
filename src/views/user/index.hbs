@@ -20,13 +20,13 @@
                     <div class="card-body rounded-bottom bg-white">
                         <form action="/users" method="POST">
                             <div class="row">
-                                <div class="col-lg-9">
+                                <div class="col-lg-8">
                                     <div class="form-group label-floating" style="margin: auto;">
                                         <label class="control-label">Nombre I.E</label>
                                         <input class="form-control" type="text" id="ie" name="ie" value="{{ie}}">
                                     </div>
                                 </div>
-                                <div class="col-lg-3">
+                                <div class="col-lg-4">
                                     <div class="form-group" style="margin: auto; text-align: center;">
                                         <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
                                             <p style="font-size: 20px; margin: auto; color: #fff;"><i
@@ -60,10 +60,12 @@
                                     <td>{{nombreInstitucion}}</td>
                                     <td>{{idInstitucion}}</td>
                                     <td>{{nombreRol}}</td>
-                                    <td><a href="#!" class="btn btn-info btn-raised btn-xs"><i
-                                                class="zmdi zmdi-refresh"></i></a></td>
-                                    <td><a href="#!" class="btn btn-danger btn-raised btn-xs"><i
-                                                class="zmdi zmdi-delete"></i></a></td>
+                                    <td><a href="/users/{{idUsuario}}" class="btn btn-info btn-raised btn-xs"><i
+                                                class="zmdi zmdi-refresh"></i></a>
+                                    </td>
+                                    <td><a href="#!" class="btn-delete-user btn btn-danger btn-raised btn-xs"
+                                            data-id="{{idUsuario}}" data-institucion="{{idInstitucion}}"
+                                            data-rol="{{idRol}}"><i class="zmdi zmdi-delete"></i></a></td>
                                 </tr>
                                 {{else}}
                                 <tr>

@@ -56,7 +56,6 @@ export const getPersonal = async (req, res) => {
   const institution = user.user.name;
   try {
     const personals = await Personal.getPersonal(institution, ofset);
-    console.log(personals)
     const [counts] = await Personal.countPersonals(institution);
     const institutions = await Institution.getInstitution();
 
@@ -87,6 +86,11 @@ export const getCreate = async (req, res) => {
 /* función para crear un nuevo trabajador, se consulta
 a la base de datos si existe un registro con el
 número de DNI; si no existe, se guarda en la db */
+
+/* Si a través del formulario nos envían el _method PUT
+o PATCH, se actualizará la información del trabajador;
+caso contrario, si no se envía el _method, se procederá
+a crear un nuevo trabajador */
 export const set = async (req, res) => {
   const user = req.session;
   const institution = user.user.name;

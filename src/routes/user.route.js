@@ -18,7 +18,10 @@ const router = Router();
 router.get("/page:num", requireToken, userCtrl.getUsers);
 router.get("/create", requireToken, userCtrl.getCreate);
 router.post("/", requireToken, userCtrl.search);
-router.post("/create", requireToken, userCtrl.create);
+router.post("/create", requireToken, userCtrl.set);
+router.get("/:Id", requireToken, userCtrl.getById);
+router.put("/:Id", requireToken, userCtrl.set);
+router.patch("/:Id", requireToken, userCtrl.set);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

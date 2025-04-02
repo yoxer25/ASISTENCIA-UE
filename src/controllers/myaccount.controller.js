@@ -1,3 +1,4 @@
+import { password } from "../helpers/password.js";
 import { genarateToken } from "../helpers/tokenManager.js";
 import { User } from "../models/user.model.js";
 
@@ -35,7 +36,52 @@ export const signIn = async (req, res) => {
   }
 };
 
+/* función para actualizar la contraseña */
+export const updatePassword = async (req, res) => {
+  const { Id } = req.params;
+  const { newPassword } = req.body;
+  try {
+    validationInput(newPassword, res);
+    const [userDB] = await User.getUserById(Id);
+    const passwordHash = await password.encryptPassword(newPassword);
+    const resDB = await User.updatePassword(
+      Id,
+      userDB.idInstitucion,
+      userDB.idRol,
+      passwordHash
+    );
+    if (resDB.affectedRows > 0) {
+      // Si el registro es exitoso
+      res.cookie("success", ["¡Actualización exitosa!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      res.redirect("/myaccount/LogOut");
+    } else {
+      // Si el registro falla
+      res.cookie("error", ["¡Error al actualizar contraseña!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      throw new Error("Error al actualizar contraseña");
+    }
+  } catch (error) {
+    res.redirect("/");
+  }
+};
+
 // función para cerrar sesión
 export const logOut = async (req, res) => {
   res.clearCookie("access_token").redirect("/myaccount/signIn");
+};
+
+// función para validar que el usuario llene completamente el formulario de crear y actualizar productos
+const validationInput = (newPassword, res) => {
+  if (newPassword === "") {
+    res.cookie("error", ["¡Todos los campos son obligatorios!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
+    throw new Error("Todos los campos son obligatorios");
+  }
 };

@@ -40,7 +40,7 @@ export const getData = async (req, res) => {
   }
 };
 
-//controla lo que se debe mostrar al momento de visitar la página de asistencia por fechas o usuarios
+// controla lo que se debe mostrar al momento de visitar la página de asistencia por fechas o usuarios
 export const getAttendanceRecord = async (req, res) => {
   let forPage = 10;
   const user = req.session;

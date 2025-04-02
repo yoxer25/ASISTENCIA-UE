@@ -18,6 +18,7 @@ const router = Router();
 router.get("/signIn", myaccountCtrl.getSignIn);
 router.post("/signIn", myaccountCtrl.signIn);
 router.get("/LogOut", requireToken, myaccountCtrl.logOut);
+router.put("/update:Id", requireToken, myaccountCtrl.updatePassword);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

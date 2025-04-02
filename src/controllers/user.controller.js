@@ -39,29 +39,71 @@ export const getCreate = async (req, res) => {
 };
 
 // función para guardar nuevo usuario en la base de datos
-export const create = async (req, res) => {
-  const { username, formPassword, rolUser } = req.body;
+
+/* Si a través del formulario nos envían el _method PUT
+o PATCH, se actualizará la información del usuario;
+caso contrario, si no se envía el _method, se procederá
+a crear un nuevo usuario */
+export const set = async (req, res) => {
+  const { username, formPassword, rolUser, _method } = req.body;
+  const { Id } = req.params;
   try {
-    validationInput(username, formPassword, rolUser, res);
-    const passwordHash = await password.encryptPassword(formPassword);
-    const resDb = await User.create(username, rolUser, passwordHash);
-    if (resDb.affectedRows > 0) {
-      // Si el registro es exitoso
-      res.cookie("success", ["¡Registro exitoso!"], {
-        httpOnly: true,
-        maxAge: 6000,
-      }); // 6 segundos
-      res.redirect("/users/page1");
+    if (_method) {
+      const resDb = await User.set(username, rolUser, Id, _method);
+        if (resDb.affectedRows > 0) {
+        // Si el registro es exitoso
+        res.cookie("success", ["¡Actualización exitosa!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        res.redirect("/users/page1");
+      } else {
+        // Si el registro falla
+        res.cookie("error", ["¡Error al agregar registro!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        throw new Error("Error al agregar registro");
+      }
     } else {
-      // Si el registro falla
-      res.cookie("error", ["¡Error al agregar registro!"], {
-        httpOnly: true,
-        maxAge: 6000,
-      }); // 6 segundos
-      throw new Error("Error al agregar registro");
+      validationInput(username, formPassword, rolUser, res);
+      const passwordHash = await password.encryptPassword(formPassword);
+      const resDb = await User.create(username, rolUser, passwordHash);
+      if (resDb.affectedRows > 0) {
+        // Si el registro es exitoso
+        res.cookie("success", ["¡Registro exitoso!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        res.redirect("/users/page1");
+      } else {
+        // Si el registro falla
+        res.cookie("error", ["¡Error al agregar registro!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        throw new Error("Error al agregar registro");
+      }
     }
   } catch (error) {
     res.redirect("/users/create");
+  }
+};
+
+// controla lo que se debe mostrar al momento de visitar la página de actualizar datos de un trabajador
+export const getById = async (req, res) => {
+  const user = req.session;
+  try {
+    const { Id } = req.params;
+    const [userDB] = await User.getUserById(Id);
+    const rolUser = await RolUser.getSelectRolUser(Id);
+    res.render("user/update", {
+      user,
+      userDB,
+      rolUser,
+    });
+  } catch (error) {
+    res.render("user/update", { user });
   }
 };
 

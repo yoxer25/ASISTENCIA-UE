@@ -69,24 +69,11 @@
                                     <td><a href="/institutions/ie{{idInstitucion}}"
                                             class="btn btn-info btn-raised btn-xs"><i class="zmdi zmdi-refresh"></i></a>
                                     </td>
-                                    <td>
-                                        <form action="/institutions/ie{{idInstitucion}}?_method=PATCH" method="POST">
-                                            <input type="hidden" name="_method" value="PATCH">
-                                            <input class="form-control" type="hidden" id="modularCode"
-                                                name="modularCode" value="{{idInstitucion}}">
-                                            <input class="form-control" type="hidden" id="nameInstitution"
-                                                name="nameInstitution" value="{{nombreInstitucion}}">
-                                            <input class="form-control" type="hidden" id="address" name="address"
-                                                value="{{direccion}}">
-                                            <input class="form-control" type="hidden" id="nameDirector"
-                                                name="nameDirector" value="{{nombreDirector}}">
-                                            <input class="form-control" type="hidden" id="level" name="level"
-                                                value="{{idNivel}}">
-                                            <input class="form-control" type="hidden" id="district" name="district"
-                                                value="{{idDistrito}}">
-                                            <button type="submit" class="btn btn-danger btn-raised btn-xs"><i
-                                                    class="zmdi zmdi-delete"></i></button>
-                                        </form>
+                                    <td><a href="#!" class="btn-delete-institution btn btn-danger btn-raised btn-xs"
+                                            data-id="{{idInstitucion}}" data-nombre="{{nombreInstitucion}}"
+                                            data-nivel="{{nombreNivel}}" data-director="{{nombreDirector}}"
+                                            data-direccion="{{direccion}}" data-distrito="{{nombreDistrito}}"><i
+                                                class="zmdi zmdi-delete"></i></a>
                                     </td>
                                 </tr>
                                 {{else}}

@@ -73,18 +73,10 @@
                                     <td><a href="/personals/{{idPersonal}}" class="btn btn-info btn-raised btn-xs"><i
                                                 class="zmdi zmdi-refresh"></i></a>
                                     </td>
-                                    <td>
-                                        <form action="/personals/{{idPersonal}}?_method=PATCH" method="POST">
-                                            <input type="hidden" name="_method" value="PATCH">
-                                            <input class="form-control" type="hidden" id="documentNumber"
-                                                name="documentNumber" value="{{dniPersonal}}">
-                                            <input class="form-control" type="hidden" id="fullName" name="fullName"
-                                                value="{{nombrePersonal}}">
-                                            <input class="form-control" type="hidden" id="idReloj" name="idReloj"
-                                                value="{{idReloj}}">
-                                            <button type="submit" class="btn btn-danger btn-raised btn-xs"><i
-                                                    class="zmdi zmdi-delete"></i></button>
-                                        </form>
+                                    <td><a href="#!" class="btn-delete-personal btn btn-danger btn-raised btn-xs"
+                                            data-id="{{idPersonal}}" data-dni="{{dniPersonal}}"
+                                            data-nombre="{{nombrePersonal}}" data-idreloj="{{idReloj}}"><i
+                                                class="zmdi zmdi-delete"></i></a>
                                     </td>
                                 </tr>
                                 {{else}}

@@ -3,7 +3,7 @@
         <div class="form-group label-floating">
             <label class="control-label">Rol del Usuario</label>
             <select class="form-control" id="rolUser" name="rolUser">
-                <option value="{{product.idCategoria}}" selected>{{product.categoria}}</option>
+                <option value="{{userDB.idRol}}" selected>{{userDB.nombreRol}}</option>
                 {{#each rolUser}}
                 <option value="{{idRolUsuario}}">{{nombreRol}}</option>
                 {{/each}}
@@ -18,7 +18,7 @@
         <div class="form-group label-floating">
             <label class="control-label">I.E</label>
             <select class="form-control" id="username" name="username" style="width: 100%;">
-                <option value="{{product.idCategoria}}" selected>{{product.categoria}}</option>
+                <option value="{{userDB.idInstitucion}}" selected>{{userDB.nombreInstitucion}}</option>
                 {{#each institution}}
                 <option value="{{idInstitucion}}">{{nombreNivel}} - {{nombreInstitucion}}</option>
                 {{/each}}

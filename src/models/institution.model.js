@@ -39,9 +39,9 @@ export class Institution {
 
   // para consultar datos de las instituciones
   static async getInstitution(ofset) {
-    if (ofset >= 0) {
+    if (ofset !== undefined) {
       const [institution] = await pool.query(
-        "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.estado != 0 ORDER BY i.idInstitucion lIMIT ?, 10",
+        "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo INNER JOIN turno_institucion t ON i.idTurnoInstitucion = t.idTurnoInstitucion INNER JOIN horario_institucion h ON i.idHorarioInstitucion = h.idHorarioInstitucion WHERE i.estado != 0 ORDER BY i.idInstitucion lIMIT ?, 10",
         [ofset]
       );
       if (institution != "") {
@@ -51,7 +51,7 @@ export class Institution {
       }
     } else {
       const [institution] = await pool.query(
-        "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.estado != 0"
+        "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo INNER JOIN turno_institucion t ON i.idTurnoInstitucion = t.idTurnoInstitucion INNER JOIN horario_institucion h ON i.idHorarioInstitucion = h.idHorarioInstitucion WHERE i.estado != 0"
       );
       if (institution != "") {
         return institution;
@@ -64,7 +64,7 @@ export class Institution {
   // para consultar datos de una institución por id
   static async getInstitutionById(id) {
     const [institution] = await pool.query(
-      "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.idInstitucion = ?",
+      "SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo INNER JOIN turno_institucion t ON i.idTurnoInstitucion = t.idTurnoInstitucion INNER JOIN horario_institucion h ON i.idHorarioInstitucion = h.idHorarioInstitucion WHERE i.idInstitucion = ?",
       id
     );
     if (institution) {
@@ -75,7 +75,7 @@ export class Institution {
   // para consultar datos de una institución por nombre
   static async getInstitutionByName(name) {
     const [institution] = await pool.query(
-      `SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo WHERE i.nombreInstitucion LIKE '%${name}%' AND i.estado != 0 ORDER BY i.idInstitucion`
+      `SELECT * FROM institucion i INNER JOIN distrito d ON i.idDistrito = d.idDistrito INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo INNER JOIN turno_institucion t ON i.idTurnoInstitucion = t.idTurnoInstitucion INNER JOIN horario_institucion h ON i.idHorarioInstitucion = h.idHorarioInstitucion WHERE i.nombreInstitucion LIKE '%${name}%' AND i.estado != 0 ORDER BY i.idInstitucion`
     );
     if (institution) {
       return institution;
@@ -93,6 +93,8 @@ export class Institution {
     nameInstitution,
     nameDirector,
     address,
+    turnInstitution,
+    scheduleInstitution,
     Id,
     _method
   ) {
@@ -105,7 +107,9 @@ export class Institution {
       address
     );
     if (!_method) {
-      newInstitution.fechaCreado = await helpers.formatDateTime();
+      newInstitution.idTurnoInstitucion = turnInstitution;
+      (newInstitution.idHorarioInstitucion = scheduleInstitution),
+        (newInstitution.fechaCreado = await helpers.formatDateTime());
       const [res] = await pool.query("INSERT INTO institucion SET ?", [
         newInstitution,
       ]);

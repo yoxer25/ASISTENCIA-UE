@@ -1,6 +1,6 @@
-import { RolUser } from "../models/rolUser.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Personal } from "../models/personal.model.js";
+import { TurnPersonal } from "../models/turnPersonal.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -54,10 +54,10 @@ export const getPersonal = async (req, res) => {
   let ofset = page * forPage - forPage;
   const user = req.session;
   const institution = user.user.name;
+  const institutions = await Institution.getInstitution();
   try {
     const personals = await Personal.getPersonal(institution, ofset);
     const [counts] = await Personal.countPersonals(institution);
-    const institutions = await Institution.getInstitution();
 
     res.render("personal/index", {
       user,
@@ -67,17 +67,24 @@ export const getPersonal = async (req, res) => {
       pages: Math.ceil(counts.personals / forPage),
     });
   } catch (error) {
-    res.render("personal/index", { user });
+    console.log(error.message);
+    res.render("personal/index", { user, institutions });
   }
 };
 
 // controla lo que se debe mostrar al momento de visitar la página de crear nuevo trabajador
 export const getCreate = async (req, res) => {
   const user = req.session;
+  const institution = user.user.name;
   try {
-    const rolUser = await RolUser.getRolUser();
-    const institution = await Institution.getInstitution();
-    res.render("personal/create", { user, rolUser, institution });
+    const [institutionDB] = await Institution.getInstitutionById(institution);
+    const turnPersonalDB = await TurnPersonal.getTurnPersonal();
+    const turnPersonal = turnPersonalDB.slice(0, 2);
+    res.render("personal/create", {
+      user,
+      turnPersonal,
+      turnoIE: institutionDB.idTurnoInstitucion,
+    });
   } catch (error) {
     res.render("personal/create", { user });
   }
@@ -95,7 +102,17 @@ export const set = async (req, res) => {
   const user = req.session;
   const institution = user.user.name;
   const { documentNumber, fullName, idReloj, _method } = req.body;
+  let { turnPersonal } = req.body;
   const { Id } = req.params;
+  const [institutionDB] = await Institution.getInstitutionById(institution);
+  if (institutionDB.nombreHorario === "regular") {
+    turnPersonal = turnPersonal;
+  } else {
+    const [turnPersonalDB] = await TurnPersonal.getByName(
+      institutionDB.nombreHorario
+    );
+    turnPersonal = turnPersonalDB.idTurnoPersonal;
+  }
   try {
     validationInput(documentNumber, fullName, idReloj, res);
     if (_method) {
@@ -115,6 +132,7 @@ export const set = async (req, res) => {
               institution,
               fullName,
               idReloj,
+              turnPersonal,
               Id,
               _method
             );
@@ -148,6 +166,7 @@ export const set = async (req, res) => {
               institution,
               fullName,
               idReloj,
+              turnPersonal,
               Id,
               _method
             );
@@ -183,6 +202,7 @@ export const set = async (req, res) => {
               institution,
               fullName,
               idReloj,
+              turnPersonal,
               Id,
               _method
             );
@@ -215,6 +235,7 @@ export const set = async (req, res) => {
             institution,
             fullName,
             idReloj,
+            turnPersonal,
             Id,
             _method
           );
@@ -247,7 +268,8 @@ export const set = async (req, res) => {
             documentNumber,
             institution,
             fullName,
-            idReloj
+            idReloj,
+            turnPersonal
           );
           if (resDb.affectedRows > 0) {
             // Si el registro es exitoso
@@ -290,12 +312,18 @@ export const set = async (req, res) => {
 // controla lo que se debe mostrar al momento de visitar la página de actualizar datos de un trabajador
 export const getById = async (req, res) => {
   const user = req.session;
+  const institution = user.user.name;
   try {
     const { Id } = req.params;
     const [personal] = await Personal.getPersonalById(Id);
+    const turnPersonalDB = await TurnPersonal.getSelectTurnPersonal(Id);
+    const turnPersonal = turnPersonalDB.slice(0, 1);
+    const [institutionDB] = await Institution.getInstitutionById(institution);
     res.render("personal/update", {
       user,
       personal,
+      turnPersonal,
+      turnoIE: institutionDB.idTurnoInstitucion,
     });
   } catch (error) {
     res.render("personal/update", { user });

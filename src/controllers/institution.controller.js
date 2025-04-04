@@ -1,6 +1,8 @@
 import { Institution } from "../models/institution.model.js";
 import { District } from "../models/district.model.js";
 import { EducationalLevel } from "../models/educationalLevel.model.js";
+import { TurnInstitution } from "../models/turnInstitution.model.js";
+import { ScheduleInstitution } from "../models/scheduleInstitution.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -32,7 +34,16 @@ export const getCreate = async (req, res) => {
   try {
     const district = await District.getDistrict();
     const educationalLevel = await EducationalLevel.getEducationalLevel();
-    res.render("institution/create", { user, district, educationalLevel });
+    const turnInstitution = await TurnInstitution.getTurnInstitution();
+    const scheduleInstitution =
+      await ScheduleInstitution.getScheduleInstitution();
+    res.render("institution/create", {
+      user,
+      district,
+      educationalLevel,
+      turnInstitution,
+      scheduleInstitution,
+    });
   } catch (error) {
     res.render("institution/create", { user });
   }
@@ -53,6 +64,8 @@ export const set = async (req, res) => {
     level,
     nameDirector,
     address,
+    turnInstitution,
+    scheduleInstitution,
     _method,
   } = req.body;
 
@@ -64,7 +77,9 @@ export const set = async (req, res) => {
       nameInstitution,
       level,
       nameDirector,
-      address
+      address,
+      turnInstitution,
+      scheduleInstitution
     );
     const [resModularCodeDB] = await Institution.getInstitutionById(
       modularCode
@@ -79,6 +94,8 @@ export const set = async (req, res) => {
             nameInstitution,
             nameDirector,
             address,
+            turnInstitution,
+            scheduleInstitution,
             Id,
             _method
           );
@@ -98,6 +115,8 @@ export const set = async (req, res) => {
           nameInstitution,
           nameDirector,
           address,
+          turnInstitution,
+          scheduleInstitution,
           Id,
           _method
         );
@@ -115,7 +134,9 @@ export const set = async (req, res) => {
           level,
           nameInstitution,
           nameDirector,
-          address
+          address,
+          turnInstitution,
+          scheduleInstitution
         );
         if (resDb.affectedRows > 0) {
           res.redirect("/institutions/page1");
@@ -160,11 +181,16 @@ export const getById = async (req, res) => {
     const educationalLevel = await EducationalLevel.getSelectEducationalLevel(
       Id
     );
+    const turnInstitution = await TurnInstitution.getSelectTurnInstitution(Id);
+    const scheduleInstitution =
+      await ScheduleInstitution.getSelectScheduleInstitution(Id);
     res.render("institution/update", {
       user,
       institution,
       district,
       educationalLevel,
+      turnInstitution,
+      scheduleInstitution,
     });
   } catch (error) {
     res.redirect("/institutions/page1");
@@ -178,7 +204,9 @@ function validationInput(
   nameInstitution,
   level,
   nameDirector,
-  address
+  address,
+  turnInstitution,
+  scheduleInstitution
 ) {
   if (
     modularCode === "" ||
@@ -186,7 +214,9 @@ function validationInput(
     nameInstitution === "" ||
     level === "" ||
     nameDirector === "" ||
-    address === ""
+    address === "" ||
+    turnInstitution === "" ||
+    scheduleInstitution === ""
   )
     throw new Error("Todos los campos son obligatorios");
 }

@@ -17,5 +17,14 @@
             <input class="form-control" type="text" id="idReloj" name="idReloj" value="{{personal.idReloj}}"
                 onkeypress="return solonumeros(event)">
         </div>
+        <div class="form-group label-floating" id="turno">
+            <label class="control-label">Turno</label>
+            <select class="form-control" id="turnPersonal" name="turnPersonal" style="width: 100%;">
+                <option value="{{personal.idTurnoPersonal}}" selected>{{personal.nombreTurno}}</option>
+                {{#each turnPersonal}}
+                <option value="{{idTurnoPersonal}}">{{nombreTurno}}</option>
+                {{/each}}
+            </select>
+        </div>
     </div>
 </div>

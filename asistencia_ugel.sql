@@ -110,8 +110,8 @@ DROP TABLE IF EXISTS `personal`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `personal` (
   `idPersonal` int NOT NULL AUTO_INCREMENT,
-  `dniPersonal` varchar(8) NOT NULL,
   `idInstitucion` varchar(10) NOT NULL,
+  `dniPersonal` varchar(8) NOT NULL,
   `nombrePersonal` varchar(60) NOT NULL,
   `idReloj` int NOT NULL,
   `estado` int NOT NULL DEFAULT '1',

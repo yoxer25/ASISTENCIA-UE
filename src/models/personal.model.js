@@ -33,14 +33,14 @@ export class Personal {
   static async getPersonal(institution, ofset) {
     if (ofset === undefined) {
       const [personalDb] = await pool.query(
-        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal",
+        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj, t.nombreTurno FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal",
         [institution]
       );
 
       return personalDb;
     } else {
       const [personalDb] = await pool.query(
-        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
+        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj, t.nombreTurno FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
         [institution, ofset]
       );
       if (personalDb != "") {
@@ -88,6 +88,7 @@ export class Personal {
     institution,
     fullName,
     idReloj,
+    turnPersonal,
     Id,
     _method
   ) {
@@ -98,6 +99,7 @@ export class Personal {
       idReloj
     );
     if (!_method) {
+      newPersonal.idTurnoPersonal = turnPersonal,
       newPersonal.fechaCreado = await helpers.formatDateTime();
       const [res] = await pool.query("INSERT INTO personal SET ?", [
         newPersonal,
@@ -127,7 +129,7 @@ export class Personal {
   // para consultar dotos de todos de un trabajador por ID
   static async getPersonalById(Id) {
     const [personalDb] = await pool.query(
-      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj FROM personal p WHERE p.idPersonal = ?",
+      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj, p.idTurnoPersonal, t.nombreTurno FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE p.idPersonal = ?",
       [Id]
     );
     if (personalDb != "") {

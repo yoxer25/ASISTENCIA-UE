@@ -39,30 +39,3 @@
 {{>navigation/navigation}}
 
 <script src="/js/functions.js"></script>
-<script>
-
-    document.getElementById('ieForm').addEventListener('submit', function (event) {
-        // Prevenir el envío por defecto del formulario
-        event.preventDefault();
-
-        const modularCode = document.getElementById("modularCode").value;
-        const nameInstitution = document.getElementById("nameInstitution").value;
-        const address = document.getElementById("address").value;
-        const nameDirector = document.getElementById("nameDirector").value;
-
-        const level = document.querySelector("#level");
-        const optionLevel = level.options[level.selectedIndex];
-
-        const district = document.querySelector("#district");
-        const optionDistrict = district.options[district.selectedIndex];
-
-        if (modularCode === "" || nameInstitution === "" || address === "" || nameDirector === "" || optionLevel
-            .value === "" || optionDistrict.value === "") {
-            alert("FORMULARIO INCOMPLETO");
-            return;
-        } else {
-            this.submit();
-        }
-    });
-
-</script>

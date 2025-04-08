@@ -1,9 +1,15 @@
 <div class="row">
-<input type="hidden" class="form-control" name="page" id="page">
+    <input type="hidden" class="form-control" name="page" id="page">
     <div class="col-lg-3">
         <div class="form-group label-floating">
             <label class="control-label">Código Modular I.E</label>
-            <input class="form-control" type="text" id="ie" name="ie" value="{{ie}}" onkeypress="return solonumeros(event)">
+            {{#if (eq user.user.rol "administrador")}}
+            <input class="form-control" type="text" id="ie" name="ie" value="{{ie}}"
+                onkeypress="return solonumeros(event)">
+            {{else}}
+            <input class="form-control" type="text" id="ie" name="ie" value="{{ie}}"
+                onkeypress="return solonumeros(event)" readonly>
+            {{/if}}
         </div>
     </div>
     <div class="col-lg-2">

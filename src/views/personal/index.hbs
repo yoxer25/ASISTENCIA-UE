@@ -15,6 +15,7 @@
             <div class="col-lg-5">
                 <a href="/personals/create">{{>btn-new}}</a>
             </div>
+            {{#if (eq user.user.rol "administrador")}}
             <div class="col-lg-7" id="formSearchPersonal">
                 <div class="card">
                     <div class="card-body rounded-bottom bg-white">
@@ -49,6 +50,7 @@
                     </div>
                 </div>
             </div>
+            {{/if}}
         </div>
         <div class="row">
             <div class="col-lg-12 text-center">
@@ -112,19 +114,19 @@
     const numPages = (num) => {
         let navPages = '';
 
-        if (pages) {
+        if (num) {
             var i = (Number(current) > 5 ? Number(current) - 4 : 1);
-            for (; i <= (Number(current) + 4) && i <= pages; i++) {
+            for (; i <= (Number(current) + 4) && i <= num; i++) {
                 let fila = '<ul class="pagination pagination-sm" id="pagination">';
                 if (i == current) {
                     fila += '<li class="active">';
                 } else {
                     fila += '<li>';
                 }
-                if (i === Number(current) - 4 && i < pages) {
+                if (i === Number(current) - 4 && i < num) {
                     fila += `<a href="#">...</a>`;
                 }
-                if (i === Number(current) + 4 && i < pages) {
+                if (i === Number(current) + 4 && i < num) {
                     fila += `<a href="#">...</a>`;
                 }
                 if (option.value === "") {
@@ -140,11 +142,6 @@
     }
     document.getElementById("pagination").innerHTML =
         numPages(pages);
-
-    const formSearchPersonal = document.getElementById("formSearchPersonal");
-    if (listUser.rol !== "administrador") {
-        formSearchPersonal.innerHTML = ``;
-    };
 
     function submitConsultPersonal(i) {
         const page = document.getElementById("page")

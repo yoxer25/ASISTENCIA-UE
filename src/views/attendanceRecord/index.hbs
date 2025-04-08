@@ -43,22 +43,26 @@
                                     <th class="text-center">Fecha Registro</th>
                                     <th class="text-center">Primera Entrada</th>
                                     <th class="text-center">Primera Salida</th>
+                                    {{#if (eq turno "ue")}}
                                     <th class="text-center">Segunda Entrada</th>
                                     <th class="text-center">Segunda Salida</th>
+                                    {{/if}}
                                     <th class="text-center">Eliminar</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaRegistros">
+                                {{#if (eq turno "ue")}}
                                 {{#each attendanceRecord}}
                                 <tr data-fecha="{{formatDateTimeIso fechaCreado}}">
                                     <td>{{dniPersonal}}</td>
                                     <td>{{nombrePersonal}}</td>
                                     <td>{{formatDate fechaRegistro}}</td>
-                                    <td>{{primeraEntrada}}</td>
-                                    <td>{{primeraSalida}}</td>
-                                    <td>{{segundaEntrada}}</td>
-                                    <td>{{segundaSalida}}</td>
-                                    <td><a href="#!" id="myButton" class="btn-delete-attendanceRecord btn btn-danger btn-raised btn-xs"
+                                    <td>{{defaultIfEmpty primeraEntrada "no marcó"}}</td>
+                                    <td>{{defaultIfEmpty primeraSalida "no marcó"}}</td>
+                                    <td>{{defaultIfEmpty segundaEntrada "no marcó"}}</td>
+                                    <td>{{defaultIfEmpty segundaSalida "no marcó"}}</td>
+                                    <td><a href="#!" id="myButton"
+                                            class="btn-delete-attendanceRecord btn btn-danger btn-raised btn-xs"
                                             data-id="{{idRegistroAsistencia}}" data-personal="{{idPersonal}}"
                                             data-institucion="{{idInstitucion}}"><i class="zmdi zmdi-delete"></i></a>
                                     </td>
@@ -68,6 +72,27 @@
                                     <td colspan="8">No hay registros para mostrar</td>
                                 </tr>
                                 {{/each}}
+                                {{else}}
+                                {{#each attendanceRecord}}
+                                <tr data-fecha="{{formatDateTimeIso fechaCreado}}">
+                                    <td>{{dniPersonal}}</td>
+                                    <td>{{nombrePersonal}}</td>
+                                    <td>{{formatDate fechaRegistro}}</td>
+                                    <td>{{defaultIfEmpty primeraEntrada "no marcó"}}</td>
+                                    <td>{{defaultIfEmpty primeraSalida "no marcó"}}</td>
+                                    <td><a href="#!" id="myButton"
+                                            class="btn-delete-attendanceRecord btn btn-danger btn-raised btn-xs"
+                                            data-id="{{idRegistroAsistencia}}" data-personal="{{idPersonal}}"
+                                            data-institucion="{{idInstitucion}}"><i class="zmdi zmdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="6">No hay registros para mostrar</td>
+                                </tr>
+                                {{/each}}
+                                {{/if}}
+                                
                             </tbody>
                         </table>
                         <ul class="pagination pagination-sm" id="pagination">
@@ -111,27 +136,22 @@
     const pages = ({{{ convertJson pages }}});
     const option = ({{{ convertJson option }}});
 
-    const ie = document.getElementById("ie");
-
-    if (listUser.rol === "directivo") {
-        document.getElementById('ie').readOnly = true;
-    };
     const numPages = (num) => {
         let navPages = '';
 
-        if (pages) {
+        if (num) {
             let i = (Number(current) > 5 ? Number(current) - 4 : 1);
-            for (; i <= (Number(current) + 4) && i <= pages; i++) {
+            for (; i <= (Number(current) + 4) && i <= num; i++) {
                 let fila = '<ul class="pagination pagination-sm" id="pagination">';
                 if (i == current) {
                     fila += '<li class="active">';
                 } else {
                     fila += '<li>';
                 }
-                if (i === Number(current) - 4 && i < pages) {
+                if (i === Number(current) - 4 && i < num) {
                     fila += `<a href="#">...</a>`;
                 }
-                if (i === Number(current) + 4 && i < pages) {
+                if (i === Number(current) + 4 && i < num) {
                     fila += `<a href="#">...</a>`;
                 }
                 if (option !== null) {

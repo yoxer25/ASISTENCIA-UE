@@ -51,8 +51,10 @@
                                     <th class="text-center">Fecha Registro</th>
                                     <th class="text-center">Primera Entrada</th>
                                     <th class="text-center">Primera Salida</th>
+                                    {{#if (eq turno "ue")}}
                                     <th class="text-center">Segunda Entrada</th>
                                     <th class="text-center">Segunda Salida</th>
+                                    {{/if}}
                                     <th class="text-center">Tiempo no trabajado</th>
                                     <th class="text-center">Observaciones</th>
                                 </tr>
@@ -79,6 +81,7 @@
 
 <script>
     const listRecords = ({{{ convertJson attendanceRecord }}});
+    const turno = ({{{ convertJson turno }}});
 
     const convertirATotalMinutos = (tiempo) => {
         if (tiempo !== null) {
@@ -91,13 +94,30 @@
     };
 
     const tableRecord = (lista) => {
-        const horaEntrada = convertirATotalMinutos("08:00:00");
-        const horaSalida = convertirATotalMinutos("13:00:00");
-        const horaEntrada2 = convertirATotalMinutos("14:15:00");
-        const horaSalida2 = convertirATotalMinutos("17:00:00");
+        // si dato.nombreTurno === "ue"
+        let horaEntrada = convertirATotalMinutos("08:00:00"); // 480
+        let horaSalida = convertirATotalMinutos("13:00:00"); // 780
+        let horaEntrada2 = convertirATotalMinutos("14:15:00"); // 855
+        let horaSalida2 = convertirATotalMinutos("17:00:00"); // 1020
 
         let stringTable = '';
         for (const dato of lista) {
+            if (dato.nombreTurno === "jec") {
+                horaEntrada = convertirATotalMinutos("08:00:00") // 480
+                horaSalida = convertirATotalMinutos("15:30:00") // 930
+            } if (dato.nombreTurno === "ceba") {
+                horaEntrada = convertirATotalMinutos("18:00:00") // 1080
+                horaSalida = convertirATotalMinutos("23:00:00") // 1380
+            } if (dato.nombreTurno === "tarde") {
+                horaEntrada = convertirATotalMinutos("13:00:00") // 780
+                horaSalida = convertirATotalMinutos("18:00:00") //1080
+            } if (dato.nombreTurno === "jer") {
+                horaEntrada = convertirATotalMinutos("08:00:00") // 480
+                horaSalida = convertirATotalMinutos("13:45:00") // 825
+            } if (dato.nombreTurno === "mañana") {
+                horaEntrada = convertirATotalMinutos("08:00:00") // 480
+                horaSalida = convertirATotalMinutos("13:00:00") // 780
+            }
             let minutosPrimeraEntrada = convertirATotalMinutos(dato.primeraEntrada);
             let minustosPrimeraSalida = convertirATotalMinutos(dato.primeraSalida);
             let minustosSegundaEntrada = convertirATotalMinutos(dato.segundaEntrada);
@@ -134,8 +154,14 @@
             }
 
             let message = "";
-            if (dato.primeraEntrada === null || dato.primeraSalida === null || dato.segundaEntrada === null || dato.segundaSalida === null) {
-                message = "Tiene horas sin marcar";
+            if (dato.nombreTurno === "ue") {
+                if (dato.primeraEntrada === null || dato.primeraSalida === null || dato.segundaEntrada === null || dato.segundaSalida === null) {
+                    message = "Tiene horas sin marcar";
+                }
+            } else {
+                if (dato.primeraEntrada === null || dato.primeraSalida === null) {
+                    message = "Tiene horas sin marcar";
+                }
             }
 
             let minNoTrabajados = 0;
@@ -172,20 +198,22 @@
                 fila += "no marcó";
             }
             fila += "</td>";
-            fila += "<td>";
-            if (dato.segundaEntrada !== null) {
-                fila += dato.segundaEntrada;
-            } else {
-                fila += "no marcó";
+            if (turno === "ue") {
+                fila += "<td>";
+                if (dato.segundaEntrada !== null) {
+                    fila += dato.segundaEntrada;
+                } else {
+                    fila += "no marcó";
+                }
+                fila += "</td>";
+                fila += "<td>";
+                if (dato.segundaSalida !== null) {
+                    fila += dato.segundaSalida;
+                } else {
+                    fila += "no marcó";
+                }
+                fila += "</td>";
             }
-            fila += "</td>";
-            fila += "<td>";
-            if (dato.segundaSalida !== null) {
-                fila += dato.segundaSalida;
-            } else {
-                fila += "no marcó";
-            }
-            fila += "</td>";
             fila += "<td>";
             minNoTrabajados = primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
             if (minNoTrabajados >= 60) {
@@ -216,30 +244,30 @@
     const pages = ({{{ convertJson pages }}});
     const option = ({{{ convertJson option }}});
 
-    const ie = document.getElementById("ie");
-
-    if (listUser.rol === "directivo") {
-        document.getElementById('ie').readOnly = true;
-    };
     const numPages = (num) => {
         let navPages = '';
 
-        if (pages) {
+        if (num) {
             let i = (Number(current) > 5 ? Number(current) - 4 : 1);
-            for (; i <= (Number(current) + 4) && i <= pages; i++) {
+            for (; i <= (Number(current) + 4) && i <= num; i++) {
                 let fila = '<ul class="pagination pagination-sm" id="pagination">';
                 if (i == current) {
                     fila += '<li class="active">';
                 } else {
                     fila += '<li>';
                 }
-                if (i === Number(current) - 4 && i < pages) {
+                if (i === Number(current) - 4 && i < num) {
                     fila += `<a href="#">...</a>`;
                 }
-                if (i === Number(current) + 4 && i < pages) {
+                if (i === Number(current) + 4 && i < num) {
                     fila += `<a href="#">...</a>`;
                 }
-                fila += `<a id="enlace href="#" onclick="enviar_formulario(${i}); return false;">${i}</a>`;
+                if (option !== null) {
+                    fila += `<a id="enlace href="#" onclick="enviar_formulario(${i}); return false;">${i}</a>`;
+                } else {
+                    fila += `<a href="/reports/page${i}">${i}</a>`;
+
+                }
                 fila += "</li></ul>";
                 navPages += fila;
             }

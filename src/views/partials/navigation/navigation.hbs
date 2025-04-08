@@ -28,12 +28,20 @@
                     <i class="zmdi zmdi-home zmdi-hc-fw"></i> Dashboard
                 </a>
             </li>
-            <li id="panel">
+            <li>
                 <a href="#!" class="btn-sideBar-SubMenu">
                     <i class="zmdi zmdi-case zmdi-hc-fw"></i> Administración <i
                         class="zmdi zmdi-caret-down pull-right"></i>
                 </a>
                 <ul class="list-unstyled full-box">
+                    {{#if (eq user.user.rol "administrador")}}
+                    <li>
+                        <a href="/users/page1"><i class="zmdi zmdi-account zmdi-hc-fw"></i> Usuarios</a>
+                    </li>
+                    <li>
+                        <a href="/institutions/page1"><i class="zmdi zmdi-graduation-cap zmdi-hc-fw"></i> II.EE</a>
+                    </li>
+                    {{/if}}
                     <li>
                         <a href="/personals/page1"><i class="zmdi zmdi-male-alt zmdi-hc-fw"></i> Personal</a>
                     </li>
@@ -53,25 +61,3 @@
     </div>
 </section>
 {{/if}}
-
-<script>
-    const listUser = ({{{ convertJson user.user }}});
-    const panel = document.getElementById("panel")
-    if (listUser.rol === "administrador") {
-        panel.innerHTML = `<a href="#!" class="btn-sideBar-SubMenu">
-                    <i class="zmdi zmdi-case zmdi-hc-fw"></i> Administración <i
-                        class="zmdi zmdi-caret-down pull-right"></i>
-                </a>
-                <ul class="list-unstyled full-box">
-                    <li>
-                        <a href="/users/page1"><i class="zmdi zmdi-account zmdi-hc-fw"></i> Usuarios</a>
-                    </li>
-                    <li>
-                        <a href="/personals/page1"><i class="zmdi zmdi-male-alt zmdi-hc-fw"></i> Personal</a>
-                    </li>
-                    <li>
-                        <a href="/institutions/page1"><i class="zmdi zmdi-graduation-cap zmdi-hc-fw"></i> II.EE</a>
-                    </li>
-                </ul>`;
-    };
-</script>

@@ -54,7 +54,7 @@ export class Personal {
   // para consultar el idPersonal de un trabajador por idReloj e institucion
   static async getId(institution, idReloj) {
     const [id] = await pool.query(
-      "SELECT p.idPersonal FROM personal p WHERE p.idInstitucion = ? and p.idReloj = ? and p.estado != 0",
+      "SELECT p.idPersonal, t.nombreTurno FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE p.idInstitucion = ? and p.idReloj = ? and p.estado != 0",
       [institution, idReloj]
     );
     if (id != "") {

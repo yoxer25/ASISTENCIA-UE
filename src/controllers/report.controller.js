@@ -1,6 +1,7 @@
 import { helpers } from "../helpers/helper.js";
 import { AttendanceRecord } from "../models/attendanceRecord.model.js";
 import XlsxPopulate from "xlsx-populate"; // para crear el excel del reporte
+import { Institution } from "../models/institution.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -11,6 +12,7 @@ export const getData = async (req, res) => {
   let page = req.params.num || 1;
   const user = req.session;
   const institution = user.user.name;
+  const [turnoIE] = await Institution.getInstitutionById(institution);
   try {
     const attendanceRecordDB = await AttendanceRecord.getData(institution);
     let attendanceRecord = attendanceRecordDB.slice(
@@ -19,6 +21,7 @@ export const getData = async (req, res) => {
     );
     res.render("report/index", {
       user,
+      turno: turnoIE.nombreHorario,
       ie: institution,
       attendanceRecord,
       current: page,
@@ -26,10 +29,11 @@ export const getData = async (req, res) => {
       option: null,
     });
   } catch (error) {
-    res.render("report/index", { user });
+    res.render("report/index", { user, turno: turnoIE.nombreHorario });
   }
 };
 
+// controla lo que se debe mostrar al momento de visitar la página de asistencia por fechas o usuarios
 export const getReport = async (req, res) => {
   let forPage = 10;
   const user = req.session;
@@ -39,6 +43,7 @@ export const getReport = async (req, res) => {
   let year = fechaActual.getFullYear();
   let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0
   let day = String(fechaActual.getDate()).padStart(2, "0");
+  let [turnoIE] = await Institution.getInstitutionById(institution);
 
   try {
     let { startDate, endDate, page, option, username, ie } = req.body;
@@ -65,6 +70,7 @@ export const getReport = async (req, res) => {
         } else {
           ie = institution;
         }
+        [turnoIE] = await Institution.getInstitutionById(ie);
         if (option === "dni") {
           const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
             ie,
@@ -79,6 +85,7 @@ export const getReport = async (req, res) => {
           );
           res.render("report/index", {
             user,
+            turno: turnoIE.nombreHorario,
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -103,6 +110,7 @@ export const getReport = async (req, res) => {
           );
           res.render("report/index", {
             user,
+            turno: turnoIE.nombreHorario,
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -128,6 +136,7 @@ export const getReport = async (req, res) => {
           );
           res.render("report/index", {
             user,
+            turno: turnoIE.nombreHorario,
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -152,6 +161,7 @@ export const getReport = async (req, res) => {
           );
           res.render("report/index", {
             user,
+            turno: turnoIE.nombreHorario,
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -170,6 +180,7 @@ export const getReport = async (req, res) => {
         } else {
           ie = institution;
         }
+        [turnoIE] = await Institution.getInstitutionById(ie);
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
           ie,
           startDate,
@@ -181,6 +192,7 @@ export const getReport = async (req, res) => {
         );
         res.render("report/index", {
           user,
+          turno: turnoIE.nombreHorario,
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -202,6 +214,7 @@ export const getReport = async (req, res) => {
         );
         res.render("report/index", {
           user,
+          turno: turnoIE.nombreHorario,
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -214,7 +227,7 @@ export const getReport = async (req, res) => {
       }
     }
   } catch (error) {
-    res.render("report/index", { user });
+    res.render("report/index", { user, turno: turnoIE.nombreHorario });
   }
 };
 

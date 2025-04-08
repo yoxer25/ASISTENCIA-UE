@@ -24,3 +24,15 @@ helpers.formatDateTimeIso = (date) => dayjs(date).format('YYYY-MM-DDTHH:mm:ss');
 y hora de registro en la tabla "registro_asistencia" en la base de datos */
 helpers.formatDate = (date) => dayjs(date).format("YYYY-MM-DD");
 helpers.formatTime = (date) => dayjs(date).format("HH:mm:ss");
+
+/* para verificar si la institución es "ue", mostrar las
+columnas "segunda entrada" y "segunda salida" en las
+páginas de registro de asistencia y reportes */
+helpers.eq = (a, b) => a === b;
+
+/* para mostrar en la página de registro de asistencia
+las horas que ha marcado el trabajador, caso contrario,
+"no marcó" */
+helpers.defaultIfEmpty = (value, defaultValue) => {
+  return value ? value : defaultValue;
+};

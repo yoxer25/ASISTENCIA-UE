@@ -5,6 +5,7 @@ import fs from "node:fs";
 // importamos el módulo "xlsx-populate" para poder leer archivos .xlsx
 import xlsxPopulate from "xlsx-populate";
 import { AttendanceRecord } from "../models/attendanceRecord.model.js";
+import { Institution } from "../models/institution.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -21,6 +22,7 @@ export const getData = async (req, res) => {
   let page = req.params.num || 1;
   const user = req.session;
   const institution = user.user.name;
+  const [turnoIE] = await Institution.getInstitutionById(institution);
   try {
     const attendanceRecordDB = await AttendanceRecord.getData(institution);
     let attendanceRecord = attendanceRecordDB.slice(
@@ -29,6 +31,7 @@ export const getData = async (req, res) => {
     );
     res.render("attendanceRecord/index", {
       user,
+      turno: turnoIE.nombreHorario,
       ie: institution,
       attendanceRecord,
       current: page,
@@ -36,7 +39,10 @@ export const getData = async (req, res) => {
       option: null,
     });
   } catch (error) {
-    res.render("attendanceRecord/index", { user });
+    res.render("attendanceRecord/index", {
+      user,
+      turno: turnoIE.nombreHorario,
+    });
   }
 };
 
@@ -50,6 +56,7 @@ export const getAttendanceRecord = async (req, res) => {
   let year = fechaActual.getFullYear();
   let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0
   let day = String(fechaActual.getDate()).padStart(2, "0");
+  let [turnoIE] = await Institution.getInstitutionById(institution);
 
   try {
     let { startDate, endDate, page, option, username, ie } = req.body;
@@ -76,6 +83,7 @@ export const getAttendanceRecord = async (req, res) => {
         } else {
           ie = institution;
         }
+        [turnoIE] = await Institution.getInstitutionById(ie);
         if (option === "dni") {
           const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
             ie,
@@ -90,6 +98,7 @@ export const getAttendanceRecord = async (req, res) => {
           );
           res.render("attendanceRecord/index", {
             user,
+            turno: turnoIE.nombreHorario,
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -114,6 +123,7 @@ export const getAttendanceRecord = async (req, res) => {
           );
           res.render("attendanceRecord/index", {
             user,
+            turno: turnoIE.nombreHorario,
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -139,6 +149,7 @@ export const getAttendanceRecord = async (req, res) => {
           );
           res.render("attendanceRecord/index", {
             user,
+            turno: turnoIE.nombreHorario,
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -163,6 +174,7 @@ export const getAttendanceRecord = async (req, res) => {
           );
           res.render("attendanceRecord/index", {
             user,
+            turno: turnoIE.nombreHorario,
             attendanceRecord,
             current: page,
             pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -181,6 +193,7 @@ export const getAttendanceRecord = async (req, res) => {
         } else {
           ie = institution;
         }
+        [turnoIE] = await Institution.getInstitutionById(ie);
         const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
           ie,
           startDate,
@@ -192,6 +205,7 @@ export const getAttendanceRecord = async (req, res) => {
         );
         res.render("attendanceRecord/index", {
           user,
+          turno: turnoIE.nombreHorario,
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -213,6 +227,7 @@ export const getAttendanceRecord = async (req, res) => {
         );
         res.render("attendanceRecord/index", {
           user,
+          turno: turnoIE.nombreHorario,
           attendanceRecord,
           current: page,
           pages: Math.ceil(attendanceRecordDB.length / forPage),
@@ -225,7 +240,10 @@ export const getAttendanceRecord = async (req, res) => {
       }
     }
   } catch (error) {
-    res.render("attendanceRecord/index", { user });
+    res.render("attendanceRecord/index", {
+      user,
+      turno: turnoIE.nombreHorario,
+    });
   }
 };
 
@@ -261,18 +279,19 @@ export const importData = async (req, res) => {
         for (let i = 0; i < value.length; i++) {
           const element = value[i];
           if (element[0] !== undefined) {
-            const [DNIPersonal] = await Personal.getId(institution, element[0]);
-            const dni = DNIPersonal.idPersonal;
+            const [personal] = await Personal.getId(institution, element[0]);
+            const idPersonal = personal.idPersonal;
             const datetimeExcel = numeroAFecha(element[1], true);
             const registrationDate = helpers.formatDate(datetimeExcel);
             const registrationTime = helpers.formatTime(datetimeExcel);
-            if (!registers[dni]) {
-              registers[dni] = {
-                usuario: dni,
+            if (!registers[idPersonal]) {
+              registers[idPersonal] = {
+                usuario: idPersonal,
+                turno: personal.nombreTurno,
                 fechaRegistro: [],
               };
             }
-            registers[dni].fechaRegistro.push([
+            registers[idPersonal].fechaRegistro.push([
               registrationDate,
               registrationTime,
             ]);
@@ -291,6 +310,7 @@ export const importData = async (req, res) => {
             if (!finalRegister[date]) {
               finalRegister[date] = {
                 usuario: register.usuario,
+                turno: register.turno,
                 fechaRegistro: date,
                 marcas: [],
               };
@@ -299,11 +319,19 @@ export const importData = async (req, res) => {
             finalRegister[date].marcas.push(time);
           });
 
-          const horaEntrada1 = convertirATotalMinutos("08:00:00");
-          const horaEntrada1Hasta = convertirATotalMinutos("10:00:00");
+          const turnoPersonal = register.turno;
+          let horaEntrada1 = convertirATotalMinutos("08:00:00");
+          let horaEntrada1Hasta = convertirATotalMinutos("10:00:00");
 
-          const horaEntrada2Desde = convertirATotalMinutos("14:00:00");
-          const horaEntrada2Hasta = convertirATotalMinutos("15:00:00");
+          let horaEntrada2Desde = convertirATotalMinutos("14:00:00");
+          let horaEntrada2Hasta = convertirATotalMinutos("15:00:00");
+
+          if (turnoPersonal === "tarde") {
+            horaEntrada1Hasta = convertirATotalMinutos("14:00:00");
+          } else if (turnoPersonal === "ceba") {
+            horaEntrada1 = convertirATotalMinutos("18:00:00");
+            horaEntrada1Hasta = convertirATotalMinutos("19:30:00");
+          }
 
           Object.values(finalRegister).forEach(async (register) => {
             const attenRec = {
@@ -314,30 +342,69 @@ export const importData = async (req, res) => {
 
             register.marcas.forEach((registroHora) => {
               const horaMarco = convertirATotalMinutos(registroHora);
-              if (horaMarco < horaEntrada1 && horaMarco <= horaEntrada1Hasta) {
-                if (!attenRec.firstHourEntry) {
-                  attenRec.firstHourEntry = registroHora;
+              if (turnoPersonal === "ue") {
+                if (horaMarco <= horaEntrada1Hasta) {
+                  if (!attenRec.firstHourEntry) {
+                    attenRec.firstHourEntry = registroHora;
+                  }
                 }
-              }
-              if (
-                horaMarco > horaEntrada1Hasta &&
-                horaMarco < horaEntrada2Desde
+                if (
+                  horaMarco > horaEntrada1Hasta &&
+                  horaMarco < horaEntrada2Desde
+                ) {
+                  if (!attenRec.firstHourDeparture) {
+                    attenRec.firstHourDeparture = registroHora;
+                  }
+                }
+                if (
+                  horaMarco >= horaEntrada2Desde &&
+                  horaMarco <= horaEntrada2Hasta
+                ) {
+                  if (!attenRec.secondHourEntry) {
+                    attenRec.secondHourEntry = registroHora;
+                  }
+                }
+                if (horaMarco > horaEntrada2Hasta) {
+                  if (!attenRec.secondDepartureTime) {
+                    attenRec.secondDepartureTime = registroHora;
+                  }
+                }
+              } else if (turnoPersonal === "ceba") {
+                if (horaMarco <= horaEntrada1Hasta) {
+                  if (!attenRec.firstHourEntry) {
+                    attenRec.firstHourEntry = registroHora;
+                  }
+                }
+                if (horaMarco > horaEntrada1Hasta) {
+                  if (!attenRec.firstHourDeparture) {
+                    attenRec.firstHourDeparture = registroHora;
+                  }
+                }
+              } else if (
+                turnoPersonal === "mañana" ||
+                turnoPersonal === "jer" ||
+                turnoPersonal === "jec"
               ) {
-                if (!attenRec.firstHourDeparture) {
-                  attenRec.firstHourDeparture = registroHora;
+                if (horaMarco <= horaEntrada1Hasta) {
+                  if (!attenRec.firstHourEntry) {
+                    attenRec.firstHourEntry = registroHora;
+                  }
                 }
-              }
-              if (
-                horaMarco >= horaEntrada2Desde &&
-                horaMarco <= horaEntrada2Hasta
-              ) {
-                if (!attenRec.secondHourEntry) {
-                  attenRec.secondHourEntry = registroHora;
+                if (horaMarco > horaEntrada1Hasta) {
+                  if (!attenRec.firstHourDeparture) {
+                    attenRec.firstHourDeparture = registroHora;
+                  }
                 }
-              }
-              if (horaMarco > horaEntrada2Hasta) {
-                if (!attenRec.secondDepartureTime) {
-                  attenRec.secondDepartureTime = registroHora;
+              } else if (turnoPersonal === "tarde") {
+                if (horaMarco <= horaEntrada1Hasta) {
+                  if (!attenRec.firstHourEntry) {
+                    attenRec.firstHourEntry = registroHora;
+                  }
+                }
+                if (horaMarco > horaEntrada1Hasta) {
+                  if (!attenRec.firstHourDeparture) {
+                    attenRec.firstHourDeparture = registroHora;
+                  }
                 }
               }
             });

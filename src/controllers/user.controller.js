@@ -14,6 +14,7 @@ export const getUsers = async (req, res) => {
   const user = req.session;
   try {
     const users = await User.getUser(ofset);
+    console.log(users);
     const [counts] = await User.countUsers();
     res.render("user/index", {
       user,
@@ -50,7 +51,7 @@ export const set = async (req, res) => {
   try {
     if (_method) {
       const resDb = await User.set(username, rolUser, Id, _method);
-        if (resDb.affectedRows > 0) {
+      if (resDb.affectedRows > 0) {
         // Si el registro es exitoso
         res.cookie("success", ["¡Actualización exitosa!"], {
           httpOnly: true,

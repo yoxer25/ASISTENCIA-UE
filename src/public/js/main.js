@@ -14,9 +14,10 @@ $(document).ready(function () {
 
   // modal para actualizar la contraseña
   $(".btn-update-password").on("click", function () {
+    var idUsuario = $(this).data("id");
     swal({
       title: "¿Estás seguro de actualizar tu contraseña?",
-      text: `<form id="passwordForm" action="/myaccount/update${listUser.id}?_method=PUT" method="POST">
+      text: `<form id="passwordForm" action="/myaccount/update${idUsuario}?_method=PUT" method="POST">
               <input type="hidden" name="_method" value="PUT">
               <div class="form-group">
                 <label class="control-label">Nueva Contraseña</label>

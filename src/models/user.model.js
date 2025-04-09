@@ -32,7 +32,7 @@ export class User {
   // para consultar dotos de todos los usuarios
   static async getUser(ofset) {
     const [userDb] = await pool.query(
-      "SELECT u.idUsuario, u.idInstitucion, u.idRol, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND u.idUsuario != 1 ORDER BY u.idUsuario lIMIT ?, 10",
+      "SELECT u.idUsuario, u.idInstitucion, u.idRol, i.nombreInstitucion, n.nombreNivel, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND u.idUsuario != 1 ORDER BY u.idUsuario lIMIT ?, 10",
       [ofset]
     );
     if (userDb != "") {
@@ -58,7 +58,7 @@ export class User {
   // para consultar dotos de usuarios por nombre de I.E
   static async search(name) {
     const [userDb] = await pool.query(
-      `SELECT u.idUsuario, u.idInstitucion, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND i.nombreInstitucion LIKE '%${name}%' ORDER BY u.idUsuario`
+      `SELECT u.idUsuario, u.idInstitucion, i.nombreInstitucion, n.nombreNivel, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN nivel_educativo n ON i.idNivel = n.idNivelEducativo INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND i.nombreInstitucion LIKE '%${name}%' ORDER BY u.idUsuario`
     );
     if (userDb != "") {
       return userDb;
@@ -69,7 +69,7 @@ export class User {
 
   // para crear un nuevo usuario
   static async create(username, rolUser, password) {
-    const newUser = new User(username, rolUser, password);
+    const newUser = new User(username, rolUser);
     newUser.contrasena = password;
     newUser.fechaCreado = await helpers.formatDateTime();
     const [res] = await pool.query("INSERT INTO usuarios SET ?", [newUser]);
@@ -128,7 +128,8 @@ export class User {
 
   // para cambiar contraseña del usuario
   static async updatePassword(id, username, rolUser, password) {
-    const newUser = new User(username, rolUser, password);
+    const newUser = new User(username, rolUser);
+    newUser.contrasena = password;
     newUser.fechaActualizado = await helpers.formatDateTime();
     const [res] = await pool.query(
       "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",

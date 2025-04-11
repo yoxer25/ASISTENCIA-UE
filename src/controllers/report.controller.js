@@ -407,6 +407,11 @@ export const generateExcel = async (req, res, next) => {
       if (element.nombreTurno === "ue") {
         minNoTrabajados =
           primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
+        const totalMinutos = minNoTrabajados / (60 * 1000);
+        // Convertir minutos en horas y minutos (si supera los 59 minutos)
+        const hrs = Math.floor(totalMinutos / 60);
+        const minutosRestantes = totalMinutos % 60;
+
         workbook
           .sheet("Sheet1")
           .cell("F" + (i + 2))
@@ -415,27 +420,27 @@ export const generateExcel = async (req, res, next) => {
           .sheet("Sheet1")
           .cell("G" + (i + 2))
           .value(element.segundaSalida);
-        if (minNoTrabajados >= 60) {
-          const hora = Math.floor(minNoTrabajados / 60);
-          const minuto = minNoTrabajados % 60;
-          workbook
-            .sheet("Sheet1")
-            .cell("H" + (i + 2))
-            .value(hora + "h " + minuto + " minutos");
-        }
-        if (minNoTrabajados < 60 && minNoTrabajados > 0) {
-          workbook
-            .sheet("Sheet1")
-            .cell("H" + (i + 2))
-            .value(minNoTrabajados + " minutos");
-        }
-        if (minNoTrabajados <= 0) {
-          workbook
-            .sheet("Sheet1")
-            .cell("H" + (i + 2))
-            .value(minNoTrabajados + " minutos");
-        }
 
+        // Si el total de minutos es menor a 1, mostramos 0 minutos
+        if (totalMinutos < 1) {
+          workbook
+            .sheet("Sheet1")
+            .cell("H" + (i + 2))
+            .value("0 minutos");
+        } else {
+          // Mostrar las horas y minutos correctamente si hay más de 0 minutos
+          if (hrs > 0) {
+            workbook
+              .sheet("Sheet1")
+              .cell("H" + (i + 2))
+              .value(hrs + "h " + minutosRestantes.toFixed(0) + " minutos");
+          } else {
+            workbook
+              .sheet("Sheet1")
+              .cell("H" + (i + 2))
+              .value(minutosRestantes.toFixed(0) + " minutos");
+          }
+        }
         workbook
           .sheet("Sheet1")
           .cell("I" + (i + 2))
@@ -471,6 +476,7 @@ export const generateExcel = async (req, res, next) => {
     }
     workbook.toFileAsync("./src/archives/reporte.xlsx");
   } catch (error) {
+    console.log(error.message);
   }
   next();
 };
@@ -489,8 +495,7 @@ export const download = async (req, res) => {
 const convertirATotalMinutos = (tiempo) => {
   if (tiempo !== null) {
     const [horas, minutos, segundos] = tiempo.split(":").map(Number);
-    const totalMinutos = horas * 60 + minutos + Math.round(segundos / 60);
-    return totalMinutos;
+    return (horas * 3600 + minutos * 60 + segundos) * 1000;
   } else {
     return null;
   }

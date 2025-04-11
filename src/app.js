@@ -2,6 +2,7 @@
 import morgan from "morgan";
 // framework
 import express from "express";
+import 'dotenv/config'
 // para las vistas
 import { engine } from "express-handlebars";
 // facilitar la posibilidad de modificar las cookies

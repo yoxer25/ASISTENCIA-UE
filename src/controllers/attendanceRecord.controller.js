@@ -486,21 +486,7 @@ const saveExcel = (file) => {
   return newPath;
 };
 
-// función para convertir números a fecha
-/* const numeroAFecha = (numeroDeDias, esExcel = false) => { 
-  const diasDesde1900 = esExcel ? 25568 + 1 : 25568;
-  const datafe = new Date((numeroDeDias - diasDesde1900) * 86400000);
-  return new Date(
-    datafe.getFullYear(),
-    datafe.getMonth(),
-    datafe.getDate(),
-    datafe.getHours() + 5,
-    datafe.getMinutes(),
-    datafe.getSeconds(),
-    datafe.getMilliseconds()
-  );
-}; */
-// Función para convertir número de Excel a UTC y luego guardarlo en la base de datos en UTC
+// función para convertir número de Excel a UTC y luego guardarlo en la base de datos en UTC
 const numeroAFecha = (numeroDeDias) => {
   // Convertir el número de Excel a UTC
   const fechaUtc = new Date((numeroDeDias - 25569) * 86400000);

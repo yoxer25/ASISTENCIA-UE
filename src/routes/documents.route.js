@@ -2,7 +2,7 @@
 import { Router } from "express";
 
 // importamos todas las funciones para asignar cada función a una ruta de la web
-import * as myaccountCtrl from "../controllers/myaccount.controller.js";
+import * as documentsCtrl from "../controllers/documents.controller.js";
 /* para proteger nuestras rutas
 privadas, se verificará el
 token que nos están
@@ -14,11 +14,15 @@ caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
-// rutas de la página mi cuenta
-router.get("/signIn", myaccountCtrl.getSignIn);
-router.post("/signIn", myaccountCtrl.signIn);
-router.get("/LogOut", requireToken, myaccountCtrl.logOut);
-router.put("/update:Id", requireToken, myaccountCtrl.updatePassword);
+// rutas de la página documentos de gestión
+router.get("/", requireToken, documentsCtrl.getDocuments);
+router.get("/:anio", requireToken, documentsCtrl.getDocuments);
+/* router.get("/create", requireToken, documentsCtrl.getCreate);
+router.post("/", requireToken, documentsCtrl.search);
+router.post("/create", requireToken, documentsCtrl.set);
+router.get("/:Id", requireToken, documentsCtrl.getById);
+router.put("/:Id", requireToken, documentsCtrl.set);
+router.patch("/:Id", requireToken, documentsCtrl.set); */
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

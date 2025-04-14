@@ -2,7 +2,7 @@
 import morgan from "morgan";
 // framework
 import express from "express";
-import 'dotenv/config'
+import "dotenv/config";
 // para las vistas
 import { engine } from "express-handlebars";
 // facilitar la posibilidad de modificar las cookies
@@ -25,6 +25,7 @@ import userRoutes from "./routes/user.route.js";
 import personalRoutes from "./routes/personal.route.js";
 import attendanceRecordRoutes from "./routes/attendanceRecord.route.js";
 import reportRoutes from "./routes/report.route.js";
+import documentsRoutes from "./routes/documents.route.js";
 
 //constantes
 // para iniciar el servidor
@@ -78,6 +79,7 @@ app.use("/users", userRoutes);
 app.use("/personals", personalRoutes);
 app.use("/attendanceRecords", attendanceRecordRoutes);
 app.use("/reports", reportRoutes);
+app.use("/documents", documentsRoutes);
 
 // exportamos la constante "app" para poder utilizarla en otras parte del proyecto
 export default app;

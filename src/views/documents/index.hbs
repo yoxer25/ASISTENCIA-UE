@@ -1,0 +1,100 @@
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-account zmdi-hc-fw"></i> Documentos
+                <small>Listado</small>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row" style="margin-bottom: 20px;">
+            {{#if (eq user.user.rol "administrador")}}
+            <div class="col-lg-7" id="formSearchPersonal">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white">
+                        <div class="card-header bg-primary text-center">
+                            <p class="text-white" style="font-size: 30px;">Buscar por IE</p>
+                        </div>
+                        <form action="/personals" id="consultPersonal" method="POST">
+                            <input type="hidden" class="form-control" name="page" id="page">
+                            <div class="row">
+                                <div class="col-lg-7">
+                                    <div class="form-group" style="margin: auto;">
+                                        <select class="form-control" id="username" name="username" style="width: 100%;">
+                                            <option value="{{username}}" selected>{{ie}}</option>
+                                            {{#each institutions}}
+                                            <option value="{{idInstitucion}}">{{nombreNivel}} - {{nombreInstitucion}}
+                                            </option>
+                                            {{/each}}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-5">
+                                    <div class="form-group" style="margin: auto; text-align: right;">
+                                        <button class="btn btn-raised btn-sm"
+                                            style="background-color: #01579B; margin: auto;">
+                                            <p style="font-size: 20px; margin: auto; color: #fff;"><i
+                                                    class="zmdi zmdi-search"></i> Consultar</p>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white p-5">
+                        <h1 class="text-titles text-center">
+                            <small>Documentos de Gestión Interna</small>
+                        </h1>
+                        <form action="/attendanceRecords/importData" method="POST" enctype="multipart/form-data">
+                            <div>
+                                <label>ARCHIVO PDF</label>
+                                <input type="file" accept=".pdf" name="pdf">
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                    <p style="font-size: 20px; margin: auto; color: #fff;"><i
+                                            class="zmdi zmdi-upload"></i> Importar</p>
+                                </button>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white p-5">
+                        <h1 class="text-titles text-center">
+                            <small>Sesiones de trabajo</small>
+                        </h1>
+                        <div class="row" style="padding-top: 3%;">
+                            {{#each schoolYear}}
+                            <div class="col-md-2" style="text-align: center;">
+                                <a href="/documents/{{nombreAnio}}">
+                                    <img src="/assets/img/folder.png" alt="" width="50%">
+                                    <p>{{nombreAnio}}</p>
+                                </a>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}

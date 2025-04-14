@@ -14,7 +14,7 @@ caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
-// rutas de la página principal
+// rutas de la página usuarios
 router.get("/page:num", requireToken, userCtrl.getUsers);
 router.get("/create", requireToken, userCtrl.getCreate);
 router.post("/", requireToken, userCtrl.search);

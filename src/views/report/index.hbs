@@ -85,8 +85,10 @@
 
     const convertirATotalMinutos = (tiempo) => {
         if (tiempo !== null) {
-            const [horas, minutos, segundos] = tiempo.split(":").map(Number);
-            return (horas * 3600 + minutos * 60 + segundos) * 1000;
+            let [horas, minutos, segundos] = tiempo.split(':').map(Number);
+            let totalSegundos = horas * 3600 + minutos * 60 + segundos;
+            let totalMinutos = totalSegundos / 60;
+            return totalMinutos;
         } else {
             return null;
         }
@@ -213,21 +215,18 @@
             }
             fila += "<td>";
             const minNoTrabajados = primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
-            const totalMinutos = minNoTrabajados / (60 * 1000);
-            // Convertir minutos en horas y minutos (si supera los 59 minutos)
-            const hrs = Math.floor(totalMinutos / 60);
-            const minutosRestantes = totalMinutos % 60;
 
-            // Si el total de minutos es menor a 1, mostramos 0 minutos
-            if (totalMinutos < 1) {
-                fila += "0 minutos";
+            // Convertir minutos en horas y minutos (si supera los 59 minutos)
+            const hrs = Math.floor(minNoTrabajados / 60);
+            const minutosRestantes = minNoTrabajados % 60;
+
+
+            // Mostrar las horas y minutos correctamente si hay más de 0 minutos
+            if (hrs > 0) {
+                fila += `${hrs} horas y ${Math.floor(minutosRestantes)} minutos`;
             } else {
-                // Mostrar las horas y minutos correctamente si hay más de 0 minutos
-                if (hrs > 0) {
-                    fila += `${hrs} horas y ${minutosRestantes.toFixed(0)} minutos`;
-                } else {
-                    fila += `${minutosRestantes.toFixed(0)} minutos`;
-                }
+                fila += `${Math.floor(minutosRestantes)} minutos`;
+
             }
             fila += "</td>";
             fila += "<td>";

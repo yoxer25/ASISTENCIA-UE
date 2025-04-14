@@ -327,7 +327,7 @@ export const importData = async (req, res) => {
           });
 
           const turnoPersonal = register.turno;
-          let horaEntrada = convertirATotalMinutos("07:00:00");
+          let horaEntrada = convertirATotalMinutos("02:00:00");
           let horaEntrada1Hasta = convertirATotalMinutos("10:00:00");
 
           let horaEntrada2Desde = convertirATotalMinutos("13:20:00");

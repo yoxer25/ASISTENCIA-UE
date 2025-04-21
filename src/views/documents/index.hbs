@@ -56,10 +56,10 @@
                         <h1 class="text-titles text-center">
                             <small>Documentos de Gestión Interna</small>
                         </h1>
-                        <form action="/attendanceRecords/importData" method="POST" enctype="multipart/form-data">
+                        <form action="/documents/ie/{{ie}}" method="POST" enctype="multipart/form-data">
                             <div>
                                 <label>ARCHIVO PDF</label>
-                                <input type="file" accept=".pdf" name="pdf">
+                                <input type="file" accept=".pdf" name="pdfIE">
                             </div>
                             <p class="text-center">
                                 <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
@@ -68,6 +68,16 @@
                                 </button>
                             </p>
                         </form>
+                        <div class="row" style="padding-top: 3%;">
+                            {{#each documents}}
+                            <div class="col-md-2" style="text-align: center;">
+                                <a href="/documents/{{nombreDocumento}}" target="_blank">
+                                    <img src="/assets/img/pdf.png" alt="" width="50%">
+                                    <p>{{nombreDocumento}}</p>
+                                </a>
+                            </div>
+                            {{/each}}
+                        </div>
                     </div>
                 </div>
             </div>

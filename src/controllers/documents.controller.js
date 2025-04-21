@@ -4,17 +4,26 @@ import { FileProfesor } from "../models/fileProfesor.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Personal } from "../models/personal.model.js";
 import { SchoolYear } from "../models/schoolYear.model.js";
-import { DocumentProfesor } from "../models/document.model.js";
+import { DocumentProfesor } from "../models/documentProfesor.model.js";
+import { DocumentIE } from "../models/documentIE.model.js";
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
 
 // controla lo que se debe mostrar al momento de visitar la página de documentos de gestión
 export const getDocuments = async (req, res) => {
   const user = req.session;
+  const ie = user.user.name;
   const institutions = await Institution.getInstitution();
   try {
     const schoolYear = await SchoolYear.getSchoolYear();
-    res.render("documents/index", { user, institutions, schoolYear });
+    const documents = await DocumentIE.getDocument(ie);
+    res.render("documents/index", {
+      user,
+      institutions,
+      schoolYear,
+      ie,
+      documents,
+    });
   } catch (error) {
     res.render("documents/index", { user, institutions });
   }
@@ -44,7 +53,7 @@ export const getDocumentByName = async (req, res) => {
 };
 
 /* controla lo que se debe mostrar al momento de visitar la
-página de documentos por año, aquí veremos las carpetas
+página de documentos por año, aquí veremos los documentos
 por cada docente */
 export const getDocumentByProfesor = async (req, res) => {
   const user = req.session;
@@ -53,19 +62,19 @@ export const getDocumentByProfesor = async (req, res) => {
     const documents = await DocumentProfesor.getDocument(idCarpeta);
     res.render("documents/indexByProfesor", { user, idCarpeta, documents });
   } catch (error) {
-    res.render("documents/indexByProfesor", { user });
+    res.render("documents/indexByProfesor", { user, idCarpeta });
   }
 };
 
 // para agregar carpetas para los docentes de cada IE
 export const fileProfesor = async (req, res) => {
-    const user = req.session;
+  const user = req.session;
   const ie = user.user.name;
   const { anio } = req.params;
   const { profesor } = req.body;
 
   try {
-  const [schoolYear] = await SchoolYear.getSchoolYearByName(anio);
+    const [schoolYear] = await SchoolYear.getSchoolYearByName(anio);
     const [fileProfesor] = await FileProfesor.getById(
       schoolYear.idAnio,
       profesor
@@ -110,6 +119,50 @@ export const documentProfesor = async (req, res) => {
       if (mimetype === "application/pdf") {
         savePDF(req.file);
         const resDB = await DocumentProfesor.set(idCarpeta, originalname);
+        if (resDB.affectedRows > 0) {
+          // Si el registro es exitoso
+          res.cookie("success", ["¡Registro exitoso!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
+          res.redirect(`/documents/file/${idCarpeta}`);
+        } else {
+          // Si el registro falla
+          res.cookie("error", ["¡Error al agregar registro!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
+          throw new Error("Error al agregar registro");
+        }
+      } else {
+        res.cookie("error", ["¡Seleccione un archivo pdf!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        throw new Error("Seleccione un archivo .pdf");
+      }
+    } else {
+      res.cookie("error", ["¡Seleccione un archivo pdf!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      throw new Error("Seleccione un archivo .pdf");
+    }
+  } catch (error) {
+    res.redirect(`/documents/file/${idCarpeta}`);
+  }
+};
+
+// para agregar documentos para cada IE (documentos de gestión interna)
+export const documentIE = async (req, res) => {
+  const { idIE } = req.params;
+  try {
+    if (req.file) {
+      const { mimetype } = req.file;
+      const { originalname } = req.file;
+      if (mimetype === "application/pdf") {
+        savePDF(req.file);
+        const resDB = await DocumentIE.set(idIE, originalname);
         if (resDB.affectedRows > 0) {
           // Si el registro es exitoso
           res.cookie("success", ["¡Registro exitoso!"], {

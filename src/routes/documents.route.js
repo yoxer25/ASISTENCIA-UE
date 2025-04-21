@@ -1,5 +1,5 @@
 // para subir archivos a la web
-import multer from "multer"; 
+import multer from "multer";
 // importamos lo necesario para poder usar las rutas de la página principal
 import { Router } from "express";
 
@@ -28,17 +28,17 @@ router.get(
   documentsCtrl.getDocumentByProfesor
 );
 router.post(
+  "/ie/:idIE",
+  requireToken,
+  upload.single("pdfIE"),
+  documentsCtrl.documentIE
+);
+router.post(
   "/file/:idCarpeta",
-  requireToken, upload.single("pdf"),
+  requireToken,
+  upload.single("pdfProfesor"),
   documentsCtrl.documentProfesor
 );
-
-/* router.get("/create", requireToken, documentsCtrl.getCreate);
-router.post("/", requireToken, documentsCtrl.search);
-router.post("/create", requireToken, documentsCtrl.set);
-router.get("/:Id", requireToken, documentsCtrl.getById);
-router.put("/:Id", requireToken, documentsCtrl.set);
-router.patch("/:Id", requireToken, documentsCtrl.set); */
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

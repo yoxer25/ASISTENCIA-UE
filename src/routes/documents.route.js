@@ -1,3 +1,5 @@
+// para subir archivos a la web
+import multer from "multer"; 
 // importamos lo necesario para poder usar las rutas de la página principal
 import { Router } from "express";
 
@@ -12,11 +14,25 @@ cookies */
 podrá acceder a estas rutas;
 caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
+const upload = multer({ dest: "src/public/documents/" });
 const router = Router();
 
 // rutas de la página documentos de gestión
 router.get("/", requireToken, documentsCtrl.getDocuments);
-router.get("/:anio", requireToken, documentsCtrl.getDocuments);
+router.post("/", requireToken, documentsCtrl.getDocumentsByIE);
+router.get("/:anio", requireToken, documentsCtrl.getDocumentByName);
+router.post("/:anio", requireToken, documentsCtrl.fileProfesor);
+router.get(
+  "/file/:idCarpeta",
+  requireToken,
+  documentsCtrl.getDocumentByProfesor
+);
+router.post(
+  "/file/:idCarpeta",
+  requireToken, upload.single("pdf"),
+  documentsCtrl.documentProfesor
+);
+
 /* router.get("/create", requireToken, documentsCtrl.getCreate);
 router.post("/", requireToken, documentsCtrl.search);
 router.post("/create", requireToken, documentsCtrl.set);

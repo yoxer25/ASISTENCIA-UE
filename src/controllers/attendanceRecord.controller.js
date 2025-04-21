@@ -519,11 +519,11 @@ export const deleteById = async (req, res) => {
       res.redirect("/attendanceRecords/page1");
     } else {
       // Si el registro falla
-      res.cookie("error", ["¡Error al agregar registro!"], {
+      res.cookie("error", ["¡Error al eliminar registro!"], {
         httpOnly: true,
         maxAge: 6000,
       }); // 6 segundos
-      throw new Error("Error al agregar registro");
+      throw new Error("Error al eliminar registro");
     }
   } catch (error) {
     res.redirect("/attendanceRecords/page1");

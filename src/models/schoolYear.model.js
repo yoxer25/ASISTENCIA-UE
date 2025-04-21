@@ -18,4 +18,17 @@ export class SchoolYear {
       throw new Error("Datos no encontrados");
     }
   }
+
+  // para consultar datos de un año escolar por nombre
+  static async getSchoolYearByName(name) {
+    const [schoolYear] = await pool.query(
+      "SELECT * FROM anio_escolar a WHERE a.nombreAnio = ? AND a.estado != 0",
+      [name]
+    );
+    if (schoolYear != "") {
+      return schoolYear;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
+  }
 }

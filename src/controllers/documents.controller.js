@@ -37,7 +37,7 @@ export const getDocumentByName = async (req, res) => {
     const [schoolYear] = await SchoolYear.getSchoolYearByName(anio);
     const profesor = await Personal.getPersonal(ie);
     const fileProfesor = await FileProfesor.getFile(ie, schoolYear.idAnio);
-    res.render("documents/indexByAnio", { user, profesor, fileProfesor });
+    res.render("documents/indexByAnio", { user, profesor, fileProfesor, anio });
   } catch (error) {
     res.render("documents/indexByAnio", { user });
   }
@@ -59,12 +59,13 @@ export const getDocumentByProfesor = async (req, res) => {
 
 // para agregar carpetas para los docentes de cada IE
 export const fileProfesor = async (req, res) => {
-  const user = req.session;
+    const user = req.session;
   const ie = user.user.name;
   const { anio } = req.params;
   const { profesor } = req.body;
+
   try {
-    const [schoolYear] = await SchoolYear.getSchoolYearByName(anio);
+  const [schoolYear] = await SchoolYear.getSchoolYearByName(anio);
     const [fileProfesor] = await FileProfesor.getById(
       schoolYear.idAnio,
       profesor

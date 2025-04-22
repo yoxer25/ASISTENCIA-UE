@@ -14,7 +14,7 @@ cookies */
 podrá acceder a estas rutas;
 caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
-const upload = multer({ dest: "src/public/documents/" });
+const upload = multer({ dest: "src/documents/" });
 const router = Router();
 
 // rutas de la página documentos de gestión
@@ -39,6 +39,7 @@ router.post(
   upload.single("pdfProfesor"),
   documentsCtrl.documentProfesor
 );
+router.get("/view/:archive", requireToken, documentsCtrl.viewPDF);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

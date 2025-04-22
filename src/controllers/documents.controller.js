@@ -1,5 +1,7 @@
 // para cambiar nombre del pdf a guardar
 import fs from "node:fs";
+import path from "path"; //
+import { fileURLToPath } from "url";
 import { FileProfesor } from "../models/fileProfesor.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Personal } from "../models/personal.model.js";
@@ -157,10 +159,14 @@ export const documentProfesor = async (req, res) => {
   const { idCarpeta } = req.params;
   try {
     if (req.file) {
-      const { mimetype, originalname, filename  } = req.file;
+      const { mimetype, originalname, filename } = req.file;
       if (mimetype === "application/pdf") {
         savePDF(req.file);
-        const resDB = await DocumentProfesor.set(idCarpeta, originalname, filename);
+        const resDB = await DocumentProfesor.set(
+          idCarpeta,
+          originalname,
+          filename
+        );
         if (resDB.affectedRows > 0) {
           // Si el registro es exitoso
           res.cookie("success", ["¡Registro exitoso!"], {
@@ -201,7 +207,7 @@ export const documentIE = async (req, res) => {
   const { idIE } = req.params;
   try {
     if (req.file) {
-      const { mimetype, originalname, filename  } = req.file;
+      const { mimetype, originalname, filename } = req.file;
       if (mimetype === "application/pdf") {
         savePDF(req.file);
         const resDB = await DocumentIE.set(idIE, originalname, filename);
@@ -239,9 +245,25 @@ export const documentIE = async (req, res) => {
   }
 };
 
+// para ver los pdf desde la vista
+export const viewPDF = async (req, res) => {
+  const { archive } = req.params;
+  try {
+    const namePDF = archive + ".pdf";
+    // para establecer la ruta hasta la carpeta "src"
+    const _filename = fileURLToPath(import.meta.url);
+    const _dirname = path.dirname(_filename);
+    const rutaPDF = path.resolve(_dirname, '..', 'documents', namePDF);
+    //const rutaPDF = path.join(__dirname, "documents", namePDF);
+
+    res.sendFile(rutaPDF);
+  } catch (error) {
+  }
+};
+
 // función para que el pdf subido se guarde con su nombre original dentro de la carpeta "src/public/documents"
 const savePDF = (file) => {
-  const newPath = `./src/public/documents/${file.filename}.pdf`;
+  const newPath = `./src/documents/${file.filename}.pdf`;
   fs.renameSync(file.path, newPath);
   return newPath;
 };

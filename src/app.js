@@ -12,7 +12,7 @@ import flash from "connect-flash";
 // para peoder usar todos los métodos HTTP (GET, POST, PUT, PATCH, DELETE)
 import methodOverride from "method-override";
 // para establecer la ruta de los archivos handlebars
-import path from "path"; //
+import path from "path";
 import { fileURLToPath } from "url";
 // para especificar en la configuración de las vistas donde se encuentran los helpers
 import { helpers } from "./helpers/helper.js";

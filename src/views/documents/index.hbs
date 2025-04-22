@@ -11,8 +11,8 @@
         </div>
     </div>
     <div class="container-fluid">
+        {{#if (eq user.user.rol "administrador")}}
         <div class="row" style="margin-bottom: 20px;">
-            {{#if (eq user.user.rol "administrador")}}
             <div class="col-lg-7" id="formSearchPersonal">
                 <div class="card">
                     <div class="card-body rounded-bottom bg-white">
@@ -25,7 +25,7 @@
                                 <div class="col-lg-7">
                                     <div class="form-group" style="margin: auto;">
                                         <select class="form-control" id="username" name="ie" style="width: 100%;">
-                                            <option value="{{username}}" selected>{{ie}}</option>
+                                            <option value="{{ie}}" selected>{{nameIE}}</option>
                                             {{#each institutions}}
                                             <option value="{{idInstitucion}}">{{nombreNivel}} - {{nombreInstitucion}}
                                             </option>
@@ -47,8 +47,8 @@
                     </div>
                 </div>
             </div>
-            {{/if}}
         </div>
+        {{/if}}
         <div class="row" style="margin-bottom: 20px;">
             <div class="col-lg-12">
                 <div class="card">
@@ -56,6 +56,7 @@
                         <h1 class="text-titles text-center">
                             <small>Documentos de Gestión Interna</small>
                         </h1>
+                        {{#if (eq user.user.rol "directivo")}}
                         <form action="/documents/ie/{{ie}}" method="POST" enctype="multipart/form-data">
                             <div>
                                 <label>ARCHIVO PDF</label>
@@ -68,6 +69,7 @@
                                 </button>
                             </p>
                         </form>
+                        {{/if}}
                         <div class="row" style="padding-top: 3%;">
                             {{#each documents}}
                             <div class="col-md-2" style="text-align: center;">
@@ -90,9 +92,9 @@
                             <small>Sesiones de trabajo</small>
                         </h1>
                         <div class="row" style="padding-top: 3%;">
-                            {{#each schoolYear}}
+                            {{#each anios}}
                             <div class="col-md-2" style="text-align: center;">
-                                <a href="/documents/{{nombreAnio}}">
+                                <a href="/documents/{{nombreAnio}}_{{ie}}">
                                     <img src="/assets/img/folder.png" alt="" width="50%">
                                     <p>{{nombreAnio}}</p>
                                 </a>

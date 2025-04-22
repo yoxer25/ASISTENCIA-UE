@@ -16,11 +16,21 @@ export const getDocuments = async (req, res) => {
   const institutions = await Institution.getInstitution();
   try {
     const schoolYear = await SchoolYear.getSchoolYear();
+    const anios = [];
+    for (let i = 0; i < schoolYear.length; i++) {
+      const element = schoolYear[i];
+      const objet = {
+        idAnio: element.idAnio,
+        nombreAnio: element.nombreAnio,
+        ie,
+      };
+      anios.push(objet);
+    }
     const documents = await DocumentIE.getDocument(ie);
     res.render("documents/index", {
       user,
       institutions,
-      schoolYear,
+      anios,
       ie,
       documents,
     });
@@ -31,8 +41,35 @@ export const getDocuments = async (req, res) => {
 
 // para consultar documentos por IE (solo administrador)
 export const getDocumentsByIE = async (req, res) => {
+  const user = req.session;
+  const institutions = await Institution.getInstitution();
   const { ie } = req.body;
-  console.log(ie);
+  try {
+    const schoolYear = await SchoolYear.getSchoolYear();
+    const documents = await DocumentIE.getDocument(ie);
+    const [ieDB] = await Institution.getInstitutionById(ie);
+    const nameIE = `${ieDB.nombreNivel} - ${ieDB.nombreInstitucion}`;
+    const anios = [];
+    for (let i = 0; i < schoolYear.length; i++) {
+      const element = schoolYear[i];
+      const objet = {
+        idAnio: element.idAnio,
+        nombreAnio: element.nombreAnio,
+        ie,
+      };
+      anios.push(objet);
+    }
+    res.render("documents/index", {
+      user,
+      institutions,
+      anios,
+      ie,
+      nameIE,
+      documents,
+    });
+  } catch (error) {
+    res.redirect("/documents");
+  }
 };
 
 /* controla lo que se debe mostrar al momento de visitar la
@@ -40,14 +77,19 @@ página de documentos por año, aquí veremos las carpetas
 por cada docente */
 export const getDocumentByName = async (req, res) => {
   const user = req.session;
-  const ie = user.user.name;
   const { anio } = req.params;
   try {
-    const [schoolYear] = await SchoolYear.getSchoolYearByName(anio);
+    const str = anio.split("_");
+    const year = str[0];
+    const ie = str[1];
+    const [schoolYear] = await SchoolYear.getSchoolYearByName(year);
+    console.log(schoolYear);
     const profesor = await Personal.getPersonal(ie);
+    console;
     const fileProfesor = await FileProfesor.getFile(ie, schoolYear.idAnio);
     res.render("documents/indexByAnio", { user, profesor, fileProfesor, anio });
   } catch (error) {
+    console.log(error.message);
     res.render("documents/indexByAnio", { user });
   }
 };
@@ -74,7 +116,9 @@ export const fileProfesor = async (req, res) => {
   const { profesor } = req.body;
 
   try {
-    const [schoolYear] = await SchoolYear.getSchoolYearByName(anio);
+    const str = anio.split("_");
+    const year = str[0];
+    const [schoolYear] = await SchoolYear.getSchoolYearByName(year);
     const [fileProfesor] = await FileProfesor.getById(
       schoolYear.idAnio,
       profesor

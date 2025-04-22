@@ -14,11 +14,7 @@ export class FileProfesor {
       "SELECT * FROM carpeta_docente c INNER JOIN personal p ON p.idPersonal = c.idPersonal INNER JOIN anio_escolar ae ON c.idAnio = ae.idAnio WHERE (c.idInstitucion = ? AND c.idAnio = ?) AND c.estado != 0",
       [ie, anio]
     );
-    if (fileProfesor != "") {
       return fileProfesor;
-    } else {
-      throw new Error("Datos no encontrados");
-    }
   }
 
   // para crear carpetas por docente

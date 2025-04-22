@@ -22,10 +22,11 @@ export class DocumentProfesor {
   }
 
   // para agregar documentos por docente
-  static async set(file, document) {
+  static async set(file, originalname, filename) {
     const newDocument = {
       idCarpeta: file,
-      nombreDocumento: document,
+      nombreOriginal: originalname,
+      nombreDocumento: filename,
       fechaCreado: helpers.formatDateTime(),
     };
     const [res] = await pool.query("INSERT INTO documento_profesor SET ?", [

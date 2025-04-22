@@ -30,6 +30,8 @@ helpers.formatTime = (date) => {
   // Convierte la hora a UTC antes de formatearla
   return dayjs.utc(date).format("HH:mm:ss");
 };
+/* Para obtener hora actual en la que se suben los PDF */
+helpers.formatTimePDF = () => dayjs().format("HH:mm:ss")
 
 /* para verificar si la institución es "ue", mostrar las
 columnas "segunda entrada" y "segunda salida" en las

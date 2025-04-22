@@ -18,10 +18,11 @@ export class DocumentIE {
   }
 
   // para agregar documentos por IE
-  static async set(ie, document) {
+  static async set(ie, originalname, filename) {
     const newDocument = {
       idInstitucion: ie,
-      nombreDocumento: document,
+      nombreOriginal: originalname,
+      nombreDocumento: filename,
       fechaCreado: helpers.formatDateTime(),
     };
     const [res] = await pool.query("INSERT INTO documento_institucion SET ?", [

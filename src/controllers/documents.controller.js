@@ -89,7 +89,6 @@ export const getDocumentByName = async (req, res) => {
     const fileProfesor = await FileProfesor.getFile(ie, schoolYear.idAnio);
     res.render("documents/indexByAnio", { user, profesor, fileProfesor, anio });
   } catch (error) {
-    console.log(error.message);
     res.render("documents/indexByAnio", { user });
   }
 };
@@ -158,11 +157,10 @@ export const documentProfesor = async (req, res) => {
   const { idCarpeta } = req.params;
   try {
     if (req.file) {
-      const { mimetype } = req.file;
-      const { originalname } = req.file;
+      const { mimetype, originalname, filename  } = req.file;
       if (mimetype === "application/pdf") {
         savePDF(req.file);
-        const resDB = await DocumentProfesor.set(idCarpeta, originalname);
+        const resDB = await DocumentProfesor.set(idCarpeta, originalname, filename);
         if (resDB.affectedRows > 0) {
           // Si el registro es exitoso
           res.cookie("success", ["¡Registro exitoso!"], {
@@ -193,6 +191,7 @@ export const documentProfesor = async (req, res) => {
       throw new Error("Seleccione un archivo .pdf");
     }
   } catch (error) {
+    console.log(error.message);
     res.redirect(`/documents/file/${idCarpeta}`);
   }
 };
@@ -202,11 +201,10 @@ export const documentIE = async (req, res) => {
   const { idIE } = req.params;
   try {
     if (req.file) {
-      const { mimetype } = req.file;
-      const { originalname } = req.file;
+      const { mimetype, originalname, filename  } = req.file;
       if (mimetype === "application/pdf") {
         savePDF(req.file);
-        const resDB = await DocumentIE.set(idIE, originalname);
+        const resDB = await DocumentIE.set(idIE, originalname, filename);
         if (resDB.affectedRows > 0) {
           // Si el registro es exitoso
           res.cookie("success", ["¡Registro exitoso!"], {
@@ -243,7 +241,7 @@ export const documentIE = async (req, res) => {
 
 // función para que el pdf subido se guarde con su nombre original dentro de la carpeta "src/public/documents"
 const savePDF = (file) => {
-  const newPath = `./src/public/documents/${file.originalname}`;
+  const newPath = `./src/public/documents/${file.filename}.pdf`;
   fs.renameSync(file.path, newPath);
   return newPath;
 };

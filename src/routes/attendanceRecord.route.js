@@ -20,7 +20,7 @@ const router = Router();
 
 const upload = multer({ dest: "src/archives/" });
 
-// rutas de la página principal
+// rutas de la página registro de asistencia
 router.get("/importData", requireToken, attendanceRecordCtrl.getImportData);
 router.post("/importData", requireToken, upload.single("excel"), attendanceRecordCtrl.importData);
 router.post("/", requireToken, attendanceRecordCtrl.getAttendanceRecord);

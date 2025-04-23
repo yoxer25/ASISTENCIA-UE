@@ -14,7 +14,7 @@ caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
-// rutas de la página principal
+// rutas de la página mi cuenta
 router.get("/signIn", myaccountCtrl.getSignIn);
 router.post("/signIn", myaccountCtrl.signIn);
 router.get("/LogOut", requireToken, myaccountCtrl.logOut);

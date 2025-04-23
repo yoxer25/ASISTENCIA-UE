@@ -67,7 +67,6 @@ export const getPersonal = async (req, res) => {
       pages: Math.ceil(counts.personals / forPage),
     });
   } catch (error) {
-    console.log(error.message);
     res.render("personal/index", { user, institutions });
   }
 };
@@ -304,7 +303,6 @@ export const set = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error.message);
     res.redirect("/personals/create");
   }
 };

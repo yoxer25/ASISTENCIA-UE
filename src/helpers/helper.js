@@ -18,12 +18,18 @@ esta fecha es la fecha de creación del registro y se comparará con
 la fecha actual, así de ese modo el botón de eliminar registro solo
 estará disponible para aquellos registros cuya fecha de creación
 sea menor a las 24 horas */
-helpers.formatDateTimeIso = (date) => dayjs(date).format('YYYY-MM-DDTHH:mm:ss');
+helpers.formatDateTimeIso = (date) => dayjs(date).format("YYYY-MM-DDTHH:mm:ss");
 
 /* para formatear fechas para las vistas; para la fecha de registro
 y hora de registro en la tabla "registro_asistencia" en la base de datos */
-helpers.formatDate = (date) => dayjs(date).format("YYYY-MM-DD");
-helpers.formatTime = (date) => dayjs(date).format("HH:mm:ss");
+helpers.formatDate = (date) => {
+  // Convierte la fecha a UTC antes de formatearla
+  return dayjs.utc(date).format("YYYY-MM-DD");
+};
+helpers.formatTime = (date) => {
+  // Convierte la hora a UTC antes de formatearla
+  return dayjs.utc(date).format("HH:mm:ss");
+};
 
 /* para verificar si la institución es "ue", mostrar las
 columnas "segunda entrada" y "segunda salida" en las

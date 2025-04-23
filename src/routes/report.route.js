@@ -16,7 +16,7 @@ caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
-// rutas de la página principal
+// rutas de la página reportes
 router.post("/", requireToken, reportCtrl.getReport);
 router.post("/download", requireToken, reportCtrl.generateExcel, reportCtrl.download);
 router.get("/page:num", requireToken, reportCtrl.getData);

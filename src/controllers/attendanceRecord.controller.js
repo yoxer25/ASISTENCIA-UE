@@ -2,6 +2,13 @@ import { Personal } from "../models/personal.model.js";
 import { helpers } from "../helpers/helper.js";
 // para cambiar nombre del excel a guardar
 import fs from "node:fs";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js"; // Importa el plugin UTC con la extensión .js
+import timezone from "dayjs/plugin/timezone.js"; // Importa el plugin Timezone con la extensión .js
+
+dayjs.extend(utc); // Extiende con UTC
+dayjs.extend(timezone); // Extiende con Timezone
+
 // importamos el módulo "xlsx-populate" para poder leer archivos .xlsx
 import xlsxPopulate from "xlsx-populate";
 import { AttendanceRecord } from "../models/attendanceRecord.model.js";
@@ -281,7 +288,7 @@ export const importData = async (req, res) => {
           if (element[0] !== undefined) {
             const [personal] = await Personal.getId(institution, element[0]);
             const idPersonal = personal.idPersonal;
-            const datetimeExcel = numeroAFecha(element[1], true);
+            const datetimeExcel = numeroAFecha(element[1]);
             const registrationDate = helpers.formatDate(datetimeExcel);
             const registrationTime = helpers.formatTime(datetimeExcel);
             if (!registers[idPersonal]) {
@@ -320,10 +327,10 @@ export const importData = async (req, res) => {
           });
 
           const turnoPersonal = register.turno;
-          let horaEntrada1 = convertirATotalMinutos("08:00:00");
+          let horaEntrada = convertirATotalMinutos("02:00:00");
           let horaEntrada1Hasta = convertirATotalMinutos("10:00:00");
 
-          let horaEntrada2Desde = convertirATotalMinutos("14:00:00");
+          let horaEntrada2Desde = convertirATotalMinutos("13:20:00");
           let horaEntrada2Hasta = convertirATotalMinutos("15:00:00");
 
           if (turnoPersonal === "tarde") {
@@ -343,7 +350,10 @@ export const importData = async (req, res) => {
             register.marcas.forEach((registroHora) => {
               const horaMarco = convertirATotalMinutos(registroHora);
               if (turnoPersonal === "ue") {
-                if (horaMarco <= horaEntrada1Hasta) {
+                if (
+                  horaMarco >= horaEntrada &&
+                  horaMarco <= horaEntrada1Hasta
+                ) {
                   if (!attenRec.firstHourEntry) {
                     attenRec.firstHourEntry = registroHora;
                   }
@@ -421,7 +431,6 @@ export const importData = async (req, res) => {
             if (!attenRec.secondDepartureTime) {
               attenRec.secondDepartureTime = null;
             }
-
             const [resAttenRec] =
               await AttendanceRecord.getAttendanceRecordForCreate(
                 attenRec.institution,
@@ -477,19 +486,16 @@ const saveExcel = (file) => {
   return newPath;
 };
 
-// función para convertir números a fecha
-const numeroAFecha = (numeroDeDias, esExcel = false) => {
-  const diasDesde1900 = esExcel ? 25568 + 1 : 25568;
-  const datafe = new Date((numeroDeDias - diasDesde1900) * 86400000);
-  return new Date(
-    datafe.getFullYear(),
-    datafe.getMonth(),
-    datafe.getDate(),
-    datafe.getHours() + 5,
-    datafe.getMinutes(),
-    datafe.getSeconds(),
-    datafe.getMilliseconds()
-  );
+// función para convertir número de Excel a UTC y luego guardarlo en la base de datos en UTC
+const numeroAFecha = (numeroDeDias) => {
+  // Convertir el número de Excel a UTC
+  const fechaUtc = new Date((numeroDeDias - 25569) * 86400000);
+
+  // Convertir a UTC explícitamente con Day.js
+  const fechaUtcDayjs = dayjs.utc(fechaUtc);
+
+  // Retorna la fecha en formato ISO 8601 en UTC (sin zona horaria local)
+  return fechaUtcDayjs.toISOString();
 };
 
 // función para convertir HH:MM:SS a minutos
@@ -513,11 +519,11 @@ export const deleteById = async (req, res) => {
       res.redirect("/attendanceRecords/page1");
     } else {
       // Si el registro falla
-      res.cookie("error", ["¡Error al agregar registro!"], {
+      res.cookie("error", ["¡Error al eliminar registro!"], {
         httpOnly: true,
         maxAge: 6000,
       }); // 6 segundos
-      throw new Error("Error al agregar registro");
+      throw new Error("Error al eliminar registro");
     }
   } catch (error) {
     res.redirect("/attendanceRecords/page1");

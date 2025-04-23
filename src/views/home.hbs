@@ -11,18 +11,9 @@
         </div>
     </div>
     <div class="container-fluid">
-        <div class="full-box text-center" id="home" style="padding: 30px 10px;"></div>
-    </div>
-    {{>footer/footer}}
-</section>
-
-{{>navigation/navigation}}
-
-<script>
-    const userHome = ({{{ convertJson user.user }}});
-    const home = document.getElementById("home");
-    if (userHome.rol === "administrador") {
-        home.innerHTML = `<a href="/users/page1">
+        <div class="full-box text-center" style="padding: 30px 10px;">
+            {{#if (eq user.user.rol "administrador")}}
+            <a href="/users/page1">
                 <article class="full-box tile">
                     <div class="full-box tile-title text-center text-titles text-uppercase">
                         Usuarios
@@ -54,6 +45,7 @@
                     </div>
                 </article>
             </a>
+            {{/if}}
             <a href="/personals/page1">
                 <article class="full-box tile">
                     <div class="full-box tile-title text-center text-titles text-uppercase">
@@ -69,24 +61,10 @@
                         <small>Registros</small>
                     </div>
                 </article>
-            </a>`;
-    } else {
-        home.innerHTML = `
-            <a href="/personals/page1">
-                <article class="full-box tile">
-                    <div class="full-box tile-title text-center text-titles text-uppercase">
-                        Personal
-                    </div>
-                    <div class="full-box tile-icon text-center">
-                        <i class="zmdi zmdi-male-alt"></i>
-                    </div>
-                    <div class="full-box tile-number text-titles">
-                        {{#each totalPersonals}}
-                        <p class="full-box">{{personals}}</p>
-                        {{/each}}
-                        <small>Registros</small>
-                    </div>
-                </article>
-            </a>`;
-    }
-</script>
+            </a>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}

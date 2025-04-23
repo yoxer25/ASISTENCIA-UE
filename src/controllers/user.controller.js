@@ -14,7 +14,6 @@ export const getUsers = async (req, res) => {
   const user = req.session;
   try {
     const users = await User.getUser(ofset);
-    console.log(users);
     const [counts] = await User.countUsers();
     res.render("user/index", {
       user,

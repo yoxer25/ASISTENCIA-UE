@@ -407,6 +407,10 @@ export const generateExcel = async (req, res, next) => {
       if (element.nombreTurno === "ue") {
         minNoTrabajados =
           primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
+        // Convertir minutos en horas y minutos (si supera los 59 minutos)
+        const hrs = Math.floor(minNoTrabajados / 60);
+        const minutosRestantes = minNoTrabajados % 60;
+
         workbook
           .sheet("Sheet1")
           .cell("F" + (i + 2))
@@ -415,25 +419,18 @@ export const generateExcel = async (req, res, next) => {
           .sheet("Sheet1")
           .cell("G" + (i + 2))
           .value(element.segundaSalida);
-        if (minNoTrabajados >= 60) {
-          const hora = Math.floor(minNoTrabajados / 60);
-          const minuto = minNoTrabajados % 60;
+
+        // Mostrar las horas y minutos correctamente si hay más de 0 minutos
+        if (hrs > 0) {
           workbook
             .sheet("Sheet1")
             .cell("H" + (i + 2))
-            .value(hora + "h " + minuto + " minutos");
-        }
-        if (minNoTrabajados < 60 && minNoTrabajados > 0) {
+            .value(hrs + "h " + Math.floor(minutosRestantes) + " minutos");
+        } else {
           workbook
             .sheet("Sheet1")
             .cell("H" + (i + 2))
-            .value(minNoTrabajados + " minutos");
-        }
-        if (minNoTrabajados <= 0) {
-          workbook
-            .sheet("Sheet1")
-            .cell("H" + (i + 2))
-            .value(minNoTrabajados + " minutos");
+            .value(Math.floor(minutosRestantes) + " minutos");
         }
 
         workbook
@@ -442,27 +439,18 @@ export const generateExcel = async (req, res, next) => {
           .value(message);
       } else {
         minNoTrabajados = primeraTardanza + primeraFalta;
-        if (minNoTrabajados >= 60) {
-          const hora = Math.floor(minNoTrabajados / 60);
-          const minuto = minNoTrabajados % 60;
+        // Mostrar las horas y minutos correctamente si hay más de 0 minutos
+        if (hrs > 0) {
           workbook
             .sheet("Sheet1")
             .cell("F" + (i + 2))
-            .value(hora + "h " + minuto + " minutos");
-        }
-        if (minNoTrabajados < 60 && minNoTrabajados > 0) {
+            .value(hrs + "h " + Math.floor(minutosRestantes) + " minutos");
+        } else {
           workbook
             .sheet("Sheet1")
             .cell("F" + (i + 2))
-            .value(minNoTrabajados + " minutos");
+            .value(Math.floor(minutosRestantes) + " minutos");
         }
-        if (minNoTrabajados <= 0) {
-          workbook
-            .sheet("Sheet1")
-            .cell("F" + (i + 2))
-            .value(minNoTrabajados + " minutos");
-        }
-
         workbook
           .sheet("Sheet1")
           .cell("G" + (i + 2))
@@ -471,6 +459,7 @@ export const generateExcel = async (req, res, next) => {
     }
     workbook.toFileAsync("./src/archives/reporte.xlsx");
   } catch (error) {
+    console.log(error.message);
   }
   next();
 };
@@ -488,8 +477,9 @@ export const download = async (req, res) => {
 // para convertir HH:MM:SS a minutos
 const convertirATotalMinutos = (tiempo) => {
   if (tiempo !== null) {
-    const [horas, minutos, segundos] = tiempo.split(":").map(Number);
-    const totalMinutos = horas * 60 + minutos + Math.round(segundos / 60);
+    let [horas, minutos, segundos] = tiempo.split(":").map(Number);
+    let totalSegundos = horas * 3600 + minutos * 60 + segundos;
+    let totalMinutos = totalSegundos / 60;
     return totalMinutos;
   } else {
     return null;

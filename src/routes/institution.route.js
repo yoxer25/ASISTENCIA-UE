@@ -13,7 +13,7 @@ caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
-// rutas de la página principal
+// rutas de la página instituciones
 router.get("/page:num", requireToken, institutionCtrl.getData);
 router.get("/create", requireToken, institutionCtrl.getCreate);
 router.post("/create", requireToken, institutionCtrl.set);

@@ -151,7 +151,7 @@ $(".btn-delete-personal").on("click", function () {
   });
 });
 
-// modal para confirmar si se desea eliminar un el registro de asistencia
+// modal para confirmar si se desea eliminar un registro de asistencia
 $(".btn-delete-attendanceRecord").on("click", function () {
   // Obtener los datos del trabajador desde los atributos `data-*` del enlace
   var idRegistroAsistencia = $(this).data("id");

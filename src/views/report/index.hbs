@@ -12,7 +12,14 @@
     </div>
     <div class="container-fluid">
         <div class="row" style="margin-bottom: 20px;">
-            <div class="col-lg-5">
+            <div class="col-lg-6">
+                <a href="/attendanceRecords/importData"><button class="btn btn-raised btn-sm"
+                        style="background-color: #01579B;">
+                        <p style="font-size: 15px; margin: auto; color: #fff;"><i class="zmdi zmdi-upload"></i> Importar
+                            Excel</p>
+                    </button></a>
+            </div>
+            <div class="col-lg-6" style="text-align: right;">
                 <form action="/reports/download" method="POST" id="downloadForm">
                     <input class="form-control" type="hidden" id="ie" name="ie" value="{{ie}}">
                     <input type="hidden" id="option" name="option" value="{{option}}">
@@ -57,11 +64,12 @@
                                     {{/if}}
                                     <th class="text-center">Tiempo no trabajado</th>
                                     <th class="text-center">Observaciones</th>
+                                    <th class="text-center">Eliminar</th>
                                 </tr>
                             </thead>
                             <tbody id="list">
                                 <tr>
-                                    <td colspan="9">No hay registros para mostrar</td>
+                                    <td colspan="10">No hay registros para mostrar</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -174,7 +182,9 @@
 
             let fechaFormateada = `${year}-${month}-${day}`;
 
-            let fila = '<tbody><tr scope="col"><td>';
+            const fechaCreado = dato.fechaCreado;
+
+            let fila = `<tbody><tr scope="col" data-fecha="${fechaCreado}"><td>`;
             fila += dato.dniPersonal;
             fila += "</td>";
             fila += "<td>";
@@ -232,6 +242,9 @@
             fila += "<td>";
             fila += message;
             fila += "</td>";
+            fila += "<td>";
+            fila += `<a href="#!" id="myButton" class="btn-delete-attendanceRecord btn btn-danger btn-raised btn-xs" data-id="${dato.idRegistroAsistencia}" data-personal="${dato.idPersonal}" data-institucion="${dato.idInstitucion}"><i class="zmdi zmdi-delete"></i></a>`;
+            fila += "</td>"
             fila += "</tr></tbody>";
             stringTable += fila;
         }
@@ -289,4 +302,27 @@
     }
 
     document.querySelector(`#${option}`).checked = true;
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filas = document.querySelectorAll("#list tr");
+
+        filas.forEach(fila => {
+            const fechaRegistroStr = fila.getAttribute("data-fecha");
+            if (fechaRegistroStr) {
+                const fechaRegistro = new Date(fechaRegistroStr);
+                const ahora = new Date();
+                const diferenciaHoras = (ahora - fechaRegistro) / (1000 * 60 * 60); // Convertir ms a horas
+
+                if (diferenciaHoras > 24) {
+                    const botonEliminar = fila.querySelector(".btn-delete-attendanceRecord");
+                    if (botonEliminar) {
+                        botonEliminar.style.display = "none"; // Ocultar el botón
+                    }
+                }
+            }
+        });
+    });
 </script>

@@ -19,13 +19,27 @@ import { requireToken } from "../middlewares/requireToken.js";
 const router = Router();
 
 const upload = multer({ dest: "src/archives/" });
+const uploadIE = multer({ dest: "src/asistencia/" });
 
 // rutas de la página registro de asistencia
-router.get("/importData", requireToken, attendanceRecordCtrl.getImportData);
-router.post("/importData", requireToken, upload.single("excel"), attendanceRecordCtrl.importData);
+router.get("/", requireToken, attendanceRecordCtrl.getData);
 router.post("/", requireToken, attendanceRecordCtrl.getAttendanceRecord);
-router.get("/page:num", requireToken, attendanceRecordCtrl.getData);
-router.patch("/:Id", requireToken, attendanceRecordCtrl.deleteById);
+router.post(
+  "/importExcel",
+  requireToken,
+  uploadIE.single("excelAttendanceRecord"),
+  attendanceRecordCtrl.postAttendanceRecord
+);
+router.get("/importData", requireToken, attendanceRecordCtrl.getImportData); // desde la página de reportes
+router.post(
+  "/importData",
+  requireToken,
+  upload.single("excel"),
+  attendanceRecordCtrl.importData
+); // desde la página de reportes
+router.get("/file/:carpeta", requireToken, attendanceRecordCtrl.getDataByAnio);
+router.get("/download/:archive", requireToken, attendanceRecordCtrl.download);
+router.patch("/:Id", requireToken, attendanceRecordCtrl.deleteById); // desde la página de reportes
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

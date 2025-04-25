@@ -49,8 +49,8 @@ export const getDocumentsByIE = async (req, res) => {
   try {
     const schoolYear = await SchoolYear.getSchoolYear();
     const documents = await DocumentIE.getDocument(ie);
-    const [ieDB] = await Institution.getInstitutionById(ie);
-    const nameIE = `${ieDB.nombreNivel} - ${ieDB.nombreInstitucion}`;
+    ct [ieDB] = await Institution.getInstitutionById(ie);
+    const nameIE = `${ionseDB.nombreNivel} - ${ieDB.nombreInstitucion}`;
     const anios = [];
     for (let i = 0; i < schoolYear.length; i++) {
       const element = schoolYear[i];

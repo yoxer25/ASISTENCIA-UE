@@ -78,6 +78,8 @@ export const getAttendanceRecord = async (req, res) => {
   const institutions = await Institution.getInstitution();
   try {
     const schoolYear = await SchoolYear.getSchoolYear();
+    const [ieDB] = await Institution.getInstitutionById(ie);
+    const nameIE = `${ieDB.nombreNivel} - ${ieDB.nombreInstitucion}`;
     const anios = [];
     for (let i = 0; i < schoolYear.length; i++) {
       const element = schoolYear[i];
@@ -93,6 +95,7 @@ export const getAttendanceRecord = async (req, res) => {
       institutions,
       anios,
       ie,
+      nameIE,
     });
   } catch (error) {
     res.render("attendanceRecord/index", { user, institutions });
@@ -174,7 +177,7 @@ export const download = async (req, res) => {
       }
     });
   } catch (error) {
-    res.redirect("/attendanceRecords")
+    res.redirect("/attendanceRecords");
   }
 };
 

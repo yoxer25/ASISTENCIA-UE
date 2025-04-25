@@ -49,8 +49,8 @@ export const getDocumentsByIE = async (req, res) => {
   try {
     const schoolYear = await SchoolYear.getSchoolYear();
     const documents = await DocumentIE.getDocument(ie);
-    ct [ieDB] = await Institution.getInstitutionById(ie);
-    const nameIE = `${ionseDB.nombreNivel} - ${ieDB.nombreInstitucion}`;
+    const [ieDB] = await Institution.getInstitutionById(ie);
+    const nameIE = `${ieDB.nombreNivel} - ${ieDB.nombreInstitucion}`;
     const anios = [];
     for (let i = 0; i < schoolYear.length; i++) {
       const element = schoolYear[i];
@@ -86,8 +86,16 @@ export const getDocumentByName = async (req, res) => {
     const ie = str[1];
     const [schoolYear] = await SchoolYear.getSchoolYearByName(year);
     const profesor = await Personal.getPersonal(ie);
+    const [IE] = await Institution.getInstitutionById(ie);
     const fileProfesor = await FileProfesor.getFile(ie, schoolYear.idAnio);
-    res.render("documents/indexByAnio", { user, profesor, fileProfesor, anio });
+    res.render("documents/indexByAnio", {
+      user,
+      profesor,
+      fileProfesor,
+      anio,
+      IE,
+      year,
+    });
   } catch (error) {
     res.render("documents/indexByAnio", { user });
   }
@@ -100,10 +108,15 @@ export const getDocumentByProfesor = async (req, res) => {
   const user = req.session;
   const { idCarpeta } = req.params;
   try {
-    const documents = await DocumentProfesor.getDocument(idCarpeta);
-    res.render("documents/indexByProfesor", { user, idCarpeta, documents });
+    const str = idCarpeta.split("_");
+    const file = str[0];
+    const personal = str[1];
+    const documents = await DocumentProfesor.getDocument(file);
+    const [dataPersonal] = await Personal.getPersonalById(personal);
+    console.log(dataPersonal);
+    res.render("documents/indexByProfesor", { user, file, documents, dataPersonal });
   } catch (error) {
-    res.render("documents/indexByProfesor", { user, idCarpeta });
+    res.render("documents/indexByProfesor", { user, file });
   }
 };
 
@@ -258,7 +271,7 @@ export const viewPDF = async (req, res) => {
       httpOnly: true,
       maxAge: 6000,
     }); // 6 segundos
-    res.redirect("/documents")
+    res.redirect("/documents");
   }
 };
 

@@ -59,11 +59,14 @@ export const getDataByAnio = async (req, res) => {
     const year = str[0];
     const ie = str[1];
     const documents = await DocumentIE.getDocumentExcel(ie, year);
+    const [IE] = await Institution.getInstitutionById(ie);
     res.render("attendanceRecord/indexByAnio", {
       user,
       institutions,
       carpeta,
       documents,
+      IE,
+      year,
     });
   } catch (error) {
     res.render("attendanceRecord/indexByAnio", { user, institutions });

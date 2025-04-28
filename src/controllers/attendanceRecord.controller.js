@@ -2,6 +2,8 @@ import { Personal } from "../models/personal.model.js";
 import { helpers } from "../helpers/helper.js";
 // para cambiar nombre del excel a guardar
 import fs from "node:fs";
+import path from "path"; //
+import { fileURLToPath } from "url";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js"; // Importa el plugin UTC con la extensión .js
 import timezone from "dayjs/plugin/timezone.js"; // Importa el plugin Timezone con la extensión .js
@@ -13,245 +15,181 @@ dayjs.extend(timezone); // Extiende con Timezone
 import xlsxPopulate from "xlsx-populate";
 import { AttendanceRecord } from "../models/attendanceRecord.model.js";
 import { Institution } from "../models/institution.model.js";
+import { DocumentIE } from "../models/documentIE.model.js";
+import { SchoolYear } from "../models/schoolYear.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
+
+// controla lo que se debe mostrar al momento de visitar la página de asistencia
+export const getData = async (req, res) => {
+  const user = req.session;
+  const ie = user.user.name;
+  const institutions = await Institution.getInstitution();
+  try {
+    const schoolYear = await SchoolYear.getSchoolYear();
+    const anios = [];
+    for (let i = 0; i < schoolYear.length; i++) {
+      const element = schoolYear[i];
+      const objet = {
+        idAnio: element.idAnio,
+        nombreAnio: element.nombreAnio,
+        ie,
+      };
+      anios.push(objet);
+    }
+    res.render("attendanceRecord/index", {
+      user,
+      institutions,
+      anios,
+      ie,
+    });
+  } catch (error) {
+    res.render("attendanceRecord/index", { user, institutions });
+  }
+};
+
+// controla lo que se debe mostrar al momento de visitar la página de asistencia por año
+export const getDataByAnio = async (req, res) => {
+  const user = req.session;
+  const institutions = await Institution.getInstitution();
+  const { carpeta } = req.params;
+  try {
+    const str = carpeta.split("_");
+    const year = str[0];
+    const ie = str[1];
+    const documents = await DocumentIE.getDocumentExcel(ie, year);
+    const [IE] = await Institution.getInstitutionById(ie);
+    res.render("attendanceRecord/indexByAnio", {
+      user,
+      institutions,
+      carpeta,
+      documents,
+      IE,
+      year,
+    });
+  } catch (error) {
+    res.render("attendanceRecord/indexByAnio", { user, institutions });
+  }
+};
+
+/* controla lo que se debe mostrar al momento de visitar la página de
+asistencia consultando por IE */
+export const getAttendanceRecord = async (req, res) => {
+  const user = req.session;
+  const { ie } = req.body;
+  const institutions = await Institution.getInstitution();
+  try {
+    const schoolYear = await SchoolYear.getSchoolYear();
+    const [ieDB] = await Institution.getInstitutionById(ie);
+    const nameIE = `${ieDB.nombreNivel} - ${ieDB.nombreInstitucion}`;
+    const anios = [];
+    for (let i = 0; i < schoolYear.length; i++) {
+      const element = schoolYear[i];
+      const objet = {
+        idAnio: element.idAnio,
+        nombreAnio: element.nombreAnio,
+        ie,
+      };
+      anios.push(objet);
+    }
+    res.render("attendanceRecord/index", {
+      user,
+      institutions,
+      anios,
+      ie,
+      nameIE,
+    });
+  } catch (error) {
+    res.render("attendanceRecord/index", { user, institutions });
+  }
+};
+
+// para importar el consolidado de la asistencia mensual
+export const postAttendanceRecord = async (req, res) => {
+  const user = req.session;
+  const institution = user.user.name;
+  const { carpeta } = req.body;
+  try {
+    if (req.file) {
+      const { mimetype, originalname, filename } = req.file;
+      if (
+        mimetype ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        saveExcelIE(req.file);
+        const str = carpeta.split("_");
+        const year = str[0];
+        const resDB = await DocumentIE.set(
+          institution,
+          originalname,
+          filename,
+          year
+        );
+        if (resDB.affectedRows > 0) {
+          // Si el registro es exitoso
+          res.cookie("success", ["¡Registro exitoso!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
+          res.redirect(`/attendanceRecords/file/${carpeta}`);
+        } else {
+          // Si el registro falla
+          res.cookie("error", ["¡Error al agregar registro!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
+          throw new Error("Error al agregar registro");
+        }
+      } else {
+        res.cookie("error", ["¡Seleccione un archivo excel!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        throw new Error("Seleccione un archivo .xlsx");
+      }
+    } else {
+      res.cookie("error", ["¡Seleccione un archivo excel!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      throw new Error("Seleccione un archivo .xlsx");
+    }
+  } catch (error) {
+    res.redirect(`/attendanceRecords/file/${carpeta}`);
+  }
+};
+
+// para descargar el consolidado de la asistencia mensual
+export const download = async (req, res) => {
+  const { archive } = req.params;
+  try {
+    const nameExcel = archive + ".xlsx";
+    // para establecer la ruta hasta la carpeta "src"
+    const _filename = fileURLToPath(import.meta.url);
+    const _dirname = path.dirname(_filename);
+    const rutaExcel = path.resolve(_dirname, "..", "asistencia", nameExcel);
+
+    res.download(rutaExcel, (err) => {
+      if (err) {
+        res.cookie("error", ["¡Hubo un problema al descargar el archivo!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        throw new Error("Hubo un problema al descargar el archivo");
+      }
+    });
+  } catch (error) {
+    res.redirect("/attendanceRecords");
+  }
+};
+
+// de aquí en adelante se usan en la página de reportes
 
 // controla lo que se debe mostrar al momento de visitar la página de importar data
 export const getImportData = async (req, res) => {
   const user = req.session;
   res.render("attendanceRecord/create", { user });
-};
-
-//controla lo que se debe mostrar al momento de visitar la página de asistencia
-export const getData = async (req, res) => {
-  let forPage = 10;
-  let page = req.params.num || 1;
-  const user = req.session;
-  const institution = user.user.name;
-  const [turnoIE] = await Institution.getInstitutionById(institution);
-  try {
-    const attendanceRecordDB = await AttendanceRecord.getData(institution);
-    let attendanceRecord = attendanceRecordDB.slice(
-      page * forPage - forPage,
-      page * forPage
-    );
-    res.render("attendanceRecord/index", {
-      user,
-      turno: turnoIE.nombreHorario,
-      ie: institution,
-      attendanceRecord,
-      current: page,
-      pages: Math.ceil(attendanceRecordDB.length / forPage),
-      option: null,
-    });
-  } catch (error) {
-    res.render("attendanceRecord/index", {
-      user,
-      turno: turnoIE.nombreHorario,
-    });
-  }
-};
-
-// controla lo que se debe mostrar al momento de visitar la página de asistencia por fechas o usuarios
-export const getAttendanceRecord = async (req, res) => {
-  let forPage = 10;
-  const user = req.session;
-  const rol = user.user.rol;
-  const institution = user.user.name;
-  const fechaActual = new Date();
-  let year = fechaActual.getFullYear();
-  let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0
-  let day = String(fechaActual.getDate()).padStart(2, "0");
-  let [turnoIE] = await Institution.getInstitutionById(institution);
-
-  try {
-    let { startDate, endDate, page, option, username, ie } = req.body;
-    if (startDate !== "") {
-      startDate = startDate;
-    } else {
-      startDate = `${year}-${month}-${day}`;
-    }
-    if (endDate !== "") {
-      endDate = endDate;
-    } else {
-      endDate = `${year}-${month}-${day}`;
-    }
-    if (page !== "") {
-      page = page;
-    } else {
-      page = 1;
-    }
-
-    if (username) {
-      if (rol === "administrador") {
-        if (ie) {
-          ie = ie;
-        } else {
-          ie = institution;
-        }
-        [turnoIE] = await Institution.getInstitutionById(ie);
-        if (option === "dni") {
-          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-            ie,
-            startDate,
-            endDate,
-            undefined,
-            username
-          );
-          let attendanceRecord = attendanceRecordDB.slice(
-            page * forPage - forPage,
-            page * forPage
-          );
-          res.render("attendanceRecord/index", {
-            user,
-            turno: turnoIE.nombreHorario,
-            attendanceRecord,
-            current: page,
-            pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie,
-            username,
-            option,
-            startDate,
-            endDate,
-          });
-        }
-        if (option === "name") {
-          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-            ie,
-            startDate,
-            endDate,
-            username,
-            undefined
-          );
-          let attendanceRecord = attendanceRecordDB.slice(
-            page * forPage - forPage,
-            page * forPage
-          );
-          res.render("attendanceRecord/index", {
-            user,
-            turno: turnoIE.nombreHorario,
-            attendanceRecord,
-            current: page,
-            pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie,
-            username,
-            option,
-            startDate,
-            endDate,
-          });
-        }
-      } else {
-        if (option === "dni") {
-          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-            institution,
-            startDate,
-            endDate,
-            undefined,
-            username
-          );
-          let attendanceRecord = attendanceRecordDB.slice(
-            page * forPage - forPage,
-            page * forPage
-          );
-          res.render("attendanceRecord/index", {
-            user,
-            turno: turnoIE.nombreHorario,
-            attendanceRecord,
-            current: page,
-            pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: institution,
-            username,
-            option,
-            startDate,
-            endDate,
-          });
-        }
-        if (option === "name") {
-          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-            institution,
-            startDate,
-            endDate,
-            username,
-            undefined
-          );
-          let attendanceRecord = attendanceRecordDB.slice(
-            page * forPage - forPage,
-            page * forPage
-          );
-          res.render("attendanceRecord/index", {
-            user,
-            turno: turnoIE.nombreHorario,
-            attendanceRecord,
-            current: page,
-            pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: institution,
-            username,
-            option,
-            startDate,
-            endDate,
-          });
-        }
-      }
-    } else {
-      if (rol === "administrador") {
-        if (ie) {
-          ie = ie;
-        } else {
-          ie = institution;
-        }
-        [turnoIE] = await Institution.getInstitutionById(ie);
-        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          ie,
-          startDate,
-          endDate
-        );
-        let attendanceRecord = attendanceRecordDB.slice(
-          page * forPage - forPage,
-          page * forPage
-        );
-        res.render("attendanceRecord/index", {
-          user,
-          turno: turnoIE.nombreHorario,
-          attendanceRecord,
-          current: page,
-          pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie,
-          username,
-          option,
-          startDate,
-          endDate,
-        });
-      } else {
-        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          institution,
-          startDate,
-          endDate
-        );
-        let attendanceRecord = attendanceRecordDB.slice(
-          page * forPage - forPage,
-          page * forPage
-        );
-        res.render("attendanceRecord/index", {
-          user,
-          turno: turnoIE.nombreHorario,
-          attendanceRecord,
-          current: page,
-          pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie: institution,
-          username,
-          option,
-          startDate,
-          endDate,
-        });
-      }
-    }
-  } catch (error) {
-    res.render("attendanceRecord/index", {
-      user,
-      turno: turnoIE.nombreHorario,
-    });
-  }
 };
 
 /* para importar los datos desde el archivo .xlsx;
@@ -453,7 +391,7 @@ export const importData = async (req, res) => {
         });
 
         function redirectPage() {
-          res.redirect("/attendanceRecords/page1");
+          res.redirect("/reports/page1");
         }
         res.cookie("success", ["¡Registro exitoso!"], {
           httpOnly: true,
@@ -479,9 +417,46 @@ export const importData = async (req, res) => {
   }
 };
 
-// función para que el excel subido se guarde con su nombre original dentro de la carpeta "src/archives"
+// para eliminar un registro de asistencia
+export const deleteById = async (req, res) => {
+  const { Id } = req.params;
+  const { institution, personal } = req.body;
+  try {
+    const resDB = await AttendanceRecord.deleteById(Id, institution, personal);
+    if (resDB.affectedRows > 0) {
+      // Si el registro es exitoso
+      res.cookie("success", ["¡Se eliminó correctamente!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      res.redirect("/reports/page1");
+    } else {
+      // Si el registro falla
+      res.cookie("error", ["¡Error al eliminar registro!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      throw new Error("Error al eliminar registro");
+    }
+  } catch (error) {
+    res.redirect("/reports/page1");
+  }
+};
+
+/* función para que el excel subido se guarde con su nombre
+original dentro de la carpeta "src/archives". Esto es para
+importar la asistencia diaria */
 const saveExcel = (file) => {
   const newPath = `./src/archives/${file.originalname}`;
+  fs.renameSync(file.path, newPath);
+  return newPath;
+};
+
+/* función para que el excel subido se guarde con su nombre
+original dentro de la carpeta "src/asistencia". Esto es para
+importar la asistencia diaria */
+const saveExcelIE = (file) => {
+  const newPath = `./src/asistencia/${file.filename}.xlsx`;
   fs.renameSync(file.path, newPath);
   return newPath;
 };
@@ -503,29 +478,4 @@ const convertirATotalMinutos = (tiempo) => {
   const [horas, minutos, segundos] = tiempo.split(":").map(Number);
   const totalMinutos = horas * 60 + minutos + Math.round(segundos / 60);
   return totalMinutos;
-};
-
-export const deleteById = async (req, res) => {
-  const { Id } = req.params;
-  const { institution, personal } = req.body;
-  try {
-    const resDB = await AttendanceRecord.deleteById(Id, institution, personal);
-    if (resDB.affectedRows > 0) {
-      // Si el registro es exitoso
-      res.cookie("success", ["¡Se eliminó correctamente!"], {
-        httpOnly: true,
-        maxAge: 6000,
-      }); // 6 segundos
-      res.redirect("/attendanceRecords/page1");
-    } else {
-      // Si el registro falla
-      res.cookie("error", ["¡Error al eliminar registro!"], {
-        httpOnly: true,
-        maxAge: 6000,
-      }); // 6 segundos
-      throw new Error("Error al eliminar registro");
-    }
-  } catch (error) {
-    res.redirect("/attendanceRecords/page1");
-  }
 };

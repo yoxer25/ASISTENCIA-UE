@@ -439,7 +439,9 @@ export const generateExcel = async (req, res, next) => {
           .value(message);
       } else {
         minNoTrabajados = primeraTardanza + primeraFalta;
-        // Mostrar las horas y minutos correctamente si hay más de 0 minutos
+        // Convertir minutos en horas y minutos (si supera los 59 minutos)
+        const hrs = Math.floor(minNoTrabajados / 60);
+        const minutosRestantes = minNoTrabajados % 60;
         if (hrs > 0) {
           workbook
             .sheet("Sheet1")
@@ -458,10 +460,14 @@ export const generateExcel = async (req, res, next) => {
       }
     }
     workbook.toFileAsync("./src/archives/reporte.xlsx");
+    next();
   } catch (error) {
-    console.log(error.message);
+    res.cookie("error", ["¡Ocurrió un error al generar el reporte!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
+    res.redirect("/reports/page1");
   }
-  next();
 };
 
 // para descargar el reporte
@@ -471,7 +477,13 @@ export const download = async (req, res) => {
       res.download("./src/archives/reporte.xlsx");
     }
     setTimeout(downloadExcel, 2000);
-  } catch (error) {}
+  } catch (error) {
+    res.cookie("error", ["¡Ocurrió un error al descargar el reporte!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
+    res.redirect("/reports/page1");
+  }
 };
 
 // para convertir HH:MM:SS a minutos

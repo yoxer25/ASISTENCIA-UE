@@ -85,11 +85,17 @@ export const getDocumentByName = async (req, res) => {
     const year = str[0];
     const ie = str[1];
     const [schoolYear] = await SchoolYear.getSchoolYearByName(year);
-    console.log(schoolYear);
     const profesor = await Personal.getPersonal(ie);
-    console;
+    const [IE] = await Institution.getInstitutionById(ie);
     const fileProfesor = await FileProfesor.getFile(ie, schoolYear.idAnio);
-    res.render("documents/indexByAnio", { user, profesor, fileProfesor, anio });
+    res.render("documents/indexByAnio", {
+      user,
+      profesor,
+      fileProfesor,
+      anio,
+      IE,
+      year,
+    });
   } catch (error) {
     res.render("documents/indexByAnio", { user });
   }
@@ -102,10 +108,15 @@ export const getDocumentByProfesor = async (req, res) => {
   const user = req.session;
   const { idCarpeta } = req.params;
   try {
-    const documents = await DocumentProfesor.getDocument(idCarpeta);
-    res.render("documents/indexByProfesor", { user, idCarpeta, documents });
+    const str = idCarpeta.split("_");
+    const file = str[0];
+    const personal = str[1];
+    const documents = await DocumentProfesor.getDocument(file);
+    const [dataPersonal] = await Personal.getPersonalById(personal);
+    console.log(dataPersonal);
+    res.render("documents/indexByProfesor", { user, file, documents, dataPersonal });
   } catch (error) {
-    res.render("documents/indexByProfesor", { user, idCarpeta });
+    res.render("documents/indexByProfesor", { user, file });
   }
 };
 
@@ -197,7 +208,6 @@ export const documentProfesor = async (req, res) => {
       throw new Error("Seleccione un archivo .pdf");
     }
   } catch (error) {
-    console.log(error.message);
     res.redirect(`/documents/file/${idCarpeta}`);
   }
 };
@@ -206,11 +216,12 @@ export const documentProfesor = async (req, res) => {
 export const documentIE = async (req, res) => {
   const { idIE } = req.params;
   try {
+    const anio = "S/N";
     if (req.file) {
       const { mimetype, originalname, filename } = req.file;
       if (mimetype === "application/pdf") {
         savePDF(req.file);
-        const resDB = await DocumentIE.set(idIE, originalname, filename);
+        const resDB = await DocumentIE.set(idIE, originalname, filename, anio);
         if (resDB.affectedRows > 0) {
           // Si el registro es exitoso
           res.cookie("success", ["¡Registro exitoso!"], {
@@ -253,11 +264,14 @@ export const viewPDF = async (req, res) => {
     // para establecer la ruta hasta la carpeta "src"
     const _filename = fileURLToPath(import.meta.url);
     const _dirname = path.dirname(_filename);
-    const rutaPDF = path.resolve(_dirname, '..', 'documents', namePDF);
-    //const rutaPDF = path.join(__dirname, "documents", namePDF);
-
+    const rutaPDF = path.resolve(_dirname, "..", "documents", namePDF);
     res.sendFile(rutaPDF);
   } catch (error) {
+    res.cookie("error", ["Ocurrió un error al abrir el archivo pdf!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
+    res.redirect("/documents");
   }
 };
 

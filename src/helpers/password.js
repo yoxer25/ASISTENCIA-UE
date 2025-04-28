@@ -13,9 +13,5 @@ password.encryptPassword = async (passwordFrontEnd) => {
 
 // para comparar la contraseña que ingresa el user con la que est guardada en la BD
 password.matchPassword = async (passwordFrontEnd, passwordDB) => {
-  try {
-      return await bcrytp.compare(passwordFrontEnd, passwordDB);
-  } catch (error) {
-      console.log(error);
-  }
+  return await bcrytp.compare(passwordFrontEnd, passwordDB);
 };

@@ -62,4 +62,18 @@ export class Area {
       return res;
     }
   }
+
+  /* para consultar datos de todas las áreas que sean
+  diferentes a la área que tiene registrado el trabajador */
+  static async getSelectArea(id) {
+    const [categories] = await pool.query(
+      "SELECT * FROM area a WHERE NOT EXISTS (SELECT * FROM personal p WHERE a.idArea = p.idArea AND a.estado != 0 AND p.idPersonal = ?)",
+      [id]
+    );
+    if (categories) {
+      return categories;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
+  }
 }

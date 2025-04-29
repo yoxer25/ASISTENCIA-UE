@@ -17,6 +17,17 @@
             <input class="form-control" type="text" id="idReloj" name="idReloj" value="{{personal.idReloj}}"
                 onkeypress="return solonumeros(event)">
         </div>
+        {{#if (eq user.user.name "200006")}}
+        <div class="form-group label-floating" id="area">
+            <label class="control-label">Área</label>
+            <select class="form-control" id="area" name="area" style="width: 100%;">
+                <option value="{{personal.idArea}}" selected>{{personal.nombreArea}}</option>
+                {{#each areas}}
+                <option value="{{idArea}}">{{nombreArea}}</option>
+                {{/each}}
+            </select>
+        </div>
+        {{/if}}
         {{#if (eq turnoIE 2)}}
         <div class="form-group label-floating" id="turno">
             <label class="control-label">Turno</label>

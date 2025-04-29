@@ -73,7 +73,6 @@ export const setArea = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error.message);
     res.redirect("/areas");
   }
 };

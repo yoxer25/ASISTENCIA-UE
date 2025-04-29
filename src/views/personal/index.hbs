@@ -60,22 +60,27 @@
                             <thead>
                                 <tr>
                                     <th class="text-center">DNI</th>
+                                    {{#if (eq user.user.rol "administrador")}}
                                     <th class="text-center">Nombre I.E</th>
+                                    <th class="text-center">Turno</th>
+                                    <th class="text-center">Área</th>
+                                    {{/if}}
                                     <th class="text-center">Nombres y Apellidos</th>
                                     <th class="text-center">Id Reloj</th>
-                                    <th class="text-center">Turno</th>
                                     <th class="text-center">Editar</th>
                                     <th class="text-center">Eliminar</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                {{#if (eq user.user.rol "administrador")}}
                                 {{#each personals}}
                                 <tr>
                                     <td>{{dniPersonal}}</td>
                                     <td>{{nombreInstitucion}}</td>
+                                    <td>{{nombreTurno}}</td>
+                                    <td>{{nombreArea}}</td>
                                     <td>{{nombrePersonal}}</td>
                                     <td>{{idReloj}}</td>
-                                    <td>{{nombreTurno}}</td>
                                     <td><a href="/personals/{{idPersonal}}" class="btn btn-info btn-raised btn-xs"><i
                                                 class="zmdi zmdi-refresh"></i></a>
                                     </td>
@@ -87,9 +92,31 @@
                                 </tr>
                                 {{else}}
                                 <tr>
-                                    <td colspan="7">No hay registros para mostrar</td>
+                                    <td colspan="8">No hay registros para mostrar</td>
                                 </tr>
                                 {{/each}}
+                                {{else}}
+                                {{#each personals}}
+                                <tr>
+                                    <td>{{dniPersonal}}</td>
+                                    <td>{{nombrePersonal}}</td>
+                                    <td>{{idReloj}}</td>
+                                    <td><a href="/personals/{{idPersonal}}" class="btn btn-info btn-raised btn-xs"><i
+                                                class="zmdi zmdi-refresh"></i></a>
+                                    </td>
+                                    <td><a href="#!" class="btn-delete-personal btn btn-danger btn-raised btn-xs"
+                                            data-id="{{idPersonal}}" data-dni="{{dniPersonal}}"
+                                            data-nombre="{{nombrePersonal}}" data-idreloj="{{idReloj}}"><i
+                                                class="zmdi zmdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="5">No hay registros para mostrar</td>
+                                </tr>
+                                {{/each}}
+                                {{/if}}
+
                             </tbody>
                         </table>
                         <ul class="pagination pagination-sm" id="pagination">

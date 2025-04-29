@@ -33,14 +33,14 @@ export class Personal {
   static async getPersonal(institution, ofset) {
     if (ofset === undefined) {
       const [personalDb] = await pool.query(
-        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj, t.nombreTurno FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal",
+        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj, t.nombreTurno, a.nombreArea FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN area a ON a.idArea = p.idArea WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal",
         [institution]
       );
 
       return personalDb;
     } else {
       const [personalDb] = await pool.query(
-        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj, t.nombreTurno FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
+        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj, t.nombreTurno, a.nombreArea FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN area a ON a.idArea = p.idArea WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
         [institution, ofset]
       );
       if (personalDb != "") {
@@ -89,6 +89,7 @@ export class Personal {
     fullName,
     idReloj,
     turnPersonal,
+    area,
     Id,
     _method
   ) {
@@ -99,7 +100,12 @@ export class Personal {
       idReloj
     );
     if (!_method) {
-      newPersonal.idTurnoPersonal = turnPersonal,
+      if (area === undefined) {
+        newPersonal.idArea = 1;
+      } else {
+        newPersonal.idArea = area;
+      }
+      newPersonal.idTurnoPersonal = turnPersonal;
       newPersonal.fechaCreado = helpers.formatDateTime();
       const [res] = await pool.query("INSERT INTO personal SET ?", [
         newPersonal,
@@ -107,6 +113,7 @@ export class Personal {
       return res;
     }
     if (_method === "PUT") {
+      newPersonal.idArea = area;
       newPersonal.fechaActualizado = helpers.formatDateTime();
       const [res] = await pool.query(
         "UPDATE personal p SET ? WHERE p.idPersonal = ?",
@@ -129,7 +136,7 @@ export class Personal {
   // para consultar dotos de todos de un trabajador por ID
   static async getPersonalById(Id) {
     const [personalDb] = await pool.query(
-      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj, p.idTurnoPersonal, t.nombreTurno FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE p.idPersonal = ?",
+      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj, p.idTurnoPersonal, p.idArea, t.nombreTurno, a.nombreArea FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN area a ON a.idArea = p.idArea WHERE p.idPersonal = ?",
       [Id]
     );
     if (personalDb != "") {

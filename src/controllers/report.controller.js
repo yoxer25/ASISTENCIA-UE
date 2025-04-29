@@ -244,7 +244,7 @@ export const generateExcel = async (req, res, next) => {
     const [turnoIE] = await Institution.getInstitutionById(ie);
 
     const workbook = await XlsxPopulate.fromBlankAsync();
-    workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
+    workbook.sheet("Sheet1").cell("A1").value("DNI");
     workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
     workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
     workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");

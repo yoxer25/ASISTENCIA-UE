@@ -1,3 +1,4 @@
+import { Area } from "../models/area.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Personal } from "../models/personal.model.js";
 import { TurnPersonal } from "../models/turnPersonal.model.js";
@@ -78,11 +79,13 @@ export const getCreate = async (req, res) => {
   try {
     const [institutionDB] = await Institution.getInstitutionById(institution);
     const turnPersonalDB = await TurnPersonal.getTurnPersonal();
+    const areas = await Area.getAreas();
     const turnPersonal = turnPersonalDB.slice(0, 2);
     res.render("personal/create", {
       user,
       turnPersonal,
       turnoIE: institutionDB.idTurnoInstitucion,
+      areas,
     });
   } catch (error) {
     res.render("personal/create", { user });
@@ -100,7 +103,7 @@ a crear un nuevo trabajador */
 export const set = async (req, res) => {
   const user = req.session;
   const institution = user.user.name;
-  const { documentNumber, fullName, idReloj, _method } = req.body;
+  const { documentNumber, fullName, idReloj, area, _method } = req.body;
   let { turnPersonal } = req.body;
   const { Id } = req.params;
   const [institutionDB] = await Institution.getInstitutionById(institution);
@@ -132,6 +135,7 @@ export const set = async (req, res) => {
               fullName,
               idReloj,
               turnPersonal,
+              area,
               Id,
               _method
             );
@@ -166,6 +170,7 @@ export const set = async (req, res) => {
               fullName,
               idReloj,
               turnPersonal,
+              area,
               Id,
               _method
             );
@@ -202,6 +207,7 @@ export const set = async (req, res) => {
               fullName,
               idReloj,
               turnPersonal,
+              area,
               Id,
               _method
             );
@@ -235,6 +241,7 @@ export const set = async (req, res) => {
             fullName,
             idReloj,
             turnPersonal,
+            area,
             Id,
             _method
           );
@@ -268,7 +275,8 @@ export const set = async (req, res) => {
             institution,
             fullName,
             idReloj,
-            turnPersonal
+            turnPersonal,
+            area
           );
           if (resDb.affectedRows > 0) {
             // Si el registro es exitoso
@@ -303,6 +311,7 @@ export const set = async (req, res) => {
       }
     }
   } catch (error) {
+    console.log(error.message);
     res.redirect("/personals/create");
   }
 };
@@ -317,12 +326,14 @@ export const getById = async (req, res) => {
 
     const turnPersonalDB = await TurnPersonal.getSelectTurnPersonal(Id);
     const turnPersonal = turnPersonalDB.slice(0, 1);
+    const areas = await Area.getSelectArea(Id);
     const [institutionDB] = await Institution.getInstitutionById(institution);
     res.render("personal/update", {
       user,
       personal,
       turnPersonal,
       turnoIE: institutionDB.idTurnoInstitucion,
+      areas,
     });
   } catch (error) {
     res.render("personal/update", { user });

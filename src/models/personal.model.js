@@ -100,14 +100,14 @@ export class Personal {
     );
     if (!_method) {
       newPersonal.idTurnoPersonal = turnPersonal,
-      newPersonal.fechaCreado = await helpers.formatDateTime();
+      newPersonal.fechaCreado = helpers.formatDateTime();
       const [res] = await pool.query("INSERT INTO personal SET ?", [
         newPersonal,
       ]);
       return res;
     }
     if (_method === "PUT") {
-      newPersonal.fechaActualizado = await helpers.formatDateTime();
+      newPersonal.fechaActualizado = helpers.formatDateTime();
       const [res] = await pool.query(
         "UPDATE personal p SET ? WHERE p.idPersonal = ?",
         [newPersonal, Id]
@@ -117,7 +117,7 @@ export class Personal {
 
     if (_method === "PATCH") {
       newPersonal.estado = 0;
-      newPersonal.fechaEliminado = await helpers.formatDateTime();
+      newPersonal.fechaEliminado = helpers.formatDateTime();
       const [res] = await pool.query(
         "UPDATE personal p SET ? WHERE p.idPersonal = ?",
         [newPersonal, Id]

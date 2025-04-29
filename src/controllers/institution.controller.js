@@ -100,11 +100,26 @@ export const set = async (req, res) => {
             _method
           );
           if (resDb.affectedRows > 0) {
+            // Si el registro es exitoso
+            res.cookie("success", ["Actualización exitosa!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             res.redirect("/institutions/page1");
           } else {
+            // Si el registro falla
+            res.cookie("error", ["¡Error al actualizar registro!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             throw new Error("Error al agregar registro");
           }
         } else {
+          // Si el registro falla
+          res.cookie("error", ["¡Registro ya existe!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           throw new Error("Registro ya existe");
         }
       } else {
@@ -121,9 +136,19 @@ export const set = async (req, res) => {
           _method
         );
         if (resDb.affectedRows > 0) {
+          // Si el registro falla
+          res.cookie("error", ["¡Actualización exitosa!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           res.redirect("/institutions/page1");
         } else {
-          throw new Error("Error al agregar registro");
+          // Si el registro falla
+          res.cookie("error", ["¡Error al actualizar registro!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
+          throw new Error("Error al actualizar registro");
         }
       }
     } else {
@@ -139,11 +164,26 @@ export const set = async (req, res) => {
           scheduleInstitution
         );
         if (resDb.affectedRows > 0) {
+          // Si el registro falla
+          res.cookie("error", ["¡Registro exitoso!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           res.redirect("/institutions/page1");
         } else {
+          // Si el registro falla
+          res.cookie("error", ["¡Error al agregar registro!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           throw new Error("Error al agregar registro");
         }
       } else {
+        // Si el registro falla
+        res.cookie("error", ["¡Registro exitoso!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
         throw new Error("Registro ya existe");
       }
     }

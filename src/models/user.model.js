@@ -71,7 +71,7 @@ export class User {
   static async create(username, rolUser, password) {
     const newUser = new User(username, rolUser);
     newUser.contrasena = password;
-    newUser.fechaCreado = await helpers.formatDateTime();
+    newUser.fechaCreado = helpers.formatDateTime();
     const [res] = await pool.query("INSERT INTO usuarios SET ?", [newUser]);
     return res;
   }
@@ -80,7 +80,7 @@ export class User {
   static async set(username, rolUser, Id, _method) {
     const newUser = new User(username, rolUser);
     if (_method === "PUT") {
-      newUser.fechaActualizado = await helpers.formatDateTime();
+      newUser.fechaActualizado = helpers.formatDateTime();
       const [res] = await pool.query(
         "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",
         [newUser, Id]
@@ -90,7 +90,7 @@ export class User {
 
     if (_method === "PATCH") {
       newUser.estado = 0;
-      newUser.fechaEliminado = await helpers.formatDateTime();
+      newUser.fechaEliminado = helpers.formatDateTime();
       const [res] = await pool.query(
         "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",
         [newUser, Id]
@@ -130,7 +130,7 @@ export class User {
   static async updatePassword(id, username, rolUser, password) {
     const newUser = new User(username, rolUser);
     newUser.contrasena = password;
-    newUser.fechaActualizado = await helpers.formatDateTime();
+    newUser.fechaActualizado = helpers.formatDateTime();
     const [res] = await pool.query(
       "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",
       [newUser, id]

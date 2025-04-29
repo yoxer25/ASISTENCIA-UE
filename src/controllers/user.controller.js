@@ -59,11 +59,11 @@ export const set = async (req, res) => {
         res.redirect("/users/page1");
       } else {
         // Si el registro falla
-        res.cookie("error", ["¡Error al agregar registro!"], {
+        res.cookie("error", ["¡Error al actualizar registro!"], {
           httpOnly: true,
           maxAge: 6000,
         }); // 6 segundos
-        throw new Error("Error al agregar registro");
+        throw new Error("Error al actualizar registro");
       }
     } else {
       validationInput(username, formPassword, rolUser, res);

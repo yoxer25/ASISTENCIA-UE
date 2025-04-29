@@ -1,0 +1,49 @@
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-assignment-account zmdi-hc-fw"></i> Áreas
+                <small>Listado</small>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-6" id="formSearchPersonal">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white">
+                        <div class="card-header bg-primary text-center">
+                            <p class="text-white" style="font-size: 30px;">Crear Área</p>
+                        </div>
+                        <form action="/areas/{{area.idArea}}" method="POST">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    {{>area/frmSet}}
+                                    <div class="form-group" style="margin: auto; text-align: center;">
+                                        <button class="btn btn-raised btn-sm"
+                                            style="background-color: #01579B; margin: auto;">
+                                            <p style="font-size: 20px; margin: auto; color: #fff;"><i
+                                                    class="zmdi zmdi-floppy"></i> Registrar</p>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                {{>area/listArea}}
+            </div>
+        </div>
+    </div>
+
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}
+
+<script src="/js/functions.js"></script>

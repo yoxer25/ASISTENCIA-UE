@@ -121,7 +121,7 @@ export class AttendanceRecord {
       secondHourEntry,
       secondDepartureTime
     );
-    newRegister.fechaCreado = await helpers.formatDateTime();
+    newRegister.fechaCreado = helpers.formatDateTime();
     await pool.query("INSERT INTO registro_asistencia SET ?", [newRegister]);
   }
 
@@ -132,7 +132,7 @@ export class AttendanceRecord {
       idPersonal: personal,
     };
     newRegister.estado = 0;
-    newRegister.fechaEliminado = await helpers.formatDateTime();
+    newRegister.fechaEliminado = helpers.formatDateTime();
     const [res] = await pool.query(
       "UPDATE registro_asistencia r SET ? WHERE r.idRegistroAsistencia = ?",
       [newRegister, Id]

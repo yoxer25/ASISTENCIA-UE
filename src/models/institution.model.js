@@ -109,14 +109,14 @@ export class Institution {
     if (!_method) {
       newInstitution.idTurnoInstitucion = turnInstitution;
       (newInstitution.idHorarioInstitucion = scheduleInstitution),
-        (newInstitution.fechaCreado = await helpers.formatDateTime());
+        (newInstitution.fechaCreado = helpers.formatDateTime());
       const [res] = await pool.query("INSERT INTO institucion SET ?", [
         newInstitution,
       ]);
       return res;
     }
     if (_method === "PUT") {
-      newInstitution.fechaActualizado = await helpers.formatDateTime();
+      newInstitution.fechaActualizado = helpers.formatDateTime();
       const [res] = await pool.query(
         "UPDATE institucion i SET ? WHERE i.idInstitucion = ?",
         [newInstitution, Id]
@@ -126,7 +126,7 @@ export class Institution {
 
     if (_method === "PATCH") {
       newInstitution.estado = 0;
-      newInstitution.fechaEliminado = await helpers.formatDateTime();
+      newInstitution.fechaEliminado = helpers.formatDateTime();
       const [res] = await pool.query(
         "UPDATE institucion i SET ? WHERE i.idInstitucion = ?",
         [newInstitution, Id]

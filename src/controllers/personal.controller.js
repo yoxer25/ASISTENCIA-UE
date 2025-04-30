@@ -311,7 +311,6 @@ export const set = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error.message);
     res.redirect("/personals/create");
   }
 };

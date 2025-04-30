@@ -2,6 +2,7 @@ import { password } from "../helpers/password.js";
 import { User } from "../models/user.model.js";
 import { RolUser } from "../models/rolUser.model.js";
 import { Institution } from "../models/institution.model.js";
+import { Area } from "../models/area.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -32,7 +33,8 @@ export const getCreate = async (req, res) => {
   try {
     const rolUser = await RolUser.getRolUser();
     const institution = await Institution.getInstitution();
-    res.render("user/create", { user, rolUser, institution });
+    const areas = await Area.getAreas();
+    res.render("user/create", { user, rolUser, institution, areas });
   } catch (error) {
     res.render("user/create", { user });
   }
@@ -46,10 +48,16 @@ caso contrario, si no se envía el _method, se procederá
 a crear un nuevo usuario */
 export const set = async (req, res) => {
   const { username, formPassword, rolUser, _method } = req.body;
+  let { dni } = req.body;
+  if (dni) {
+    dni = dni;
+  } else {
+    dni = username;
+  }
   const { Id } = req.params;
   try {
     if (_method) {
-      const resDb = await User.set(username, rolUser, Id, _method);
+      const resDb = await User.set(username, rolUser, Id, _method, dni);
       if (resDb.affectedRows > 0) {
         // Si el registro es exitoso
         res.cookie("success", ["¡Actualización exitosa!"], {
@@ -68,7 +76,7 @@ export const set = async (req, res) => {
     } else {
       validationInput(username, formPassword, rolUser, res);
       const passwordHash = await password.encryptPassword(formPassword);
-      const resDb = await User.create(username, rolUser, passwordHash);
+      const resDb = await User.create(username, rolUser, passwordHash, dni);
       if (resDb.affectedRows > 0) {
         // Si el registro es exitoso
         res.cookie("success", ["¡Registro exitoso!"], {

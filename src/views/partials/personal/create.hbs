@@ -18,7 +18,7 @@
                 onkeypress="return solonumeros(event)">
         </div>
         {{#if (eq user.user.name "200006")}}
-        <div class="form-group label-floating" id="area">
+        <div class="form-group label-floating">
             <label class="control-label">Área</label>
             <select class="form-control" id="area" name="area" style="width: 100%;">
                 <option value="{{personal.idArea}}" selected>{{personal.nombreArea}}</option>
@@ -29,7 +29,7 @@
         </div>
         {{/if}}
         {{#if (eq turnoIE 2)}}
-        <div class="form-group label-floating" id="turno">
+        <div class="form-group label-floating">
             <label class="control-label">Turno</label>
             <select class="form-control" id="turnPersonal" name="turnPersonal" style="width: 100%;">
                 <option value="{{personal.idTurnoPersonal}}" selected>{{personal.nombreTurno}}</option>

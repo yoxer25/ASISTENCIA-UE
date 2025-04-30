@@ -27,6 +27,7 @@ import attendanceRecordRoutes from "./routes/attendanceRecord.route.js";
 import reportRoutes from "./routes/report.route.js";
 import documentRoutes from "./routes/documents.route.js";
 import areaRoutes from "./routes/area.route.js";
+import ballotRoutes from "./routes/ballot.route.js";
 
 //constantes
 // para iniciar el servidor
@@ -82,6 +83,7 @@ app.use("/attendanceRecords", attendanceRecordRoutes);
 app.use("/reports", reportRoutes);
 app.use("/documents", documentRoutes);
 app.use("/areas", areaRoutes);
+app.use("/ballots", ballotRoutes);
 
 // exportamos la constante "app" para poder utilizarla en otras parte del proyecto
 export default app;

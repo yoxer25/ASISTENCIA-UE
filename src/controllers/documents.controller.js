@@ -113,7 +113,6 @@ export const getDocumentByProfesor = async (req, res) => {
     const personal = str[1];
     const documents = await DocumentProfesor.getDocument(file);
     const [dataPersonal] = await Personal.getPersonalById(personal);
-    console.log(dataPersonal);
     res.render("documents/indexByProfesor", { user, file, documents, dataPersonal });
   } catch (error) {
     res.render("documents/indexByProfesor", { user, file });

@@ -145,4 +145,16 @@ export class Personal {
       throw new Error("Datos no encontrados");
     }
   }
+   // para consultar dotos de todos de un trabajador por dni
+   static async getPersonalByDNI(dni) {
+    const [personalDb] = await pool.query(
+      "SELECT p.nombrePersonal, a.nombreArea, a.idArea FROM personal p INNER JOIN area a ON a.idArea = p.idArea WHERE p.dniPersonal = ?",
+      [dni]
+    );
+    if (personalDb != "") {
+      return personalDb;
+    } else {
+      throw new Error("Datos no encontrados");
+    }
+  }
 }

@@ -1,0 +1,180 @@
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-collection-text zmdi-hc-fw"></i> Papeletas
+                <small>Listado</small>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white">
+                        <form action="/ballots" method="POST">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group label-floating">
+                                        <label class="control-label">Solicitante</label>
+                                        <input class="form-control" type="text" id="applicant" name="applicant"
+                                            value="{{personal.nombrePersonal}}" readonly>
+                                    </div>
+                                    <div class="form-group label-floating">
+                                        <label class="control-label">Dependencia</label>
+                                        <input class="form-control" type="hidden" id="dependency" name="dependency"
+                                            value="{{personal.idArea}}">
+                                        <input class="form-control" type="text" value="{{personal.nombreArea}}"
+                                            readonly>
+                                    </div>
+                                    <div class="form-group label-floating">
+                                        <label class="control-label">Condición Laboral</label>
+                                        <select class="form-control" id="workingCondition" name="workingCondition">
+                                            <option value="" selected></option>
+                                            <option value="CAS">CAS</option>
+                                            <option value="276">276</option>
+                                            <option value="ESPECIALISTA">ESPECIALISTA</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group label-floating">
+                                        <label class="control-label">Motivo</label>
+                                        <select class="form-control" id="reason" name="reason">
+                                            <option value="" selected></option>
+                                            <option value="MOTIVOS PERSONALES">MOTIVOS PERSONALES</option>
+                                            <option value="COMISIÓN DE SERVICIOS">COMISIÓN DE SERVICIOS</option>
+                                            <option value="CITA JUDICIAL">CITA JUDICIAL</option>
+                                            <option value="CAPACITACIÓN">CAPACITACIÓN</option>
+                                            <option value="ONOMÁSTICO">ONOMÁSTICO</option>
+                                            <option value="ENFERMEDAD">ENFERMEDAD</option>
+                                            <option value="OTROS">OTROS</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group label-floating">
+                                        <label class="control-label">Fundamentación</label>
+                                        <textarea type="text" class="form-control" name="foundation" id="foundation"
+                                            rows="2"></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div class="form-group">
+                                                <h5>Se ausentará:</h5>
+                                                <h5>Días</h5>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="form-group" style="margin: auto;">
+                                                <label class="control-label">Desde</label>
+                                                <input class="form-control" type="date" id="startDate" name="startDate">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="form-group" style="margin: auto;">
+                                                <label class="control-label">Hasta</label>
+                                                <input class="form-control" type="date" id="endDate" name="endDate">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12">
+                                            <div class="form-group">
+                                                <h5>Horas</h5>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="form-group" style="margin: auto;">
+                                                <label class="control-label">Desde</label>
+                                                <input class="form-control" type="time" id="startTime" name="startTime">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="form-group" style="margin: auto;">
+                                                <label class="control-label">Hasta</label>
+                                                <input class="form-control" type="time" id="endTime" name="endTime">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-raised btn-sm" style="background-color: #01579B;" type="submit">
+                                    <p style="font-size: 20px; margin: auto; color: #fff;"><i
+                                            class="zmdi zmdi-floppy"></i> Registrar</p>
+                                </button>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="card table-wrapper">
+                    <div class="card-body rounded-bottom bg-white p-5">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Fecha</th>
+                                    <th class="text-center">N° Papeleta</th>
+                                    <th class="text-center">Solicitante</th>
+                                    <th class="text-center">Dependencia</th>
+                                    <th class="text-center">Condición Laboral</th>
+                                    <th class="text-center">Ausente Desde</th>
+                                    <th class="text-center">Ausente Hasta</th>
+                                    <th class="text-center">Motivo</th>
+                                    <th class="text-center">Fundamento</th>
+                                    <th class="text-center">VB Administración</th>
+                                    <th class="text-center">VB Dirección</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each ballots}}
+                                <tr>
+                                    <td>{{formatDate fechaPapeleta}}</td>
+                                    <td>{{numeroPapeleta}}</td>
+                                    <td>{{solicitante}}</td>
+                                    <td>{{nombreArea}}</td>
+                                    <td>{{condicionLaboral}}</td>
+                                    {{#if desdeDia}}
+                                    <td>{{formatDate desdeDia}}</td>
+                                    {{else}}
+                                    <td>{{desdeHora}}</td>
+                                    {{/if}}
+                                    {{#if hastaDia}}
+                                    <td>{{formatDate hastaDia}}</td>
+                                    {{else}}
+                                    <td>{{hastaHora}}</td>
+                                    {{/if}}
+                                    <td>{{motivo}}</td>
+                                    <td>{{fundamento}}</td>
+                                    {{#if VBadministracion}}
+                                    <td>Aceptado</td>
+                                    {{else}}
+                                    <td>Pendiente</td>
+                                    {{/if}}
+                                    {{#if VBdireccion}}
+                                    <td>Aceptado</td>
+                                    {{else}}
+                                    <td>Pendiente</td>
+                                    {{/if}}
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="9">No hay registros para mostrar</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                        <ul class="pagination pagination-sm" id="pagination">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}

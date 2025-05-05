@@ -119,12 +119,10 @@
                                     <th class="text-center">Fecha</th>
                                     <th class="text-center">N° Papeleta</th>
                                     <th class="text-center">Solicitante</th>
-                                    <th class="text-center">Dependencia</th>
-                                    <th class="text-center">Condición Laboral</th>
                                     <th class="text-center">Ausente Desde</th>
                                     <th class="text-center">Ausente Hasta</th>
                                     <th class="text-center">Motivo</th>
-                                    <th class="text-center">Fundamento</th>
+                                    <th class="text-center">VB Jefe Inmediato</th>
                                     <th class="text-center">VB Administración</th>
                                     <th class="text-center">VB Dirección</th>
                                 </tr>
@@ -135,8 +133,6 @@
                                     <td>{{formatDate fechaPapeleta}}</td>
                                     <td>{{numeroPapeleta}}</td>
                                     <td>{{solicitante}}</td>
-                                    <td>{{nombreArea}}</td>
-                                    <td>{{condicionLaboral}}</td>
                                     {{#if desdeDia}}
                                     <td>{{formatDate desdeDia}}</td>
                                     {{else}}
@@ -148,21 +144,35 @@
                                     <td>{{hastaHora}}</td>
                                     {{/if}}
                                     <td>{{motivo}}</td>
-                                    <td>{{fundamento}}</td>
-                                    {{#if VBadministracion}}
-                                    <td>Aceptado</td>
+                                    {{#if VBjefe}}
+                                    <td style="background-color: rgb(2, 255, 2);">Aceptado</td>
                                     {{else}}
-                                    <td>Pendiente</td>
+                                    <td style="background-color: rgb(2, 238, 255);">Pendiente</td>
+                                    {{/if}}
+                                    {{#if VBadministracion}}
+                                    <td style="background-color: rgb(2, 255, 2);">Aceptado</td>
+                                    {{else}}
+                                    <td style="background-color: rgb(2, 238, 255);">Pendiente</td>
                                     {{/if}}
                                     {{#if VBdireccion}}
-                                    <td>Aceptado</td>
+                                    <td style="background-color: rgb(2, 255, 2);">Aceptado</td>
                                     {{else}}
-                                    <td>Pendiente</td>
+                                    <td style="background-color: rgb(2, 238, 255);">Pendiente</td>
                                     {{/if}}
+                                    <td><a href="#!" class="btn-info-ballot btn btn-info btn-raised btn-xs"
+                                            data-dateballot="{{formatDate fechaPapeleta}}"
+                                            data-ballot="{{numeroPapeleta}}" data-applicant="{{solicitante}}"
+                                            data-dependency="{{nombreArea}}"
+                                            data-workingcondition="{{condicionLaboral}}" data-reason="{{motivo}}"
+                                            data-foundation="{{fundamento}}" {{#if desdeDia}}
+                                            data-startDate="{{formatDate desdeDia}}" {{else}}
+                                            data-startTime="{{desdeHora}}" {{/if}} {{#if hastaDia}}
+                                            data-endDate="{{formatDate hastaDia}}" {{else}} data-endTime="{{hastaHora}}"
+                                            {{/if}}><i class="zmdi zmdi-eye"></i></a></td>
                                 </tr>
                                 {{else}}
                                 <tr>
-                                    <td colspan="9">No hay registros para mostrar</td>
+                                    <td colspan="10">No hay registros para mostrar</td>
                                 </tr>
                                 {{/each}}
                             </tbody>

@@ -20,8 +20,10 @@
                                 <div class="col-lg-6">
                                     <div class="form-group label-floating">
                                         <label class="control-label">Solicitante</label>
-                                        <input class="form-control" type="text" id="applicant" name="applicant"
-                                            value="{{personal.nombrePersonal}}" readonly>
+                                        <input class="form-control" type="hidden" id="applicant" name="applicant"
+                                            value="{{personal.idPersonal}}">
+                                        <input class="form-control" type="text" value="{{personal.nombrePersonal}}"
+                                            readonly>
                                     </div>
                                     <div class="form-group label-floating">
                                         <label class="control-label">Dependencia</label>
@@ -109,6 +111,8 @@
                 </div>
             </div>
         </div>
+        <div>
+        </div>
         <div class="row">
             <div class="col-lg-12 text-center">
                 <div class="card table-wrapper">
@@ -122,9 +126,13 @@
                                     <th class="text-center">Ausente Desde</th>
                                     <th class="text-center">Ausente Hasta</th>
                                     <th class="text-center">Motivo</th>
-                                    <th class="text-center">VB Jefe Inmediato</th>
+                                    <th class="text-center">VB Jefe de Área</th>
+                                    <th class="text-center">VB RRHH</th>
                                     <th class="text-center">VB Administración</th>
-                                    <th class="text-center">VB Dirección</th>
+                                    <th class="text-center">Ver Papeleta</th>
+                                    {{#if (noeq area 0)}}
+                                    <th class="text-center">Acciones</th>
+                                    {{/if}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -132,7 +140,7 @@
                                 <tr>
                                     <td>{{formatDate fechaPapeleta}}</td>
                                     <td>{{numeroPapeleta}}</td>
-                                    <td>{{solicitante}}</td>
+                                    <td>{{nombrePersonal}}</td>
                                     {{#if desdeDia}}
                                     <td>{{formatDate desdeDia}}</td>
                                     {{else}}
@@ -145,23 +153,35 @@
                                     {{/if}}
                                     <td>{{motivo}}</td>
                                     {{#if VBjefe}}
-                                    <td style="background-color: rgb(2, 255, 2);">Aceptado</td>
+                                    <td>
+                                        <p style="background-color: rgb(2, 255, 2);">Aceptado</p>
+                                    </td>
                                     {{else}}
-                                    <td style="background-color: rgb(2, 238, 255);">Pendiente</td>
+                                    <td>
+                                        <p style="background-color: rgb(2, 238, 255);">Pendiente</p>
+                                    </td>
+                                    {{/if}}
+                                    {{#if VBrrhh}}
+                                    <td>
+                                        <p style="background-color: rgb(2, 255, 2);">Aceptado</p>
+                                    </td>
+                                    {{else}}
+                                    <td>
+                                        <p style="background-color: rgb(2, 238, 255);">Pendiente</p>
+                                    </td>
                                     {{/if}}
                                     {{#if VBadministracion}}
-                                    <td style="background-color: rgb(2, 255, 2);">Aceptado</td>
+                                    <td>
+                                        <p style="background-color: rgb(2, 255, 2);">Aceptado</p>
+                                    </td>
                                     {{else}}
-                                    <td style="background-color: rgb(2, 238, 255);">Pendiente</td>
-                                    {{/if}}
-                                    {{#if VBdireccion}}
-                                    <td style="background-color: rgb(2, 255, 2);">Aceptado</td>
-                                    {{else}}
-                                    <td style="background-color: rgb(2, 238, 255);">Pendiente</td>
+                                    <td>
+                                        <p style="background-color: rgb(2, 238, 255);">Pendiente</p>
+                                    </td>
                                     {{/if}}
                                     <td><a href="#!" class="btn-info-ballot btn btn-info btn-raised btn-xs"
                                             data-dateballot="{{formatDate fechaPapeleta}}"
-                                            data-ballot="{{numeroPapeleta}}" data-applicant="{{solicitante}}"
+                                            data-ballot="{{numeroPapeleta}}" data-applicant="{{nombrePersonal}}"
                                             data-dependency="{{nombreArea}}"
                                             data-workingcondition="{{condicionLaboral}}" data-reason="{{motivo}}"
                                             data-foundation="{{fundamento}}" {{#if desdeDia}}
@@ -169,6 +189,40 @@
                                             data-startTime="{{desdeHora}}" {{/if}} {{#if hastaDia}}
                                             data-endDate="{{formatDate hastaDia}}" {{else}} data-endTime="{{hastaHora}}"
                                             {{/if}}><i class="zmdi zmdi-eye"></i></a></td>
+                                    {{#if (and (eq ../area 6) (not VBrrhh))}}
+                                    <td>
+                                        <form action="/ballots/approve/{{idPapeleta}}?_method=PATCH" method="POST">
+                                            <input type="hidden" name="_method" value="PATCH">
+                                            <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                                <p style="font-size: 15px; margin: auto; color: #fff;"><i
+                                                        class="zmdi zmdi-badge-check"></i> Aprobar</p>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    {{else if (and (eq ../area 2) (not VBadministracion))}}
+                                    <td>
+                                        <form action="/ballots/approve/{{idPapeleta}}?_method=PATCH" method="POST">
+                                            <input type="hidden" name="_method" value="PATCH">
+                                            <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                                <p style="font-size: 15px; margin: auto; color: #fff;"><i
+                                                        class="zmdi zmdi-badge-check"></i> Aprobar</p>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    {{else if (and (or (eq ../area 1) (eq ../area 3) (eq ../area 4) (eq ../area 5)) (not
+                                    VBjefe))}}
+                                    <td>
+                                        <form action="/ballots/approve/{{idPapeleta}}?_method=PATCH" method="POST">
+                                            <input type="hidden" name="_method" value="PATCH">
+                                            <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                                <p style="font-size: 15px; margin: auto; color: #fff;"><i
+                                                        class="zmdi zmdi-badge-check"></i> Aprobar</p>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    {{else}}
+                                    <td></td>
+                                    {{/if}}
                                 </tr>
                                 {{else}}
                                 <tr>

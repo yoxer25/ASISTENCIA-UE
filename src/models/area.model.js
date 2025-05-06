@@ -76,4 +76,13 @@ export class Area {
       throw new Error("Datos no encontrados");
     }
   }
+
+  /* para consultar datos del área de aministración y RRHH */
+  static async getAreaByResponsable(responsable) {
+    const [areas] = await pool.query(
+      "SELECT * FROM area a WHERE a.responsable = ? AND a.estado != 0",
+      [responsable]
+    );
+    return areas;
+  }
 }

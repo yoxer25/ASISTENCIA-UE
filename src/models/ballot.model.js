@@ -33,24 +33,45 @@ export class Ballot {
     this.fundamento = foundation;
   }
 
-  // para consultar todas las áreas registradas en la base de datos
-  static async getBallots() {
-    const [ballots] = await pool.query(
-      "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea"
-    );
+  /* para consultar todas las áreas registradas en la base de datos */
+  static async getBallots(applicant, dependency) {
+    let ballots = [];
+    // cuando el usuario es jefe de RRHH o administración
+    if (!applicant && !dependency) {
+      [ballots] = await pool.query(
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante"
+      );
+    }
+
+    // cuando el usuario no es jefe de área
+    if (applicant && !dependency) {
+      [ballots] = await pool.query(
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ?",
+        [applicant]
+      );
+    }
+
+    // cuando el usuario es jefe de área excepto de RRHH o administración
+    if (!applicant && dependency) {
+      [ballots] = await pool.query(
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ?",
+        [dependency]
+      );
+    }
+
     return ballots;
   }
 
-  // para consultar datos de una área por id
-  static async getAreaById(id) {
+  // para consultar datos de una papeleta por id
+  static async getBallotById(id) {
     const [ballots] = await pool.query(
-      "SELECT * FROM area a INNER JOIN personal p ON p.idPersonal = a.responsable WHERE a.idArea = ? AND a.estado != 0",
+      "SELECT * FROM papeleta pa INNER JOIN personal p ON p.idPersonal = pa.solicitante WHERE pa.idPapeleta = ?",
       [id]
     );
     return ballots;
   }
 
-  // para crear nueva área
+  // para registrar una nueva papeleta
   static async create(
     correlative,
     applicant,
@@ -80,41 +101,44 @@ export class Ballot {
     return res;
   }
 
-  // para actualizar una área
-  static async set(id, name, designatedPerson, _method) {
-    if (_method === "PUT") {
-      const newBallot = new Area(name, designatedPerson);
-      newBallot.fechaActualizado = helpers.formatDateTime();
-      const [res] = await pool.query("UPDATE area a SET ? WHERE a.idArea = ?", [
-        newBallot,
-        id,
-      ]);
-      return res;
+  // para aprobar una área
+  static async update(id, dependency, areaPersonal) {
+    if (
+      dependency === 1 ||
+      dependency === 3 ||
+      dependency === 4 ||
+      dependency === 5
+    ) {
+      return await pool.query(
+        "UPDATE papeleta p SET p.VBjefe = 1 WHERE p.idPapeleta = ?",
+        [id]
+      );
     }
-    if (_method === "PATCH") {
-      const newBallot = {
-        estado: 0,
-        fechaEliminado: helpers.formatDateTime(),
-      };
-      const [res] = await pool.query("UPDATE area a SET ? WHERE a.idArea = ?", [
-        newBallot,
-        id,
-      ]);
-      return res;
+    if (dependency === 2) {
+      if (areaPersonal === 2) {
+        return await pool.query(
+          "UPDATE papeleta p SET p.VBjefe = 1, p.VBadministracion = 1 WHERE p.idPapeleta = ?",
+          [id]
+        );
+      } else {
+        return await pool.query(
+          "UPDATE papeleta p SET p.VBadministracion = 1 WHERE p.idPapeleta = ?",
+          [id]
+        );
+      }
     }
-  }
-
-  /* para consultar datos de todas las áreas que sean
-  diferentes a la área que tiene registrado el trabajador */
-  static async getSelectArea(id) {
-    const [categories] = await pool.query(
-      "SELECT * FROM area a WHERE NOT EXISTS (SELECT * FROM personal p WHERE a.idArea = p.idArea AND a.estado != 0 AND p.idPersonal = ?)",
-      [id]
-    );
-    if (categories) {
-      return categories;
-    } else {
-      throw new Error("Datos no encontrados");
+    if (dependency === 6) {
+      if (areaPersonal === 6) {
+        return await pool.query(
+          "UPDATE papeleta p SET p.VBjefe = 1, p.VBrrhh = 1 WHERE p.idPapeleta = ?",
+          [id]
+        );
+      } else {
+        return await pool.query(
+          "UPDATE papeleta p SET p.VBrrhh = 1 WHERE p.idPapeleta = ?",
+          [id]
+        );
+      }
     }
   }
 }

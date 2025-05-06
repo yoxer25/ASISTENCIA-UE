@@ -18,6 +18,7 @@ const router = Router();
 // rutas de la página de papeletas
 router.get("/", requireToken, ballotCtrl.getBallot);
 router.post("/", requireToken, ballotCtrl.createBallot);
+router.patch("/approve/:id", requireToken, ballotCtrl.approve);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

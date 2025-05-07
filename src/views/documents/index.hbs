@@ -54,28 +54,14 @@
                 <div class="card">
                     <div class="card-body rounded-bottom bg-white p-5">
                         <h1 class="text-titles text-center">
-                            <small>Documentos de Gestión Interna</small>
+                            <small>Institución</small>
                         </h1>
-                        {{#if (eq user.user.rol "directivo")}}
-                        <form action="/documents/ie/{{ie}}" method="POST" enctype="multipart/form-data">
-                            <div>
-                                <label>ARCHIVO PDF</label>
-                                <input type="file" accept=".pdf" name="pdfIE">
-                            </div>
-                            <p class="text-center">
-                                <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
-                                    <p style="font-size: 20px; margin: auto; color: #fff;"><i
-                                            class="zmdi zmdi-upload"></i> Importar</p>
-                                </button>
-                            </p>
-                        </form>
-                        {{/if}}
                         <div class="row" style="padding-top: 3%;">
-                            {{#each documents}}
+                            {{#each anios}}
                             <div class="col-md-2" style="text-align: center;">
-                                <a href="/documents/view/{{nombreDocumento}}" target="_blank">
-                                    <img src="/assets/img/pdf.png" alt="" width="50%">
-                                    <p>{{nombreOriginal}}</p>
+                                <a href="/documents/{{nombreAnio}}_{{ie}}/institucion"> <img
+                                        src="/assets/img/folder.png" alt="" width="50%">
+                                    <p>{{nombreAnio}}</p>
                                 </a>
                             </div>
                             {{/each}}
@@ -89,13 +75,13 @@
                 <div class="card">
                     <div class="card-body rounded-bottom bg-white p-5">
                         <h1 class="text-titles text-center">
-                            <small>Sesiones de trabajo</small>
+                            <small>Docentes</small>
                         </h1>
                         <div class="row" style="padding-top: 3%;">
                             {{#each anios}}
                             <div class="col-md-2" style="text-align: center;">
-                                <a href="/documents/{{nombreAnio}}_{{ie}}">
-                                    <img src="/assets/img/folder.png" alt="" width="50%">
+                                <a href="/documents/{{nombreAnio}}_{{ie}}/docente"> <img src="/assets/img/folder.png"
+                                        alt="" width="50%">
                                     <p>{{nombreAnio}}</p>
                                 </a>
                             </div>

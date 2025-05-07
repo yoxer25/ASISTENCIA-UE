@@ -20,18 +20,10 @@ const router = Router();
 // rutas de la página documentos de gestión
 router.get("/", requireToken, documentsCtrl.getDocuments);
 router.post("/", requireToken, documentsCtrl.getDocumentsByIE);
-router.get("/:anio", requireToken, documentsCtrl.getDocumentByName);
-router.post("/:anio", requireToken, documentsCtrl.fileProfesor);
 router.get(
   "/file/:idCarpeta",
   requireToken,
   documentsCtrl.getDocumentByProfesor
-);
-router.post(
-  "/ie/:idIE",
-  requireToken,
-  upload.single("pdfIE"),
-  documentsCtrl.documentIE
 );
 router.post(
   "/file/:idCarpeta",
@@ -39,7 +31,15 @@ router.post(
   upload.single("pdfProfesor"),
   documentsCtrl.documentProfesor
 );
+router.post(
+  "/ie/:anio/:source",
+  requireToken,
+  upload.single("pdfIE"),
+  documentsCtrl.documentIE
+);
 router.get("/view/:archive", requireToken, documentsCtrl.viewPDF);
+router.get("/:anio/:source", requireToken, documentsCtrl.getByAnio);
+router.post("/:anio/:source", requireToken, documentsCtrl.fileProfesor);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

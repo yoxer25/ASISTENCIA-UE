@@ -28,13 +28,11 @@ export const getDocuments = async (req, res) => {
       };
       anios.push(objet);
     }
-    const documents = await DocumentIE.getDocument(ie);
     res.render("documents/index", {
       user,
       institutions,
       anios,
       ie,
-      documents,
     });
   } catch (error) {
     res.render("documents/index", { user, institutions });
@@ -77,9 +75,9 @@ export const getDocumentsByIE = async (req, res) => {
 /* controla lo que se debe mostrar al momento de visitar la
 página de documentos por año, aquí veremos las carpetas
 por cada docente */
-export const getDocumentByName = async (req, res) => {
+export const getByAnio = async (req, res) => {
   const user = req.session;
-  const { anio } = req.params;
+  const { anio, source } = req.params;
   try {
     const str = anio.split("_");
     const year = str[0];
@@ -88,6 +86,7 @@ export const getDocumentByName = async (req, res) => {
     const profesor = await Personal.getPersonal(ie);
     const [IE] = await Institution.getInstitutionById(ie);
     const fileProfesor = await FileProfesor.getFile(ie, schoolYear.idAnio);
+    const documents = await DocumentIE.getDocument(ie, schoolYear.idAnio);
     res.render("documents/indexByAnio", {
       user,
       profesor,
@@ -95,6 +94,8 @@ export const getDocumentByName = async (req, res) => {
       anio,
       IE,
       year,
+      documents,
+      source,
     });
   } catch (error) {
     res.render("documents/indexByAnio", { user });
@@ -107,16 +108,20 @@ por cada docente */
 export const getDocumentByProfesor = async (req, res) => {
   const user = req.session;
   const { idCarpeta } = req.params;
+  const str = idCarpeta.split("_");
+  const file = str[0];
+  const personal = str[1];
   try {
-    const str = idCarpeta.split("_");
-    const file = str[0];
-    const personal = str[1];
-    const documents = await DocumentProfesor.getDocument(file);
     const [dataPersonal] = await Personal.getPersonalById(personal);
-    console.log(dataPersonal);
-    res.render("documents/indexByProfesor", { user, file, documents, dataPersonal });
+    const documents = await DocumentProfesor.getDocument(file);
+    res.render("documents/indexByProfesor", {
+      user,
+      idCarpeta,
+      documents,
+      dataPersonal,
+    });
   } catch (error) {
-    res.render("documents/indexByProfesor", { user, file });
+    res.render("documents/indexByProfesor", { user, idCarpeta });
   }
 };
 
@@ -124,7 +129,7 @@ export const getDocumentByProfesor = async (req, res) => {
 export const fileProfesor = async (req, res) => {
   const user = req.session;
   const ie = user.user.name;
-  const { anio } = req.params;
+  const { anio, source } = req.params;
   const { profesor } = req.body;
 
   try {
@@ -143,7 +148,7 @@ export const fileProfesor = async (req, res) => {
           httpOnly: true,
           maxAge: 6000,
         }); // 6 segundos
-        res.redirect(`/documents/${anio}`);
+        res.redirect(`/documents/${anio}/${source}`);
       } else {
         // Si el registro falla
         res.cookie("error", ["¡Error al agregar registro!"], {
@@ -161,24 +166,22 @@ export const fileProfesor = async (req, res) => {
       throw new Error("Registro ya existe");
     }
   } catch (error) {
-    res.redirect(`/documents/${anio}`);
+    res.redirect(`/documents/${anio}/${source}`);
   }
 };
 
 // para agregar documentos para los docentes de cada IE
 export const documentProfesor = async (req, res) => {
   const { idCarpeta } = req.params;
+  const str = idCarpeta.split("_");
+  const file = str[0];
   try {
     if (req.file) {
       const { mimetype, originalname, filename } = req.file;
       if (mimetype === "application/pdf") {
-        savePDF(req.file);
-        const resDB = await DocumentProfesor.set(
-          idCarpeta,
-          originalname,
-          filename
-        );
+        const resDB = await DocumentProfesor.set(file, originalname, filename);
         if (resDB.affectedRows > 0) {
+          savePDF(req.file);
           // Si el registro es exitoso
           res.cookie("success", ["¡Registro exitoso!"], {
             httpOnly: true,
@@ -214,21 +217,29 @@ export const documentProfesor = async (req, res) => {
 
 // para agregar documentos para cada IE (documentos de gestión interna)
 export const documentIE = async (req, res) => {
-  const { idIE } = req.params;
+  const { anio, source } = req.params;
+  const str = anio.split("_");
+  const year = str[0];
+  const ie = str[1];
   try {
-    const anio = "S/N";
     if (req.file) {
       const { mimetype, originalname, filename } = req.file;
       if (mimetype === "application/pdf") {
-        savePDF(req.file);
-        const resDB = await DocumentIE.set(idIE, originalname, filename, anio);
+        const [schoolYear] = await SchoolYear.getSchoolYearByName(year);
+        const resDB = await DocumentIE.set(
+          ie,
+          originalname,
+          filename,
+          schoolYear.idAnio
+        );
         if (resDB.affectedRows > 0) {
+          savePDF(req.file);
           // Si el registro es exitoso
           res.cookie("success", ["¡Registro exitoso!"], {
             httpOnly: true,
             maxAge: 6000,
           }); // 6 segundos
-          res.redirect("/documents");
+          res.redirect(`/documents/${anio}/${source}`);
         } else {
           // Si el registro falla
           res.cookie("error", ["¡Error al agregar registro!"], {
@@ -252,7 +263,7 @@ export const documentIE = async (req, res) => {
       throw new Error("Seleccione un archivo .pdf");
     }
   } catch (error) {
-    res.redirect("/documents");
+    res.redirect(`/documents/${anio}/${source}`);
   }
 };
 

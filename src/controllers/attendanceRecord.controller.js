@@ -58,7 +58,8 @@ export const getDataByAnio = async (req, res) => {
     const str = carpeta.split("_");
     const year = str[0];
     const ie = str[1];
-    const documents = await DocumentIE.getDocumentExcel(ie, year);
+    const [schoolYear] = await SchoolYear.getSchoolYearByName(year);
+    const documents = await DocumentIE.getDocumentExcel(ie, schoolYear.idAnio);
     const [IE] = await Institution.getInstitutionById(ie);
     res.render("attendanceRecord/indexByAnio", {
       user,
@@ -117,16 +118,17 @@ export const postAttendanceRecord = async (req, res) => {
         mimetype ===
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       ) {
-        saveExcelIE(req.file);
         const str = carpeta.split("_");
         const year = str[0];
+        const [schoolYear] = await SchoolYear.getSchoolYearByName(year);
         const resDB = await DocumentIE.set(
           institution,
           originalname,
           filename,
-          year
+          schoolYear.idAnio
         );
         if (resDB.affectedRows > 0) {
+          saveExcelIE(req.file);
           // Si el registro es exitoso
           res.cookie("success", ["¡Registro exitoso!"], {
             httpOnly: true,

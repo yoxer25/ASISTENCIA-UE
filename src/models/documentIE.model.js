@@ -9,10 +9,10 @@ archivos del proyecto. Esta clase hace referencia
 a la tabla "documento_institucion" de la base de datos */
 export class DocumentIE {
   // para consultar los documentos pdf por ie
-  static async getDocument(ie) {
+  static async getDocument(ie, year) {
     const [documentIE] = await pool.query(
-      "SELECT * FROM documento_institucion d WHERE d.idInstitucion = ? AND d.nombreAnio = 'S/N'",
-      [ie]
+      "SELECT * FROM documento_institucion d WHERE (d.idInstitucion = ? AND d.idAnio = ?) AND d.nombreOriginal LIKE '%.pdf'",
+      [ie, year]
     );
     return documentIE;
   }
@@ -20,7 +20,7 @@ export class DocumentIE {
   // para consultar los documentos excel por institución
   static async getDocumentExcel(ie, anio) {
     const [documentIE] = await pool.query(
-      "SELECT * FROM documento_institucion d WHERE d.idInstitucion = ? AND d.nombreAnio = ?",
+      "SELECT * FROM documento_institucion d WHERE (d.idInstitucion = ? AND d.idAnio = ?) AND d.nombreOriginal LIKE '%.xlsx'",
       [ie, anio]
     );
     if (documentIE) {
@@ -34,7 +34,7 @@ export class DocumentIE {
       idInstitucion: ie,
       nombreOriginal: originalname,
       nombreDocumento: filename,
-      nombreAnio: anio,
+      idAnio: anio,
       fechaCreado: helpers.formatDateTime(),
     };
     const [res] = await pool.query("INSERT INTO documento_institucion SET ?", [

@@ -22,7 +22,7 @@
                             <div class="row">
                                 <div class="col-lg-8">
                                     <div class="form-group label-floating" style="margin: auto;">
-                                        <label class="control-label">Nombre I.E</label>
+                                        <label class="control-label">Buscar por usuario</label>
                                         <input class="form-control" type="text" id="ie" name="ie" value="{{ie}}">
                                     </div>
                                 </div>
@@ -60,7 +60,7 @@
                                 <tr>
                                     <td>{{nombreNivel}}</td>
                                     <td>{{nombreInstitucion}}</td>
-                                    <td>{{idInstitucion}}</td>
+                                    <td>{{dni_usuario}}</td>
                                     <td>{{nombreRol}}</td>
                                     <td><a href="/users/{{idUsuario}}" class="btn btn-info btn-raised btn-xs"><i
                                                 class="zmdi zmdi-refresh"></i></a>
@@ -87,7 +87,6 @@
 </section>
 
 {{>navigation/navigation}}
-
 
 <script>
     const current = ({{{ convertJson current }}});

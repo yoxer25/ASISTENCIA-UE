@@ -1,0 +1,15 @@
+<div class="form-group label-floating">
+    <label class="control-label">Nombre Área</label>
+    <input class="form-control" type="text" id="nameArea" name="nameArea" value="{{area.nombreArea}}"
+        onkeypress="return soloLetras(event)">
+</div>
+<div class="form-group label-floating">
+    <label class="control-label">Responsable</label>
+    <select class="form-control" id="username" name="designatedPerson" style="width: 100%;">
+        <option value="{{area.responsable}}" selected>{{area.nombrePersonal}}</option>
+        {{#each personal}}
+        <option value="{{idPersonal}}">{{nombrePersonal}}
+        </option>
+        {{/each}}
+    </select>
+</div>

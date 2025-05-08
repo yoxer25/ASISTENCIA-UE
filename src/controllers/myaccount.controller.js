@@ -14,10 +14,10 @@ export const getSignIn = async (req, res) => {
 son correctas, se le genera un token y se le
 redirecciona a la página principal */
 export const signIn = async (req, res) => {
-  const { userModularCode, userPassword } = req.body;
+  const { userName, userPassword } = req.body;
   try {
-    const user = await User.login(userModularCode, userPassword);
-    const { token } = genarateToken(user.idUser, user.nombre, user.rol);
+    const user = await User.login(userName, userPassword);
+    const { token } = genarateToken(user.idUser, user.nombre, user.rol, user.dniUser);
     res
       .cookie("access_token", token, {
         httpOnly: true,
@@ -42,14 +42,8 @@ export const updatePassword = async (req, res) => {
   const { newPassword } = req.body;
   try {
     validationInput(newPassword, res);
-    const [userDB] = await User.getUserById(Id);
     const passwordHash = await password.encryptPassword(newPassword);
-    const resDB = await User.updatePassword(
-      Id,
-      userDB.idInstitucion,
-      userDB.idRol,
-      passwordHash
-    );
+    const resDB = await User.updatePassword(Id, passwordHash);
     if (resDB.affectedRows > 0) {
       // Si el registro es exitoso
       res.cookie("success", ["¡Actualización exitosa!"], {

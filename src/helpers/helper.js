@@ -26,15 +26,29 @@ helpers.formatDate = (date) => {
   // Convierte la fecha a UTC antes de formatearla
   return dayjs.utc(date).format("YYYY-MM-DD");
 };
+
 helpers.formatTime = (date) => {
   // Convierte la hora a UTC antes de formatearla
   return dayjs.utc(date).format("HH:mm:ss");
 };
 
-/* para verificar si la institución es "ue", mostrar las
-columnas "segunda entrada" y "segunda salida" en las
-páginas de registro de asistencia y reportes */
+/* para ver si los datos son iguales, se usa en las vistas */
 helpers.eq = (a, b) => a === b;
+helpers.orEq = (a, b, c) => a === b || a === c;
+
+/* para ver si los datos no son iguales, se usa en las vistas
+para que el botón de aprobar papeleta solo sea visible para
+jefes de área */
+helpers.noeq = (a, b) => a !== b;
+
+/* para que desaparezca el botón de aprobar papeleta cuando
+el usuario ya aprobó lo que le corresponde */
+helpers.not = (a) => !a;
+helpers.eq = (a, b) => a === b;
+/* args.slice(0, -1) elimina el último parámetro que Handlebars pasa automáticamente (el objeto de opciones)
+Esto permite evaluar correctamente múltiples condiciones en {{#if}} */
+helpers.and = (...args) => args.slice(0, -1).every(Boolean);
+helpers.or = (...args) => args.slice(0, -1).some(Boolean);
 
 /* para mostrar en la página de registro de asistencia
 las horas que ha marcado el trabajador, caso contrario,

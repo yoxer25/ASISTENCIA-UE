@@ -8,6 +8,7 @@ import { Personal } from "../models/personal.model.js";
 import { SchoolYear } from "../models/schoolYear.model.js";
 import { DocumentProfesor } from "../models/documentProfesor.model.js";
 import { DocumentIE } from "../models/documentIE.model.js";
+import { SubFolderProfesor } from "../models/subfolderProfesor.model.js";
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
 
@@ -74,7 +75,7 @@ export const getDocumentsByIE = async (req, res) => {
 
 /* controla lo que se debe mostrar al momento de visitar la
 página de documentos por año, aquí veremos las carpetas
-por cada docente */
+por cada docente y los documentos de la IE */
 export const getByAnio = async (req, res) => {
   const user = req.session;
   const { anio, source } = req.params;
@@ -102,31 +103,8 @@ export const getByAnio = async (req, res) => {
   }
 };
 
-/* controla lo que se debe mostrar al momento de visitar la
-página de documentos por año, aquí veremos los documentos
-por cada docente */
-export const getDocumentByProfesor = async (req, res) => {
-  const user = req.session;
-  const { idCarpeta } = req.params;
-  const str = idCarpeta.split("_");
-  const file = str[0];
-  const personal = str[1];
-  try {
-    const [dataPersonal] = await Personal.getPersonalById(personal);
-    const documents = await DocumentProfesor.getDocument(file);
-    res.render("documents/indexByProfesor", {
-      user,
-      idCarpeta,
-      documents,
-      dataPersonal,
-    });
-  } catch (error) {
-    res.render("documents/indexByProfesor", { user, idCarpeta });
-  }
-};
-
 // para agregar carpetas para los docentes de cada IE
-export const fileProfesor = async (req, res) => {
+export const folderProfesor = async (req, res) => {
   const user = req.session;
   const ie = user.user.name;
   const { anio, source } = req.params;
@@ -167,6 +145,90 @@ export const fileProfesor = async (req, res) => {
     }
   } catch (error) {
     res.redirect(`/documents/${anio}/${source}`);
+  }
+};
+
+/* controla lo que se debe mostrar al momento de visitar la
+una carpeta del docente, aquí veremos las subcarpetas
+por cada docente */
+export const getBySubFolder = async (req, res) => {
+  const user = req.session;
+  const { idCarpeta } = req.params;
+  const str = idCarpeta.split("_");
+  const file = str[0];
+  const personal = str[1];
+  try {
+    const [dataPersonal] = await Personal.getPersonalById(personal);
+    const subfolder = await SubFolderProfesor.getFolder(file);
+    res.render("documents/subfolderProfesor", {
+      user,
+      subfolder,
+      idCarpeta,
+      dataPersonal,
+    });
+  } catch (error) {
+    res.render("documents/subfolderProfesor", { user, idCarpeta });
+  }
+};
+
+// para agregar subcarpetas para los docentes de cada IE
+export const subfolderProfesor = async (req, res) => {
+  const { idCarpeta } = req.params;
+  const { subFolder } = req.body;
+  try {
+    const str = idCarpeta.split("_");
+    const folder = str[0];
+    const [folderProfesor] = await SubFolderProfesor.getById(folder, subFolder);
+    if (!folderProfesor) {
+      const resDB = await SubFolderProfesor.set(folder, subFolder);
+      if (resDB.affectedRows > 0) {
+        // Si el registro es exitoso
+        res.cookie("success", ["Registro exitoso!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        res.redirect(`/documents/folder/${idCarpeta}`);
+      } else {
+        // Si el registro falla
+        res.cookie("error", ["¡Error al agregar registro!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
+        throw new Error("Error al agregar registro");
+      }
+    } else {
+      // Si el registro falla
+      res.cookie("error", ["¡Registro ya existe!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+      throw new Error("Registro ya existe");
+    }
+  } catch (error) {
+    res.redirect(`/documents/folder/${idCarpeta}`);
+  }
+};
+
+/* controla lo que se debe mostrar al momento de visitar la
+una carpeta del docente, aquí veremos los documentos
+por cada docente */
+export const getDocumentByProfesor = async (req, res) => {
+  const user = req.session;
+  const { idCarpeta } = req.params;
+  const str = idCarpeta.split("_");
+  const file = str[0];
+  const personal = str[1];
+  try {
+    const [dataPersonal] = await Personal.getPersonalById(personal);
+    const documents = await DocumentProfesor.getDocument(file);
+    res.render("documents/indexByProfesor", {
+      user,
+      idCarpeta,
+      documents,
+      dataPersonal,
+    });
+  } catch (error) {
+    res.render("documents/indexByProfesor", { user, idCarpeta });
   }
 };
 

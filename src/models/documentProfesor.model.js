@@ -11,7 +11,7 @@ export class DocumentProfesor {
   // para consultar los documentos por ie, carpeta y docente
   static async getDocument(file) {
     const [documentProfesor] = await pool.query(
-      "SELECT * FROM documento_profesor d WHERE d.idCarpeta = ?",
+      "SELECT * FROM documento_profesor d WHERE d.idSubcarpeta = ?",
       [file]
     );
     if (documentProfesor != "") {
@@ -24,7 +24,7 @@ export class DocumentProfesor {
   // para agregar documentos por docente
   static async set(file, originalname, filename) {
     const newDocument = {
-      idCarpeta: file,
+      idSubcarpeta: file,
       nombreOriginal: originalname,
       nombreDocumento: filename,
       fechaCreado: helpers.formatDateTime(),
@@ -33,14 +33,5 @@ export class DocumentProfesor {
       newDocument,
     ]);
     return res;
-  }
-
-  // para consultar datos de una carpeta por el ID del docente en dciho año escolar
-  static async getById(anio, personal) {
-    const [documentProfesor] = await pool.query(
-      "SELECT * FROM carpeta_docente c WHERE c.idAnio = ? AND c.idPersonal = ?",
-      [anio, personal]
-    );
-    return documentProfesor;
   }
 }

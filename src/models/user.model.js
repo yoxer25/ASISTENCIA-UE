@@ -75,6 +75,8 @@ export class User {
     const newUser = new User(username, rolUser, dniUser);
     newUser.contrasena = password;
     newUser.fechaCreado = helpers.formatDateTime();
+    newUser.fechaCambioContrasena = helpers.formatDateTime();
+
     const [res] = await pool.query("INSERT INTO usuarios SET ?", [newUser]);
     return res;
   }
@@ -134,6 +136,7 @@ export class User {
           dniUser: userData.dni_usuario,
           rol: rol.nombreRol,
           especialista,
+          lastPasswordUpdate: userData.fechaCambioContrasena,
         };
       }
       throw new Error("Datos Incorrectos");
@@ -146,6 +149,7 @@ export class User {
     const newUser = {
       contrasena: password,
       fechaActualizado: helpers.formatDateTime(),
+      fechaCambioContrasena: helpers.formatDateTime(),
     };
     const [res] = await pool.query(
       "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",

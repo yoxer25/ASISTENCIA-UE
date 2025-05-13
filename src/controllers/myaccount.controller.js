@@ -1,6 +1,8 @@
 import { password } from "../helpers/password.js";
 import { genarateToken } from "../helpers/tokenManager.js";
 import { User } from "../models/user.model.js";
+import dayjs from "dayjs";
+
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -30,6 +32,22 @@ export const signIn = async (req, res) => {
       sameSite: "strict",
       //maxAge: 1000 * 60 * 60, // la cookie durará 1h
     });
+    // Verificamos la fecha de cambio de contraseña
+    if (user.lastPasswordUpdate) {
+      const fechaCambio = dayjs(user.lastPasswordUpdate);
+      const hoy = dayjs();
+      const diasPasados = hoy.diff(fechaCambio, "day");
+
+      if (diasPasados >= 30) {
+        res.cookie("notification", "Ha pasado mucho tiempo desde que usted no ha actualizado su contraseña, por favor actualícela", {
+          maxAge: 6000,
+        });
+      } else if (diasPasados >= 23 && diasPasados < 30) {
+        res.cookie("notification", "Su contraseña está cerca de caducar, por favor actualícela", {
+          maxAge: 6000,
+        });
+      }
+    }
     if (user.rol === "otros") {
       if (user.especialista === "AGP") {
         return res.redirect("/documents"); //

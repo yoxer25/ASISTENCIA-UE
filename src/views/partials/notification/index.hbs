@@ -1,0 +1,37 @@
+<!-- Modal de Notificación -->
+<div id="notificationModal" class="modal-notification">
+    <div class="modal-content-notification">
+        <span class="close-modal" id="closeModal">&times;</span>
+        <p id="notificationMessage"></p> <!-- Asegúrate de que el ID coincide -->
+    </div>
+</div>
+
+<script>
+    // Función para obtener cookies por nombre
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const notification = getCookie("notification");
+        if (notification) {
+            document.getElementById("notificationMessage").innerText = decodeURIComponent(notification);
+            document.getElementById("notificationModal").style.display = "block";
+
+            // Eliminar cookie para que no se repita
+            document.cookie = "notification=; path=/; max-age=0";
+        }
+
+        document.getElementById("closeModal").onclick = function () {
+            document.getElementById("notificationModal").style.display = "none";
+        };
+
+        window.onclick = function (event) {
+            if (event.target === document.getElementById("notificationModal")) {
+                document.getElementById("notificationModal").style.display = "none";
+            }
+        };
+    });
+</script>

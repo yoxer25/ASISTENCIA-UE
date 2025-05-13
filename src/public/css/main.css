@@ -645,3 +645,65 @@ body, html{
 .toast-error {
 	background-color: #f44336;
 }
+
+/* estilos básicos para la modal de notificaciones */
+/* Estilos para el fondo de la modal */
+.modal-notification {
+  display: none; /* Oculta por defecto */
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro semitransparente */
+}
+
+/* Contenedor de la modal */
+.modal-content-notification {
+  background-color: #fff;
+  margin: 15% auto;
+  padding: 25px 30px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.4s ease;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Botón de cerrar */
+.close-modal {
+  color: #aaa;
+  float: right;
+  font-size: 26px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+  color: #e53935;
+}
+
+/* Estilo del mensaje */
+#notificationMessage {
+  font-size: 18px;
+  color: #333;
+  margin-top: 15px;
+}
+

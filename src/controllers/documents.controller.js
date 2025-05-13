@@ -40,7 +40,7 @@ export const getDocuments = async (req, res) => {
   }
 };
 
-// para consultar documentos por IE (solo administrador)
+// para consultar documentos por IE (solo administrador y RRHH)
 export const getDocumentsByIE = async (req, res) => {
   const user = req.session;
   const institutions = await Institution.getInstitution();

@@ -2,8 +2,7 @@
 import { Router } from "express";
 
 // importamos todas las funciones para asignar cada función a una ruta de la web
-import * as homeCtrl from "../controllers/home.controller.js";
-
+import * as specialistCtrl from "../controllers/specialist.controller.js";
 /* para proteger nuestras rutas
 privadas, se verificará el
 token que nos están
@@ -17,9 +16,12 @@ import { authorize } from "../middlewares/authorization.js";
 
 const router = Router();
 
-
-// rutas de la página principal
-router.get("/", requireToken, authorize(["administrador", "directivo", "otros"], ["RECURSOS HUMANOS"]), homeCtrl.getHome);
+// rutas de la página áreas
+router.get("/", requireToken, authorize(["administrador"]), specialistCtrl.getSpecialist);
+router.post("/", requireToken, authorize(["administrador"]), specialistCtrl.set);
+router.get("/:idSpecialist", requireToken, authorize(["administrador"]), specialistCtrl.getById);
+router.put("/:idSpecialist", requireToken, authorize(["administrador"]), specialistCtrl.set);
+router.patch("/:idSpecialist", requireToken, authorize(["administrador"]), specialistCtrl.set);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

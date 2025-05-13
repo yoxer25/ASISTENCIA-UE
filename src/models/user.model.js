@@ -5,7 +5,9 @@ password: para comparar la contraseña del usuario */
 import pool from "../database/connection.js";
 import { helpers } from "../helpers/helper.js";
 import { password } from "../helpers/password.js";
+import { Personal } from "./personal.model.js";
 import { RolUser } from "./rolUser.model.js";
+import { Specialist } from "./specialist.model.js";
 
 /* exportamos nuestra clase "User"
 para poder utilizar sus métodos en otros
@@ -113,19 +115,30 @@ export class User {
         userData.contrasena
       );
       if (validPassword) {
-        const rol = await RolUser.getById(userData.idRol);
-        const nameRol = rol[0];
-        const usuario = {
+        const [personal] = await Personal.getPersonalByDNI(
+          userData.dni_usuario
+        );
+        const [rol] = await RolUser.getById(userData.idRol);
+        let especialista = "S/E"; // Valor por defecto
+        if (personal) {
+          const [specialist] = await Specialist.getSpecialistByPersonal(
+            personal.idPersonal
+          );
+          if (specialist) {
+            especialista = specialist.especialidad;
+          }
+        }
+        return {
           idUser: userData.idUsuario,
           nombre: userData.idInstitucion,
           dniUser: userData.dni_usuario,
-          rol: nameRol.nombreRol,
+          rol: rol.nombreRol,
+          especialista,
         };
-        return usuario;
       }
       throw new Error("Datos Incorrectos");
     }
-    throw new Error("Datos Incorrectos");
+    throw new Error("Usuario Incorrectos");
   }
 
   // para cambiar contraseña del usuario
@@ -133,7 +146,7 @@ export class User {
     const newUser = {
       contrasena: password,
       fechaActualizado: helpers.formatDateTime(),
-    }
+    };
     const [res] = await pool.query(
       "UPDATE usuarios u SET ? WHERE u.idUsuario = ?",
       [newUser, id]

@@ -13,9 +13,12 @@
     <div class="container-fluid">
         <div class="row" style="margin-bottom: 20px;">
             <div class="col-lg-5">
+                {{#unless (eq user.user.rol "otros")}}
                 <a href="/personals/create">{{>btn-new}}</a>
+                {{/unless}}
             </div>
-            {{#if (eq user.user.rol "administrador")}}
+            {{#if (or (eq user.user.rol "administrador") (and (eq user.user.rol "otros") (eq user.user.especialista
+            "RECURSOS HUMANOS")))}}
             <div class="col-lg-7" id="formSearchPersonal">
                 <div class="card">
                     <div class="card-body rounded-bottom bg-white">
@@ -60,63 +63,61 @@
                             <thead>
                                 <tr>
                                     <th class="text-center">DNI</th>
-                                    {{#if (eq user.user.rol "administrador")}}
-                                    <th class="text-center">Nombre I.E</th>
+                                    {{#if (eq @root.user.user.rol "administrador")}}
+                                    <th class="text-center">Nombre I.E
+                                    </th>
                                     <th class="text-center">Turno</th>
                                     <th class="text-center">Área</th>
                                     {{/if}}
                                     <th class="text-center">Nombres y Apellidos</th>
                                     <th class="text-center">Id Reloj</th>
+                                    {{#unless (eq @root.user.user.rol "otros")}}
                                     <th class="text-center">Editar</th>
                                     <th class="text-center">Eliminar</th>
+                                    {{/unless}}
+
                                 </tr>
                             </thead>
                             <tbody>
-                                {{#if (eq user.user.rol "administrador")}}
                                 {{#each personals}}
                                 <tr>
                                     <td>{{dniPersonal}}</td>
+                                    {{#if (eq @root.user.user.rol "administrador")}}
                                     <td>{{nombreInstitucion}}</td>
                                     <td>{{nombreTurno}}</td>
                                     <td>{{nombreArea}}</td>
+                                    {{/if}}
                                     <td>{{nombrePersonal}}</td>
                                     <td>{{idReloj}}</td>
-                                    <td><a href="/personals/{{idPersonal}}" class="btn btn-info btn-raised btn-xs"><i
-                                                class="zmdi zmdi-refresh"></i></a>
+                                    {{#unless (eq @root.user.user.rol "otros")}}
+                                    <td>
+                                        <a href="/personals/{{idPersonal}}" class="btn btn-info btn-raised btn-xs">
+                                            <i class="zmdi zmdi-refresh"></i>
+                                        </a>
                                     </td>
-                                    <td><a href="#!" class="btn-delete-personal btn btn-danger btn-raised btn-xs"
+                                    <td>
+                                        <a href="#!" class="btn-delete-personal btn btn-danger btn-raised btn-xs"
                                             data-id="{{idPersonal}}" data-dni="{{dniPersonal}}"
-                                            data-nombre="{{nombrePersonal}}" data-idreloj="{{idReloj}}"><i
-                                                class="zmdi zmdi-delete"></i></a>
+                                            data-nombre="{{nombrePersonal}}" data-idreloj="{{idReloj}}">
+                                            <i class="zmdi zmdi-delete"></i>
+                                        </a>
                                     </td>
-                                </tr>
-                                {{else}}
-                                <tr>
-                                    <td colspan="8">No hay registros para mostrar</td>
-                                </tr>
-                                {{/each}}
-                                {{else}}
-                                {{#each personals}}
-                                <tr>
-                                    <td>{{dniPersonal}}</td>
-                                    <td>{{nombrePersonal}}</td>
-                                    <td>{{idReloj}}</td>
-                                    <td><a href="/personals/{{idPersonal}}" class="btn btn-info btn-raised btn-xs"><i
-                                                class="zmdi zmdi-refresh"></i></a>
-                                    </td>
-                                    <td><a href="#!" class="btn-delete-personal btn btn-danger btn-raised btn-xs"
-                                            data-id="{{idPersonal}}" data-dni="{{dniPersonal}}"
-                                            data-nombre="{{nombrePersonal}}" data-idreloj="{{idReloj}}"><i
-                                                class="zmdi zmdi-delete"></i></a>
-                                    </td>
-                                </tr>
-                                {{else}}
-                                <tr>
-                                    <td colspan="5">No hay registros para mostrar</td>
-                                </tr>
-                                {{/each}}
-                                {{/if}}
+                                    {{/unless}}
 
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    {{#if (eq @root.user.user.rol "administrador")}}
+                                    <td colspan="8">No hay registros para mostrar</td>
+                                    {{else if (eq @root.user.user.rol "directivo")}}
+                                    <td colspan="5">No hay registros para mostrar</td>
+                                    {{else if (eq @root.user.user.rol "otros")}}
+                                    <td colspan="3">No hay registros para mostrar</td>
+                                    {{else}}
+                                    <td colspan="3">No hay registros para mostrar</td>
+                                    {{/if}}
+                                </tr>
+                                {{/each}}
                             </tbody>
                         </table>
                         <ul class="pagination pagination-sm" id="pagination">

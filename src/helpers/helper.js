@@ -33,8 +33,7 @@ helpers.formatTime = (date) => {
 };
 
 /* para ver si los datos son iguales, se usa en las vistas */
-helpers.eq = (a, b) => a === b;
-helpers.orEq = (a, b, c) => a === b || a === c;
+helpers.orEq = (a, b, c, d) => a === b || a === c || a === d; // para el menú lateral
 
 /* para ver si los datos no son iguales, se usa en las vistas
 para que el botón de aprobar papeleta solo sea visible para
@@ -44,7 +43,7 @@ helpers.noeq = (a, b) => a !== b;
 /* para que desaparezca el botón de aprobar papeleta cuando
 el usuario ya aprobó lo que le corresponde */
 helpers.not = (a) => !a;
-helpers.eq = (a, b) => a === b;
+helpers.eq = (a, b) => a === b; // también para uso de roles
 /* args.slice(0, -1) elimina el último parámetro que Handlebars pasa automáticamente (el objeto de opciones)
 Esto permite evaluar correctamente múltiples condiciones en {{#if}} */
 helpers.and = (...args) => args.slice(0, -1).every(Boolean);

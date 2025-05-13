@@ -66,12 +66,12 @@ export class Area {
   /* para consultar datos de todas las áreas que sean
   diferentes a la área que tiene registrado el trabajador */
   static async getSelectArea(id) {
-    const [categories] = await pool.query(
+    const [areas] = await pool.query(
       "SELECT * FROM area a WHERE NOT EXISTS (SELECT * FROM personal p WHERE a.idArea = p.idAreaPersonal AND a.estado != 0 AND p.idPersonal = ?)",
       [id]
     );
-    if (categories) {
-      return categories;
+    if (areas) {
+      return areas;
     } else {
       throw new Error("Datos no encontrados");
     }

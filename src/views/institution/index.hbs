@@ -13,7 +13,9 @@
     <div class="container-fluid">
         <div class="row" style="margin-bottom: 20px;">
             <div class="col-lg-5">
+                {{#unless (eq user.user.rol "otros")}}
                 <a href="/institutions/create">{{>btn-new}}</a>
+                {{/unless}}
             </div>
             <div class="col-lg-7">
                 <div class="card">
@@ -55,8 +57,10 @@
                                     <th class="text-center">Horario</th>
                                     <th class="text-center">Dirección</th>
                                     <th class="text-center">Distrito</th>
+                                    {{#unless (eq @root.user.user.rol "otros")}}
                                     <th class="text-center">Editar</th>
                                     <th class="text-center">Eliminar</th>
+                                    {{/unless}}
                                 </tr>
                             </thead>
                             <tbody id="list">
@@ -70,6 +74,7 @@
                                     <td>{{nombreHorario}}</td>
                                     <td>{{direccion}}</td>
                                     <td>{{nombreDistrito}}</td>
+                                    {{#unless (eq @root.user.user.rol "otros")}}
                                     <td><a href="/institutions/ie{{idInstitucion}}"
                                             class="btn btn-info btn-raised btn-xs"><i class="zmdi zmdi-refresh"></i></a>
                                     </td>
@@ -79,10 +84,17 @@
                                             data-direccion="{{direccion}}" data-distrito="{{nombreDistrito}}"><i
                                                 class="zmdi zmdi-delete"></i></a>
                                     </td>
+                                    {{/unless}}
                                 </tr>
                                 {{else}}
                                 <tr>
+                                    {{#if (eq @root.user.user.rol "administrador")}}
+                                    <td colspan="10">No hay registros para mostrar</td>
+                                    {{else if (eq @root.user.user.rol "otros")}}
                                     <td colspan="8">No hay registros para mostrar</td>
+                                    {{else}}
+                                    <td colspan="8">No hay registros para mostrar</td>
+                                    {{/if}}
                                 </tr>
                                 {{/each}}
                             </tbody>

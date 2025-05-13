@@ -11,7 +11,16 @@
         </div>
     </div>
     <div class="container-fluid">
-        {{#if (eq user.user.rol "administrador")}}
+        {{#if (or
+        (eq user.user.rol "administrador")
+        (and
+        (eq user.user.rol "otros")
+        (or
+        (eq user.user.especialista "RECURSOS HUMANOS")
+        (eq user.user.especialista "AGP")
+        )
+        )
+        )}}
         <div class="row" style="margin-bottom: 20px;">
             <div class="col-lg-7" id="formSearchPersonal">
                 <div class="card">

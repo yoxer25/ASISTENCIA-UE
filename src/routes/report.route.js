@@ -14,12 +14,30 @@ cookies */
 podrá acceder a estas rutas;
 caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
+import { authorize } from "../middlewares/authorization.js";
+
 const router = Router();
 
 // rutas de la página reportes
-router.post("/", requireToken, reportCtrl.getReport);
-router.post("/download", requireToken, reportCtrl.generateExcel, reportCtrl.download);
-router.get("/page:num", requireToken, reportCtrl.getData);
+router.post(
+  "/",
+  requireToken,
+  authorize(["administrador", "directivo", "otros"], ["RECURSOS HUMANOS"]),
+  reportCtrl.getReport
+);
+router.post(
+  "/download",
+  requireToken,
+  authorize(["administrador", "directivo", "otros"], ["RECURSOS HUMANOS"]),
+  reportCtrl.generateExcel,
+  reportCtrl.download
+);
+router.get(
+  "/page:num",
+  requireToken,
+  authorize(["administrador", "directivo", "otros"], ["RECURSOS HUMANOS"]),
+  reportCtrl.getData
+);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

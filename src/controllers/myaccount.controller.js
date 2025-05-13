@@ -17,15 +17,29 @@ export const signIn = async (req, res) => {
   const { userName, userPassword } = req.body;
   try {
     const user = await User.login(userName, userPassword);
-    const { token } = genarateToken(user.idUser, user.nombre, user.rol, user.dniUser);
-    res
-      .cookie("access_token", token, {
-        httpOnly: true,
-        //secure: true,
-        sameSite: "strict",
-        //maxAge: 1000 * 60 * 60, // la cookie durará 1h
-      })
-      .redirect("/");
+    const { token } = genarateToken(
+      user.idUser,
+      user.nombre,
+      user.rol,
+      user.dniUser,
+      user.especialista
+    );
+    res.cookie("access_token", token, {
+      httpOnly: true,
+      //secure: true,
+      sameSite: "strict",
+      //maxAge: 1000 * 60 * 60, // la cookie durará 1h
+    });
+    if (user.rol === "otros") {
+      if (user.especialista === "AGP") {
+        return res.redirect("/documents"); //
+      }
+      if (user.especialista === "RECURSOS HUMANOS") {
+        return res.redirect("/");
+      }
+    } else {
+      return res.redirect("/");
+    }
   } catch (error) {
     // Si el registro falla
     res.cookie("error", ["¡Datos Incorrectos!"], {

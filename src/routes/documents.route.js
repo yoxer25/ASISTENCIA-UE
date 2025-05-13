@@ -14,38 +14,92 @@ cookies */
 podrá acceder a estas rutas;
 caso contrario, no podrá acceder */
 import { requireToken } from "../middlewares/requireToken.js";
+import { authorize } from "../middlewares/authorization.js";
+
 const upload = multer({ dest: "src/documents/" });
 const router = Router();
 
 // rutas de la página documentos de gestión
-router.get("/", requireToken, documentsCtrl.getDocuments);
-router.post("/", requireToken, documentsCtrl.getDocumentsByIE);
-router.get("/folder/:idCarpeta", requireToken, documentsCtrl.getBySubFolder);
+router.get(
+  "/",
+  requireToken,
+  authorize(
+    ["administrador", "directivo", "otros"],
+    ["RECURSOS HUMANOS", "AGP"]
+  ),
+  documentsCtrl.getDocuments
+);
+router.post(
+  "/",
+  requireToken,
+  authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP"]),
+  documentsCtrl.getDocumentsByIE
+);
+router.get(
+  "/folder/:idCarpeta",
+  requireToken,
+  authorize(
+    ["administrador", "directivo", "otros"],
+    ["RECURSOS HUMANOS", "AGP"]
+  ),
+  documentsCtrl.getBySubFolder
+);
 router.post(
   "/folder/:idCarpeta",
   requireToken,
+  authorize(["directivo"]),
   documentsCtrl.subfolderProfesor
 );
 router.get(
   "/file/:idCarpeta",
   requireToken,
+  authorize(
+    ["administrador", "directivo", "otros"],
+    ["RECURSOS HUMANOS", "AGP"]
+  ),
   documentsCtrl.getDocumentByProfesor
 );
 router.post(
   "/file/:idCarpeta",
   requireToken,
+  authorize(["directivo"]),
   upload.single("pdfProfesor"),
   documentsCtrl.documentProfesor
 );
 router.post(
   "/ie/:anio/:source",
   requireToken,
+  authorize(
+    ["administrador", "directivo", "otros"],
+    ["RECURSOS HUMANOS", "AGP"]
+  ),
   upload.single("pdfIE"),
   documentsCtrl.documentIE
 );
-router.get("/view/:archive", requireToken, documentsCtrl.viewPDF);
-router.get("/:anio/:source", requireToken, documentsCtrl.getByAnio);
-router.post("/:anio/:source", requireToken, documentsCtrl.folderProfesor);
+router.get(
+  "/view/:archive",
+  requireToken,
+  authorize(
+    ["administrador", "directivo", "otros"],
+    ["RECURSOS HUMANOS", "AGP"]
+  ),
+  documentsCtrl.viewPDF
+);
+router.get(
+  "/:anio/:source",
+  requireToken,
+  authorize(
+    ["administrador", "directivo", "otros"],
+    ["RECURSOS HUMANOS", "AGP"]
+  ),
+  documentsCtrl.getByAnio
+);
+router.post(
+  "/:anio/:source",
+  requireToken,
+  authorize(["directivo"]),
+  documentsCtrl.folderProfesor
+);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

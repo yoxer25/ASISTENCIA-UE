@@ -1,0 +1,18 @@
+<div class="form-group label-floating">
+    <label class="control-label">Nombre Especialidad</label>
+    <select class="form-control" id="nameSpecialty" name="nameSpecialty" style="width: 100%;">
+        <option value="{{specialist.especialidad}}" selected>{{specialist.especialidad}}</option>
+        <option value="AGP">AGP</option>
+        <option value="AGP">RECURSOS HUMANOS</option>
+    </select>
+</div>
+<div class="form-group label-floating">
+    <label class="control-label">Responsable</label>
+    <select class="form-control" id="username" name="designatedPerson" style="width: 100%;">
+        <option value="{{specialist.idPersonal}}" selected>{{specialist.nombrePersonal}}</option>
+        {{#each personal}}
+        <option value="{{idPersonal}}">{{nombrePersonal}}
+        </option>
+        {{/each}}
+    </select>
+</div>

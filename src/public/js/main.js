@@ -197,6 +197,27 @@ $(".btn-delete-area").on("click", function () {
   });
 });
 
+// modal para confirmar si se desea eliminar un especialista
+$(".btn-delete-specialist").on("click", function () {
+  // Obtener los datos del trabajador desde los atributos `data-*` del enlace
+  var idEspecialista = $(this).data("id");
+  swal({
+    title: "¿Estás seguro de eliminar sus datos?",
+    text: `<form id="deleteFormSpecialist" action="/specialists/${idEspecialista}?_method=PATCH" method="POST">
+              <input type="hidden" name="_method" value="PATCH">
+          </form>`,
+    type: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#03A9F4",
+    cancelButtonColor: "#F44336",
+    confirmButtonText: '<i class="zmdi zmdi-badge-check"></i> ¡Sí, Eliminar!',
+    cancelButtonText: '<i class="zmdi zmdi-close-circle"></i> ¡No, Cancelar!',
+  }).then(function () {
+    // Realiza el envío del formulario
+    $("#deleteFormSpecialist").submit();
+  });
+});
+
 // para hacer Scroll en la web
 (function ($) {
   $(window).on("load", function () {

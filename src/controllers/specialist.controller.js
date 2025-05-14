@@ -3,8 +3,8 @@ import { Specialist } from "../models/specialist.model.js";
 
 // controla lo que se debe ver al visitar la página de áreas
 export const getSpecialist = async (req, res) => {
-  const user = req.session;
-  const ie = user.user.name;
+  const user = req.user;
+  const ie = user.name;
   const personal = await Personal.getPersonal(ie);
   try {
     const specialists = await Specialist.getSpecialists();
@@ -16,8 +16,8 @@ export const getSpecialist = async (req, res) => {
 
 // controla lo que se debe ver la página de áreas de editar
 export const getById = async (req, res) => {
-  const user = req.session;
-  const ie = user.user.name;
+  const user = req.user;
+  const ie = user.name;
   const { idSpecialist } = req.params;
   const personal = await Personal.getPersonal(ie);
   try {

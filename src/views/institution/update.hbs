@@ -18,13 +18,14 @@
                         <p class="text-white" style="font-size: 40px;">Actualizar Institución</p>
                     </div>
                     <div class="card-body rounded-bottom bg-white p-5">
-                        <form id="ieForm" action="/institutions/ie{{institution.idInstitucion}}?_method=PUT" method="POST">
+                        <form id="ieForm" action="/institutions/ie{{institution.idInstitucion}}?_method=PUT"
+                            method="POST">
                             <input type="hidden" name="_method" value="PUT">
                             {{>institution/create}}
                             <p class="text-center">
                                 <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
                                     <p style="font-size: 20px; margin: auto; color: #fff;"><i
-                                            class="zmdi zmdi-floppy"></i> Registrar</p>
+                                            class="zmdi zmdi-floppy"></i> Actualizar</p>
                                 </button>
                             </p>
                         </form>

@@ -1,4 +1,4 @@
-{{#if user.user}}
+{{#if user}}
 <section class="full-box cover dashboard-sideBar">
     <div class="full-box dashboard-sideBar-bg btn-menu-dashboard"></div>
     <div class="full-box dashboard-sideBar-ct">
@@ -6,11 +6,11 @@
         <div class="full-box dashboard-sideBar-UserInfo">
             <figure class="full-box">
                 <img src="/assets/img/avatar.jpg" alt="UserIcon">
-                <figcaption class="text-center text-titles">{{user.user.name}}</figcaption>
+                <figcaption class="text-center text-titles">{{user.name}}</figcaption>
             </figure>
             <ul class="full-box list-unstyled text-center">
                 <li>
-                    <a href="#!" class="btn-update-password" data-id="{{user.user.id}}">
+                    <a href="#!" class="btn-update-password" data-id="{{user.id}}">
                         <i class="zmdi zmdi-settings"></i>
                     </a>
                 </li>
@@ -24,7 +24,7 @@
         <!-- SideBar Menu -->
         <ul class="list-unstyled full-box dashboard-sideBar-Menu">
             {{!-- ADMINISTRADOR --}}
-            {{#if (eq user.user.rol "administrador")}}
+            {{#if (eq user.rol "administrador")}}
             <li><a href="/"><i class="zmdi zmdi-home zmdi-hc-fw"></i> Dashboard</a></li>
 
             <li>
@@ -56,7 +56,7 @@
             <li><a href="/documents"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Documentos de Gestión</a></li>
 
             {{!-- DIRECTIVO --}}
-            {{else if (eq user.user.rol "directivo")}}
+            {{else if (eq user.rol "directivo")}}
             <li><a href="/"><i class="zmdi zmdi-home zmdi-hc-fw"></i> Dashboard</a></li>
 
             <li>
@@ -84,7 +84,7 @@
             <li><a href="/documents"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Documentos de Gestión</a></li>
 
             {{!-- OTROS + RECURSOS HUMANOS --}}
-            {{else if (and (eq user.user.rol "otros") (eq user.user.especialista "RECURSOS HUMANOS"))}}
+            {{else if (and (eq user.rol "otros") (eq user.especialista "RECURSOS HUMANOS"))}}
             <li><a href="/"><i class="zmdi zmdi-home zmdi-hc-fw"></i> Dashboard</a></li>
 
             <li>
@@ -113,7 +113,7 @@
             <li><a href="/documents"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Documentos de Gestión</a></li>
 
             {{!-- OTROS + AGP --}}
-            {{else if (and (eq user.user.rol "otros") (eq user.user.especialista "AGP"))}}
+            {{else if (and (eq user.rol "otros") (eq user.especialista "AGP"))}}
             <li><a href="/documents"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Documentos de Gestión</a></li>
 
             {{/if}}

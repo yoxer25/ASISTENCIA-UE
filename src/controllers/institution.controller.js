@@ -12,7 +12,7 @@ export const getData = async (req, res) => {
   let forPage = 10;
   let page = req.params.num || 1;
   let ofset = page * forPage - forPage;
-  const user = req.session;
+  const user = req.user;
   try {
     const institutions = await Institution.getInstitution(ofset);
     const [counts] = await Institution.countInstitutions();
@@ -30,7 +30,7 @@ export const getData = async (req, res) => {
 /* controla lo que se debe mostrar al momento de visitar
 la página de crear una nueva IE */
 export const getCreate = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   try {
     const district = await District.getDistrict();
     const educationalLevel = await EducationalLevel.getEducationalLevel();
@@ -100,11 +100,26 @@ export const set = async (req, res) => {
             _method
           );
           if (resDb.affectedRows > 0) {
+            // Si el registro es exitoso
+            res.cookie("success", ["¡Actualización exitosa!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
             res.redirect("/institutions/page1");
           } else {
-            throw new Error("Error al agregar registro");
+            // Si el registro falla
+            res.cookie("error", ["¡Error al actualizar registro!"], {
+              httpOnly: true,
+              maxAge: 6000,
+            }); // 6 segundos
+            throw new Error("Error al actualizar registro");
           }
         } else {
+          // Si el registro es exitoso
+          res.cookie("error", ["Registro ya existe!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           throw new Error("Registro ya existe");
         }
       } else {
@@ -121,9 +136,19 @@ export const set = async (req, res) => {
           _method
         );
         if (resDb.affectedRows > 0) {
+          // Si el registro es exitoso
+          res.cookie("success", ["¡Actualización exitosa!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           res.redirect("/institutions/page1");
         } else {
-          throw new Error("Error al agregar registro");
+          // Si el registro falla
+          res.cookie("error", ["¡Error al actualizar registro!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
+          throw new Error("Error al actualizar registro");
         }
       }
     } else {
@@ -139,11 +164,26 @@ export const set = async (req, res) => {
           scheduleInstitution
         );
         if (resDb.affectedRows > 0) {
+          // Si el registro es exitoso
+          res.cookie("success", ["Registro exitoso!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           res.redirect("/institutions/page1");
         } else {
+          // Si el registro falla
+          res.cookie("error", ["¡Error al agregar registro!"], {
+            httpOnly: true,
+            maxAge: 6000,
+          }); // 6 segundos
           throw new Error("Error al agregar registro");
         }
       } else {
+        // Si el registro falla
+        res.cookie("error", ["Registro ya existe!"], {
+          httpOnly: true,
+          maxAge: 6000,
+        }); // 6 segundos
         throw new Error("Registro ya existe");
       }
     }
@@ -154,7 +194,7 @@ export const set = async (req, res) => {
 
 // para buscar I.E por nombre
 export const search = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   try {
     const { ie } = req.body;
     if (ie) {
@@ -173,7 +213,7 @@ export const search = async (req, res) => {
 
 // para buscar I.E por ID
 export const getById = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   try {
     const { Id } = req.params;
     const [institution] = await Institution.getInstitutionById(Id);

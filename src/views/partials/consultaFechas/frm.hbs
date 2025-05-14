@@ -3,7 +3,7 @@
     <div class="col-lg-3">
         <div class="form-group label-floating">
             <label class="control-label">Código Modular I.E</label>
-            {{#if (eq user.user.rol "administrador")}}
+            {{#if (eq user.rol "administrador")}}
             <input class="form-control" type="text" id="ie" name="ie" value="{{ie}}"
                 onkeypress="return solonumeros(event)">
             {{else}}

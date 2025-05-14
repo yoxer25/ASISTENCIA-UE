@@ -19,7 +19,7 @@
                         <h1 class="text-titles text-center">
                             <small>Documentos de Gestión Interna</small>
                         </h1>
-                        {{#if (eq user.user.rol "directivo")}}
+                        {{#if (eq user.rol "directivo")}}
                         <form action="/documents/ie/{{anio}}/{{source}}" method="POST" enctype="multipart/form-data">
                             <div>
                                 <label>ARCHIVO PDF</label>
@@ -52,7 +52,7 @@
     {{else if (eq source "docente")}}
     <div class="container-fluid">
         <div class="row" style="margin-bottom: 20px;">
-            {{#if (eq user.user.rol "directivo")}}
+            {{#if (eq user.rol "directivo")}}
             <div class="col-lg-12" id="formSearchPersonal">
                 <div class="card">
                     <div class="card-body rounded-bottom bg-white">

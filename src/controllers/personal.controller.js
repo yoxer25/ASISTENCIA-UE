@@ -9,7 +9,7 @@ la carpeta "routes" que tienen todas las rutas de la web */
 // controla lo que se debe mostrar al momento de visitar la página de trabajadores por II.EE
 export const getPersonalByIE = async (req, res) => {
   let forPage = 10;
-  const user = req.session;
+  const user = req.user;
   let { username, page } = req.body;
   if (page !== "") {
     page = page;
@@ -53,8 +53,8 @@ export const getPersonal = async (req, res) => {
   let forPage = 10;
   let page = req.params.num || 1;
   let ofset = page * forPage - forPage;
-  const user = req.session;
-  const institution = user.user.name;
+  const user = req.user;
+  const institution = user.name;
   const institutions = await Institution.getInstitution();
   try {
     const personals = await Personal.getPersonal(institution, ofset);
@@ -74,8 +74,8 @@ export const getPersonal = async (req, res) => {
 
 // controla lo que se debe mostrar al momento de visitar la página de crear nuevo trabajador
 export const getCreate = async (req, res) => {
-  const user = req.session;
-  const institution = user.user.name;
+  const user = req.user;
+  const institution = user.name;
   try {
     const [institutionDB] = await Institution.getInstitutionById(institution);
     const turnPersonalDB = await TurnPersonal.getTurnPersonal();
@@ -101,8 +101,8 @@ o PATCH, se actualizará la información del trabajador;
 caso contrario, si no se envía el _method, se procederá
 a crear un nuevo trabajador */
 export const set = async (req, res) => {
-  const user = req.session;
-  const institution = user.user.name;
+  const user = req.user;
+  const institution = user.name;
   const { documentNumber, fullName, idReloj, area, _method } = req.body;
   let { turnPersonal } = req.body;
   const { Id } = req.params;
@@ -317,8 +317,8 @@ export const set = async (req, res) => {
 
 // controla lo que se debe mostrar al momento de visitar la página de actualizar datos de un trabajador
 export const getById = async (req, res) => {
-  const user = req.session;
-  const institution = user.user.name;
+  const user = req.user;
+  const institution = user.name;
   try {
     const { Id } = req.params;
     const [personal] = await Personal.getPersonalById(Id);

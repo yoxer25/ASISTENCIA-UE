@@ -4,14 +4,13 @@ import jwt from "jsonwebtoken";
 export const requireToken = (req, res, next) => {
   try {
     const token = req.cookies.access_token;
-    if (!token) throw new Error("No Autorizado");
+    if (!token) throw new Error("No autorizado");
 
-    const data = jwt.verify(token, process.env.SECRET_JWT_KEY);
-    req.session = { user: null };
-    req.session.user = data;
+    const decoded = jwt.verify(token, process.env.SECRET_JWT_KEY);
+    req.user = decoded;
 
     next();
   } catch (error) {
-    res.redirect("/myaccount/signIn")
+    res.redirect("/myaccount/signIn");
   }
 };

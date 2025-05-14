@@ -82,8 +82,8 @@ export class User {
   }
 
   // para actualizar datos de un nuevo usuario
-  static async set(username, rolUser, Id, _method) {
-    const newUser = new User(username, rolUser);
+  static async set(username, rolUser, Id, _method, dniUser) {
+    const newUser = new User(username, rolUser, dniUser);
     if (_method === "PUT") {
       newUser.fechaActualizado = helpers.formatDateTime();
       const [res] = await pool.query(

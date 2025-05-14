@@ -15,7 +15,9 @@ export class Institution {
     level,
     nameInstitution,
     nameDirector,
-    address
+    address,
+    turnInstitution,
+    scheduleInstitution
   ) {
     this.idInstitucion = modularCode;
     this.idDistrito = district;
@@ -23,6 +25,8 @@ export class Institution {
     this.nombreInstitucion = nameInstitution;
     this.nombreDirector = nameDirector;
     this.direccion = address;
+    this.idTurnoInstitucion = turnInstitution;
+    this.idHorarioInstitucion = scheduleInstitution;
   }
 
   // para consultar el número total de instituciones
@@ -104,12 +108,12 @@ export class Institution {
       level,
       nameInstitution,
       nameDirector,
-      address
+      address,
+      turnInstitution,
+      scheduleInstitution
     );
     if (!_method) {
-      newInstitution.idTurnoInstitucion = turnInstitution;
-      (newInstitution.idHorarioInstitucion = scheduleInstitution),
-        (newInstitution.fechaCreado = await helpers.formatDateTime());
+      newInstitution.fechaCreado = await helpers.formatDateTime();
       const [res] = await pool.query("INSERT INTO institucion SET ?", [
         newInstitution,
       ]);

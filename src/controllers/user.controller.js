@@ -12,7 +12,7 @@ export const getUsers = async (req, res) => {
   let forPage = 10;
   let page = req.params.num || 1;
   let ofset = page * forPage - forPage;
-  const user = req.session;
+  const user = req.user;
   try {
     const users = await User.getUser(ofset);
     const [counts] = await User.countUsers();
@@ -29,7 +29,7 @@ export const getUsers = async (req, res) => {
 
 // controla lo que se debe mostrar al momento de visitar la página de crear nuevo usuario
 export const getCreate = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   try {
     const rolUser = await RolUser.getRolUser();
     const institution = await Institution.getInstitution();
@@ -100,7 +100,7 @@ export const set = async (req, res) => {
 
 // controla lo que se debe mostrar al momento de visitar la página de actualizar datos de un trabajador
 export const getById = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   try {
     const { Id } = req.params;
     const [userDB] = await User.getUserById(Id);
@@ -117,7 +117,7 @@ export const getById = async (req, res) => {
 
 // para buscar usuarios por nombre de I.E
 export const search = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   try {
     const { ie } = req.body;
     if (ie) {

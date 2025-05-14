@@ -7,8 +7,8 @@ la carpeta "routes" que tienen todas las rutas de la web */
 
 // controla lo que se debe mostrar al momento de vistar la página principal
 export const getHome = async (req, res) => {
-  const user = req.session;
-  const institution = user.user.name;
+  const user = req.user;
+  const institution = user.name;
   try {
     const totalUsers = await User.countUsers();
     const totalInstitutions = await Institution.countInstitutions();

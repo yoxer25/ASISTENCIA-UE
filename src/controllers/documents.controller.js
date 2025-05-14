@@ -14,8 +14,8 @@ la carpeta "routes" que tienen todas las rutas de la web */
 
 // controla lo que se debe mostrar al momento de visitar la página de documentos de gestión
 export const getDocuments = async (req, res) => {
-  const user = req.session;
-  const ie = user.user.name;
+  const user = req.user;
+  const ie = user.name;
   const institutions = await Institution.getInstitution();
   try {
     const schoolYear = await SchoolYear.getSchoolYear();
@@ -42,7 +42,7 @@ export const getDocuments = async (req, res) => {
 
 // para consultar documentos por IE (solo administrador y RRHH)
 export const getDocumentsByIE = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   const institutions = await Institution.getInstitution();
   const { ie } = req.body;
   try {
@@ -77,7 +77,7 @@ export const getDocumentsByIE = async (req, res) => {
 página de documentos por año, aquí veremos las carpetas
 por cada docente y los documentos de la IE */
 export const getByAnio = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   const { anio, source } = req.params;
   try {
     const str = anio.split("_");
@@ -105,8 +105,8 @@ export const getByAnio = async (req, res) => {
 
 // para agregar carpetas para los docentes de cada IE
 export const folderProfesor = async (req, res) => {
-  const user = req.session;
-  const ie = user.user.name;
+  const user = req.user;
+  const ie = user.name;
   const { anio, source } = req.params;
   const { profesor } = req.body;
 
@@ -152,7 +152,7 @@ export const folderProfesor = async (req, res) => {
 una carpeta del docente, aquí veremos las subcarpetas
 por cada docente */
 export const getBySubFolder = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   const { idCarpeta } = req.params;
   const str = idCarpeta.split("_");
   const file = str[0];
@@ -213,7 +213,7 @@ export const subfolderProfesor = async (req, res) => {
 una carpeta del docente, aquí veremos los documentos
 por cada docente */
 export const getDocumentByProfesor = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   const { idCarpeta } = req.params;
   const str = idCarpeta.split("_");
   const file = str[0];

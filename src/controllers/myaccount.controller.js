@@ -94,15 +94,10 @@ export const signIn = async (req, res) => {
 
 // controlalo que se debe mostrar al seleccionar cambiar contraseña
 export const getUpdatePassword = async (req, res) => {
-  const user = req.session;
-  console.log(user);
-
+  const user = req.user;
   if (!user) {
     return res.redirect("/myaccount/signIn"); // por si accede sin sesión
   }
-
-  console.log("Usuario en sesión:", user);
-
   res.render("login/password", { user }); // ✅ ahora sí es el usuario real
 };
 

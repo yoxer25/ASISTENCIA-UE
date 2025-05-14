@@ -23,8 +23,8 @@ la carpeta "routes" que tienen todas las rutas de la web */
 
 // controla lo que se debe mostrar al momento de visitar la página de asistencia
 export const getData = async (req, res) => {
-  const user = req.session;
-  const ie = user.user.name;
+  const user = req.user;
+  const ie = user.name;
   const institutions = await Institution.getInstitution();
   try {
     const schoolYear = await SchoolYear.getSchoolYear();
@@ -51,7 +51,7 @@ export const getData = async (req, res) => {
 
 // controla lo que se debe mostrar al momento de visitar la página de asistencia por año
 export const getDataByAnio = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   const institutions = await Institution.getInstitution();
   const { carpeta } = req.params;
   try {
@@ -77,7 +77,7 @@ export const getDataByAnio = async (req, res) => {
 /* controla lo que se debe mostrar al momento de visitar la página de
 asistencia consultando por IE */
 export const getAttendanceRecord = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   const { ie } = req.body;
   const institutions = await Institution.getInstitution();
   try {
@@ -108,8 +108,8 @@ export const getAttendanceRecord = async (req, res) => {
 
 // para importar el consolidado de la asistencia mensual
 export const postAttendanceRecord = async (req, res) => {
-  const user = req.session;
-  const institution = user.user.name;
+  const user = req.user;
+  const institution = user.name;
   const { carpeta } = req.body;
   try {
     if (req.file) {
@@ -190,7 +190,7 @@ export const download = async (req, res) => {
 
 // controla lo que se debe mostrar al momento de visitar la página de importar data
 export const getImportData = async (req, res) => {
-  const user = req.session;
+  const user = req.user;
   res.render("attendanceRecord/create", { user });
 };
 
@@ -200,8 +200,8 @@ excel y se va guardando en la base datos (solo si
 el usuario no tiene horas agregadas en una
 determinada fecha) */
 export const importData = async (req, res) => {
-  const user = req.session;
-  const institution = user.user.name;
+  const user = req.user;
+  const institution = user.name;
 
   try {
     if (req.file) {

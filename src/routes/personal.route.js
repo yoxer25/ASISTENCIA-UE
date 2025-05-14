@@ -29,7 +29,7 @@ router.get(
   authorize(["administrador", "directivo"]),
   personalCtrl.getCreate
 );
-router.post("/", requireToken, authorize(["administrador", "directivo"], ["RECURSOS HUMANOS"]), personalCtrl.getPersonalByIE);
+router.post("/", requireToken, authorize(["administrador", "otros"], ["RECURSOS HUMANOS"]), personalCtrl.getPersonalByIE);
 router.post("/create", requireToken, authorize(["administrador", "directivo"]), personalCtrl.set);
 router.get("/:Id", requireToken, authorize(["administrador", "directivo"]), personalCtrl.getById);
 router.put("/:Id", requireToken, authorize(["administrador", "directivo"]), personalCtrl.set);

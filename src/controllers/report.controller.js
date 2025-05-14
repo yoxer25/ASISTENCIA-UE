@@ -10,8 +10,8 @@ la carpeta "routes" que tienen todas las rutas de la web */
 export const getData = async (req, res) => {
   let forPage = 10;
   let page = req.params.num || 1;
-  const user = req.session;
-  const institution = user.user.name;
+  const user = req.user;
+  const institution = user.name;
   const [turnoIE] = await Institution.getInstitutionById(institution);
   try {
     const attendanceRecordDB = await AttendanceRecord.getData(institution);
@@ -36,9 +36,9 @@ export const getData = async (req, res) => {
 // controla lo que se debe mostrar al momento de visitar la página de asistencia por fechas o usuarios
 export const getReport = async (req, res) => {
   let forPage = 10;
-  const user = req.session;
-  const rol = user.user.rol;
-  const institution = user.user.name;
+  const user = req.user;
+  const rol = user.rol;
+  const institution = user.name;
   const fechaActual = new Date();
   let year = fechaActual.getFullYear();
   let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0

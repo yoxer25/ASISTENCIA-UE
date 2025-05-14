@@ -3,8 +3,8 @@ import { Personal } from "../models/personal.model.js";
 
 // controla lo que se debe ver al visitar la página de áreas
 export const getArea = async (req, res) => {
-  const user = req.session;
-  const ie = user.user.name;
+  const user = req.user;
+  const ie = user.name;
   const personal = await Personal.getPersonal(ie);
   try {
     const areas = await Area.getAreas();
@@ -16,8 +16,8 @@ export const getArea = async (req, res) => {
 
 // controla lo que se debe ver la página de áreas de editar
 export const getAreaById = async (req, res) => {
-  const user = req.session;
-  const ie = user.user.name;
+  const user = req.user;
+  const ie = user.name;
   const { idArea } = req.params;
   const personal = await Personal.getPersonal(ie);
   try {

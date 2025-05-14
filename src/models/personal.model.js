@@ -113,7 +113,11 @@ export class Personal {
       return res;
     }
     if (_method === "PUT") {
-      newPersonal.idAreaPersonal = area;
+      if (area === undefined) {
+        newPersonal.idAreaPersonal = 1;
+      } else {
+        newPersonal.idAreaPersonal = area;
+      }
       newPersonal.fechaActualizado = helpers.formatDateTime();
       const [res] = await pool.query(
         "UPDATE personal p SET ? WHERE p.idPersonal = ?",

@@ -16,6 +16,7 @@ const router = Router();
 
 // rutas de la página mi cuenta
 router.get("/signIn", myaccountCtrl.getSignIn);
+router.get("/changePassword", requireToken, myaccountCtrl.getUpdatePassword);
 router.post("/signIn", myaccountCtrl.signIn);
 router.get("/LogOut", requireToken, myaccountCtrl.logOut);
 router.put("/update:Id", requireToken, myaccountCtrl.updatePassword);

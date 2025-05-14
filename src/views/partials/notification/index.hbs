@@ -1,13 +1,17 @@
-<!-- Modal de Notificación -->
-<div id="notificationModal" class="modal-notification">
+<!-- Modal de notificación -->
+<div id="notificationModal" class="modal-notification" style="display: none;">
     <div class="modal-content-notification">
         <span class="close-modal" id="closeModal">&times;</span>
-        <p id="notificationMessage"></p> <!-- Asegúrate de que el ID coincide -->
+        <p id="notificationMessage"></p>
+        <div id="modalButtons">
+            <button id="changePasswordBtn">Cambiar contraseña</button>
+            <button id="skipBtn">Omitir</button>
+        </div>
     </div>
 </div>
 
+<!-- Script para mostrar el modal -->
 <script>
-    // Función para obtener cookies por nombre
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -15,23 +19,36 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        const notification = getCookie("notification");
-        if (notification) {
-            document.getElementById("notificationMessage").innerText = decodeURIComponent(notification);
-            document.getElementById("notificationModal").style.display = "block";
+        const rawNotification = getCookie("notification");
+        if (rawNotification) {
+            try {
+                const decodedNotification = decodeURIComponent(rawNotification); // Decodificar si está codificada
+                const notification = JSON.parse(decodedNotification); // Convertir el string en objeto
 
-            // Eliminar cookie para que no se repita
-            document.cookie = "notification=; path=/; max-age=0";
-        }
+                document.getElementById("notificationMessage").innerText = notification.message;
+                document.getElementById("notificationModal").style.display = "block";
 
-        document.getElementById("closeModal").onclick = function () {
-            document.getElementById("notificationModal").style.display = "none";
-        };
+                // Si es obligatorio cambiar la contraseña, ocultar el botón "Omitir"
+                if (notification.forceChange) {
+                    document.getElementById("skipBtn").style.display = "none";
+                } else {
+                    document.getElementById("skipBtn").style.display = "inline-block";
+                }
 
-        window.onclick = function (event) {
-            if (event.target === document.getElementById("notificationModal")) {
-                document.getElementById("notificationModal").style.display = "none";
+                // Eventos de los botones
+                // Eventos de los botones
+                document.getElementById("changePasswordBtn").onclick = () => {
+                    window.location.href = "/myaccount/changePassword"; // Redirige a la página de cambio de contraseña
+                };
+
+                document.getElementById("skipBtn").onclick = () => {
+                    document.getElementById("notificationModal").style.display = "none"; // Cierra el modal al omitir
+                };
+
+                // Eliminar la cookie después de mostrarla
+                document.cookie = "notification=; path=/; max-age=0";
+            } catch (e) {
             }
-        };
+        }
     });
 </script>

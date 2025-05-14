@@ -3,7 +3,6 @@ import { genarateToken } from "../helpers/tokenManager.js";
 import { User } from "../models/user.model.js";
 import dayjs from "dayjs";
 
-
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
 
@@ -24,7 +23,8 @@ export const signIn = async (req, res) => {
       user.nombre,
       user.rol,
       user.dniUser,
-      user.especialista
+      user.especialista,
+      user.lastPasswordUpdate
     );
     res.cookie("access_token", token, {
       httpOnly: true,
@@ -32,6 +32,7 @@ export const signIn = async (req, res) => {
       sameSite: "strict",
       //maxAge: 1000 * 60 * 60, // la cookie durará 1h
     });
+
     // Verificamos la fecha de cambio de contraseña
     if (user.lastPasswordUpdate) {
       const fechaCambio = dayjs(user.lastPasswordUpdate);
@@ -39,15 +40,38 @@ export const signIn = async (req, res) => {
       const diasPasados = hoy.diff(fechaCambio, "day");
 
       if (diasPasados >= 30) {
-        res.cookie("notification", "Ha pasado mucho tiempo desde que usted no ha actualizado su contraseña, por favor actualícela", {
-          maxAge: 6000,
-        });
-      } else if (diasPasados >= 23 && diasPasados < 30) {
-        res.cookie("notification", "Su contraseña está cerca de caducar, por favor actualícela", {
-          maxAge: 6000,
-        });
+        // Cambiar la cookie para indicar que la contraseña ha caducado
+        res.cookie(
+          "notification",
+          JSON.stringify({
+            message:
+              "Su contraseña ha caducado. Debe cambiarla para continuar.",
+            forceChange: true,
+          }),
+          {
+            maxAge: 1000 * 60 * 60, // 1 hora (para hacer pruebas más largas)
+            httpOnly: false, // Esto es importante para que puedas acceder desde JS
+            sameSite: "Strict",
+          }
+        );
+      } else if (diasPasados >= 23) {
+        const diasFaltantes = 30 - diasPasados;
+        // Cambiar la cookie para indicar que la contraseña está cerca de caducar
+        res.cookie(
+          "notification",
+          JSON.stringify({
+            message: `Le quedan ${diasFaltantes} días, debe cambiar su contraseña.`,
+            forceChange: false,
+          }),
+          {
+            maxAge: 1000 * 60 * 60, // 1 hora
+            httpOnly: false, // Esto es importante para que puedas acceder desde JS
+            sameSite: "Strict",
+          }
+        );
       }
     }
+
     if (user.rol === "otros") {
       if (user.especialista === "AGP") {
         return res.redirect("/documents"); //
@@ -66,6 +90,20 @@ export const signIn = async (req, res) => {
     }); // 6 segundos
     res.redirect("/myaccount/signIn");
   }
+};
+
+// controlalo que se debe mostrar al seleccionar cambiar contraseña
+export const getUpdatePassword = async (req, res) => {
+  const user = req.session;
+  console.log(user);
+
+  if (!user) {
+    return res.redirect("/myaccount/signIn"); // por si accede sin sesión
+  }
+
+  console.log("Usuario en sesión:", user);
+
+  res.render("login/password", { user }); // ✅ ahora sí es el usuario real
 };
 
 /* función para actualizar la contraseña */

@@ -686,20 +686,6 @@ body, html{
   }
 }
 
-/* Botón de cerrar */
-.close-modal {
-  color: #aaa;
-  float: right;
-  font-size: 26px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.close-modal:hover,
-.close-modal:focus {
-  color: #e53935;
-}
-
 /* Estilo del mensaje */
 #notificationMessage {
   font-size: 18px;
@@ -707,3 +693,56 @@ body, html{
   margin-top: 15px;
 }
 
+ /* Botones */
+  #modalButtons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  #changePasswordBtn,
+  #skipBtn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+
+  /* Estilo para el botón de "Cambiar contraseña" */
+  #changePasswordBtn {
+    background-color: #007bff;
+    color: white;
+  }
+
+  #changePasswordBtn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+
+  /* Estilo para el botón de "Omitir" */
+  #skipBtn {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+
+  #skipBtn:hover {
+    background-color: #e2e6ea;
+    transform: scale(1.05);
+  }
+
+  /* X de cierre */
+  .close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #888;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .close-modal:hover {
+    color: #555;
+  }

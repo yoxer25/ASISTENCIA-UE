@@ -1,4 +1,5 @@
 import { Area } from "../models/area.model.js";
+import { Course } from "../models/course.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Personal } from "../models/personal.model.js";
 import { TurnPersonal } from "../models/turnPersonal.model.js";
@@ -59,11 +60,13 @@ export const getPersonal = async (req, res) => {
   try {
     const personals = await Personal.getPersonal(institution, ofset);
     const [counts] = await Personal.countPersonals(institution);
-
+    const [institutionDB] = await Institution.getInstitutionById(institution);
+    const level = institutionDB.nombreNivel;
     res.render("personal/index", {
       user,
       institutions,
       personals,
+      level,
       current: page,
       pages: Math.ceil(counts.personals / forPage),
     });
@@ -78,14 +81,18 @@ export const getCreate = async (req, res) => {
   const institution = user.name;
   try {
     const [institutionDB] = await Institution.getInstitutionById(institution);
+    const level = institutionDB.nombreNivel;
     const turnPersonalDB = await TurnPersonal.getTurnPersonal();
     const areas = await Area.getAreas();
+    const courses = await Course.getCourses();
     const turnPersonal = turnPersonalDB.slice(0, 2);
     res.render("personal/create", {
       user,
+      level,
       turnPersonal,
       turnoIE: institutionDB.idTurnoInstitucion,
       areas,
+      courses,
     });
   } catch (error) {
     res.render("personal/create", { user });
@@ -103,7 +110,7 @@ a crear un nuevo trabajador */
 export const set = async (req, res) => {
   const user = req.user;
   const institution = user.name;
-  const { documentNumber, fullName, idReloj, area, _method } = req.body;
+  const { documentNumber, fullName, idReloj, area, course, _method } = req.body;
   let { turnPersonal } = req.body;
   const { Id } = req.params;
   const [institutionDB] = await Institution.getInstitutionById(institution);
@@ -136,6 +143,7 @@ export const set = async (req, res) => {
               idReloj,
               turnPersonal,
               area,
+              course,
               Id,
               _method
             );
@@ -171,6 +179,7 @@ export const set = async (req, res) => {
               idReloj,
               turnPersonal,
               area,
+              course,
               Id,
               _method
             );
@@ -208,6 +217,7 @@ export const set = async (req, res) => {
               idReloj,
               turnPersonal,
               area,
+              course,
               Id,
               _method
             );
@@ -242,6 +252,7 @@ export const set = async (req, res) => {
             idReloj,
             turnPersonal,
             area,
+            course,
             Id,
             _method
           );
@@ -276,7 +287,8 @@ export const set = async (req, res) => {
             fullName,
             idReloj,
             turnPersonal,
-            area
+            area,
+            course
           );
           if (resDb.affectedRows > 0) {
             // Si el registro es exitoso
@@ -311,6 +323,7 @@ export const set = async (req, res) => {
       }
     }
   } catch (error) {
+    console.log(error.message);
     res.redirect("/personals/create");
   }
 };
@@ -322,17 +335,20 @@ export const getById = async (req, res) => {
   try {
     const { Id } = req.params;
     const [personal] = await Personal.getPersonalById(Id);
-
     const turnPersonalDB = await TurnPersonal.getSelectTurnPersonal(Id);
     const turnPersonal = turnPersonalDB.slice(0, 1);
     const areas = await Area.getSelectArea(Id);
     const [institutionDB] = await Institution.getInstitutionById(institution);
+    const level = institutionDB.nombreNivel;
+    const courses = await Course.getSelectCourses(Id);
     res.render("personal/update", {
       user,
       personal,
       turnPersonal,
       turnoIE: institutionDB.idTurnoInstitucion,
       areas,
+      level,
+      courses,
     });
   } catch (error) {
     res.render("personal/update", { user });

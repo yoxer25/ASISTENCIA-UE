@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import { RolUser } from "../models/rolUser.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Area } from "../models/area.model.js";
+import { Personal } from "../models/personal.model.js";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -14,7 +15,27 @@ export const getUsers = async (req, res) => {
   let ofset = page * forPage - forPage;
   const user = req.user;
   try {
-    const users = await User.getUser(ofset);
+    const usersDB = await User.getUser(ofset);
+    const users = [];
+    for (let i = 0; i < usersDB.length; i++) {
+      const element = usersDB[i];
+      let name = element.nombreInstitucion;
+      const [personal] = await Personal.getPersonalByDNI(element.dni_usuario);
+      if (personal) {
+        name = personal.nombrePersonal;
+      }
+      const newUser = {
+        idUsuario: element.idUsuario,
+        idInstitucion: element.idInstitucion,
+        idRol: element.idRol,
+        nombreNivel: element.nombreNivel,
+        nombreInstitucion: element.nombreInstitucion,
+        dni_usuario: element.dni_usuario,
+        nombres: name,
+        nombreRol: element.nombreRol,
+      };
+      users.push(newUser);
+    }
     const [counts] = await User.countUsers();
     res.render("user/index", {
       user,

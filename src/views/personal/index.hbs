@@ -70,6 +70,9 @@
                                     <th class="text-center">Área</th>
                                     {{/if}}
                                     <th class="text-center">Nombres y Apellidos</th>
+                                    {{#if (mostrarAsignatura user.rol user.especialista level)}}
+                                    <th class="text-center">Asignatura</th>
+                                    {{/if}}
                                     <th class="text-center">Id Reloj</th>
                                     {{#unless (eq @root.user.rol "otros")}}
                                     <th class="text-center">Editar</th>
@@ -88,6 +91,9 @@
                                     <td>{{nombreArea}}</td>
                                     {{/if}}
                                     <td>{{nombrePersonal}}</td>
+                                    {{#if (mostrarAsignatura @root.user.rol @root.user.especialista @root.level)}}
+                                    <td>{{nombreAsignatura}}</td>
+                                    {{/if}}
                                     <td>{{idReloj}}</td>
                                     {{#unless (eq @root.user.rol "otros")}}
                                     <td>

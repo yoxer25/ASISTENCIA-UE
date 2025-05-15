@@ -21,7 +21,7 @@
         <div class="form-group label-floating">
             <label class="control-label">Área</label>
             <select class="form-control" id="area" name="area" style="width: 100%;">
-                <option value="{{personal.idArea}}" selected>{{personal.nombreArea}}</option>
+                <option value="{{personal.idAreaPersonal}}" selected>{{personal.nombreArea}}</option>
                 {{#each areas}}
                 <option value="{{idArea}}">{{nombreArea}}</option>
                 {{/each}}
@@ -35,6 +35,17 @@
                 <option value="{{personal.idTurnoPersonal}}" selected>{{personal.nombreTurno}}</option>
                 {{#each turnPersonal}}
                 <option value="{{idTurnoPersonal}}">{{nombreTurno}}</option>
+                {{/each}}
+            </select>
+        </div>
+        {{/if}}
+        {{#if (eq level "secundaria")}}
+        <div class="form-group label-floating">
+            <label class="control-label">Asignatura</label>
+            <select class="form-control" id="course" name="course" style="width: 100%;">
+                <option value="{{personal.asignatura}}" selected>{{personal.nombreAsignatura}}</option>
+                {{#each courses}}
+                <option value="{{idAsignatura}}">{{nombreAsignatura}}</option>
                 {{/each}}
             </select>
         </div>

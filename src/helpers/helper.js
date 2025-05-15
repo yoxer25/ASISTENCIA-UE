@@ -49,6 +49,15 @@ Esto permite evaluar correctamente múltiples condiciones en {{#if}} */
 helpers.and = (...args) => args.slice(0, -1).every(Boolean);
 helpers.or = (...args) => args.slice(0, -1).some(Boolean);
 
+helpers.mostrarAsignatura = (rol, especialista, level) => {
+  return (
+    rol === "administrador" ||
+    (rol === "otros" && especialista === "RECURSOS HUMANOS") ||
+    (rol === "directivo" && (level === "secundaria" || level === "EBA avanzado"))
+  );
+};
+
+
 /* para mostrar en la página de registro de asistencia
 las horas que ha marcado el trabajador, caso contrario,
 "no marcó" */

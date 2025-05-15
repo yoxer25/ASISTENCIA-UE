@@ -339,7 +339,6 @@ export const getById = async (req, res) => {
   try {
     const { Id } = req.params;
     const [personal] = await Personal.getPersonalById(Id);
-    console.log(personal);
     const turnPersonalDB = await TurnPersonal.getSelectTurnPersonal(Id);
     const turnPersonal = turnPersonalDB.slice(0, 1);
     const areas = await Area.getSelectArea(Id);

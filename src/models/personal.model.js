@@ -9,11 +9,12 @@ para poder utilizar sus métodos en otros
 archivos del proyecto. Esta clase hace referencia
 a la tabla "usuarios" de la base de datos */
 export class Personal {
-  constructor(documentNumber, institution, fullName, idReloj) {
+  constructor(documentNumber, institution, fullName, idReloj, docente) {
     this.dniPersonal = documentNumber;
     this.idInstitucion = institution;
     this.nombrePersonal = fullName;
     this.idReloj = idReloj;
+    this.docente = docente;
   }
 
   // para consultar el número total de trabajadores
@@ -33,14 +34,14 @@ export class Personal {
   static async getPersonal(institution, ofset) {
     if (ofset === undefined) {
       const [personalDb] = await pool.query(
-        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj, t.nombreTurno, a.nombreArea, asig.nombreAsignatura FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN area a ON a.idArea = p.idAreaPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal",
+        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.docente, i.nombreInstitucion, p.idReloj, t.nombreTurno, a.nombreArea, asig.nombreAsignatura FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN area a ON a.idArea = p.idAreaPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal",
         [institution]
       );
 
       return personalDb;
     } else {
       const [personalDb] = await pool.query(
-        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, i.nombreInstitucion, p.idReloj, t.nombreTurno, a.nombreArea, asig.nombreAsignatura FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN area a ON a.idArea = p.idAreaPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
+        "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.docente, i.nombreInstitucion, p.idReloj, t.nombreTurno, a.nombreArea, asig.nombreAsignatura FROM personal p INNER JOIN institucion i ON p.idInstitucion = i.idInstitucion INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN area a ON a.idArea = p.idAreaPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura WHERE i.idInstitucion = ? and p.estado != 0 ORDER BY p.dniPersonal lIMIT ?, 10",
         [institution, ofset]
       );
       if (personalDb != "") {
@@ -90,6 +91,7 @@ export class Personal {
     idReloj,
     turnPersonal,
     area,
+    docente,
     course,
     Id,
     _method
@@ -98,7 +100,8 @@ export class Personal {
       documentNumber,
       institution,
       fullName,
-      idReloj
+      idReloj,
+      docente
     );
     if (!_method) {
       if (area === undefined) {
@@ -153,7 +156,7 @@ export class Personal {
   // para consultar dotos de todos de un trabajador por ID
   static async getPersonalById(Id) {
     const [personalDb] = await pool.query(
-      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj, p.idTurnoPersonal, p.idAreaPersonal, t.nombreTurno, a.nombreArea, p.asignatura, asig.nombreAsignatura FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura INNER JOIN area a ON a.idArea = p.idAreaPersonal WHERE p.idPersonal = ?",
+      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj, p.idTurnoPersonal, p.idAreaPersonal, p.docente, t.nombreTurno, a.nombreArea, p.asignatura, asig.nombreAsignatura FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura INNER JOIN area a ON a.idArea = p.idAreaPersonal WHERE p.idPersonal = ?",
       [Id]
     );
     if (personalDb != "") {

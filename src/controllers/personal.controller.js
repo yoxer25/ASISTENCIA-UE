@@ -110,7 +110,7 @@ a crear un nuevo trabajador */
 export const set = async (req, res) => {
   const user = req.user;
   const institution = user.name;
-  const { documentNumber, fullName, idReloj, area, course, _method } = req.body;
+  const { documentNumber, fullName, idReloj, area, docente, course, _method } = req.body;
   let { turnPersonal } = req.body;
   const { Id } = req.params;
   const [institutionDB] = await Institution.getInstitutionById(institution);
@@ -143,6 +143,7 @@ export const set = async (req, res) => {
               idReloj,
               turnPersonal,
               area,
+              docente,
               course,
               Id,
               _method
@@ -179,6 +180,7 @@ export const set = async (req, res) => {
               idReloj,
               turnPersonal,
               area,
+              docente,
               course,
               Id,
               _method
@@ -217,6 +219,7 @@ export const set = async (req, res) => {
               idReloj,
               turnPersonal,
               area,
+              docente,
               course,
               Id,
               _method
@@ -252,6 +255,7 @@ export const set = async (req, res) => {
             idReloj,
             turnPersonal,
             area,
+            docente,
             course,
             Id,
             _method
@@ -288,6 +292,7 @@ export const set = async (req, res) => {
             idReloj,
             turnPersonal,
             area,
+            docente,
             course
           );
           if (resDb.affectedRows > 0) {
@@ -323,7 +328,6 @@ export const set = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error.message);
     res.redirect("/personals/create");
   }
 };
@@ -335,6 +339,7 @@ export const getById = async (req, res) => {
   try {
     const { Id } = req.params;
     const [personal] = await Personal.getPersonalById(Id);
+    console.log(personal);
     const turnPersonalDB = await TurnPersonal.getSelectTurnPersonal(Id);
     const turnPersonal = turnPersonalDB.slice(0, 1);
     const areas = await Area.getSelectArea(Id);

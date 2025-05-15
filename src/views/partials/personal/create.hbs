@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-md-6">
         <div class="form-group label-floating">
-            <label class="control-label">DNI</label>
+            <label class="control-label">SI</label>
             <input class="form-control" type="text" id="documentNumber" name="documentNumber"
                 value="{{personal.dniPersonal}}" onkeypress="return solonumeros(event)">
         </div>
@@ -48,6 +48,17 @@
                 <option value="{{idAsignatura}}">{{nombreAsignatura}}</option>
                 {{/each}}
             </select>
+        </div>
+        {{/if}}
+        {{#if (eq user.rol "directivo")}}
+        <div class="form-group label-floating">
+            <p>Docente</p>
+            <label for="SI">Si</label>
+            <input class="control-label" type="radio" id="SI" name="docente" value="SI"  {{#if (or (eq personal.docente "SI") (not personal.docente))}}checked{{/if}}>
+
+            <label for="NO">No</label>
+            <input class="control-label" type="radio" id="NO" name="docente" value="NO" {{#if (eq personal.docente "NO"
+                )}}checked{{/if}}>
         </div>
         {{/if}}
     </div>

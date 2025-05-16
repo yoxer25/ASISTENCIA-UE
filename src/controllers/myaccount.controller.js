@@ -28,7 +28,7 @@ export const signIn = async (req, res) => {
     );
     res.cookie("access_token", token, {
       httpOnly: true,
-      //secure: true,
+      secure: true,
       sameSite: "strict",
       //maxAge: 1000 * 60 * 60, // la cookie durará 1h
     });

@@ -85,5 +85,10 @@ app.use("/documents", documentsRoutes);
 app.use("/areas", areaRoutes);
 app.use("/specialists", specialistRoutes);
 
+// ruta 404
+app.use((req, res) => {
+  res.render("errors/404");
+});
+
 // exportamos la constante "app" para poder utilizarla en otras parte del proyecto
 export default app;

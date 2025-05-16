@@ -23,13 +23,13 @@ export const authorize = (roles, allowedSpecialties) => {
 
     // 2. Verificar rol permitido
     if (!roles.includes(rol)) {
-      return res.render("403/403");
+      return res.render("errors/403");
     }
 
     // 3. Verificar especialidad si es "otros"
     if (rol === "otros") {
       if (!allowedSpecialties || !allowedSpecialties.includes(especialista)) {
-        return res.render("403/403");
+        return res.render("errors/403");
       }
     }
 

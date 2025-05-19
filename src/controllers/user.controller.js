@@ -33,6 +33,7 @@ export const getUsers = async (req, res) => {
         dni_usuario: element.dni_usuario,
         nombres: name,
         nombreRol: element.nombreRol,
+        correo: element.correo,
       };
       users.push(newUser);
     }
@@ -68,7 +69,7 @@ o PATCH, se actualizará la información del usuario;
 caso contrario, si no se envía el _method, se procederá
 a crear un nuevo usuario */
 export const set = async (req, res) => {
-  const { username, formPassword, rolUser, _method } = req.body;
+  const { username, formPassword, rolUser, email, _method } = req.body;
   let { dni } = req.body;
   if (dni) {
     dni = dni;
@@ -78,7 +79,7 @@ export const set = async (req, res) => {
   const { Id } = req.params;
   try {
     if (_method) {
-      const resDb = await User.set(username, rolUser, Id, _method, dni);
+      const resDb = await User.set(username, rolUser, Id, _method, dni, email);
       if (resDb.affectedRows > 0) {
         // Si el registro es exitoso
         res.cookie("success", ["¡Actualización exitosa!"], {
@@ -95,9 +96,15 @@ export const set = async (req, res) => {
         throw new Error("Error al actualizar registro");
       }
     } else {
-      validationInput(username, formPassword, rolUser, res);
+      validationInput(username, formPassword, rolUser, email, res);
       const passwordHash = await password.encryptPassword(formPassword);
-      const resDb = await User.create(username, rolUser, passwordHash, dni);
+      const resDb = await User.create(
+        username,
+        rolUser,
+        passwordHash,
+        dni,
+        email
+      );
       if (resDb.affectedRows > 0) {
         // Si el registro es exitoso
         res.cookie("success", ["¡Registro exitoso!"], {
@@ -156,8 +163,13 @@ export const search = async (req, res) => {
 };
 
 // función para validar que el usuario llene completamente el formulario de crear y actualizar productos
-const validationInput = (username, formPassword, rolUser, res) => {
-  if (username === "" || formPassword === "" || rolUser === "") {
+const validationInput = (username, formPassword, rolUser, email, res) => {
+  if (
+    username === "" ||
+    formPassword === "" ||
+    rolUser === "" ||
+    email === ""
+  ) {
     res.cookie("error", ["¡Todos los campos son obligatorios!"], {
       httpOnly: true,
       maxAge: 6000,

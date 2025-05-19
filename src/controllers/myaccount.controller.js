@@ -2,6 +2,8 @@ import { password } from "../helpers/password.js";
 import { genarateToken } from "../helpers/tokenManager.js";
 import { User } from "../models/user.model.js";
 import dayjs from "dayjs";
+import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
@@ -132,6 +134,91 @@ export const updatePassword = async (req, res) => {
 // función para cerrar sesión
 export const logOut = async (req, res) => {
   res.clearCookie("access_token").redirect("/myaccount/signIn");
+};
+
+const RESET_TOKEN_SECRET = process.env.RESET_PASSWORD_SECRET;
+const RESET_TOKEN_EXPIRATION = "10m"; // o lo que prefieras
+
+// Muestra formulario para ingresar el correo
+export const getForgotPasswordForm = (req, res) => {
+  res.render("login/forgot-password");
+};
+
+// Envía enlace de reseteo por correo
+export const sendResetPasswordLink = async (req, res) => {
+  const { email } = req.body;
+  const [user] = await User.findByEmail(email); // Asegúrate de tener este método en tu modelo
+
+  if (!user) {
+    return res
+      .cookie("error", ["Correo no encontrado."])
+      .redirect("/myaccount/forgot-password");
+  }
+  const token = jwt.sign({ id: user.idUsuario }, RESET_TOKEN_SECRET, {
+    expiresIn: RESET_TOKEN_EXPIRATION,
+  });
+
+  const resetLink = `http://localhost:3000/myaccount/reset-password/${token}`;
+
+  // Envío de correo (usa nodemailer con tu config real)
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER, // tu correo
+      pass: process.env.EMAIL_PASS, // tu clave
+    },
+  });
+
+  await transporter.sendMail({
+    from: '"Soporte" <soporte@example.com>',
+    to: email,
+    subject: "Restablecer contraseña",
+    html: `<p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+           <a href="${resetLink}">Restablecer Contraseña</a>`,
+  });
+
+  res.cookie("success", ["Revisa tu correo para continuar."], {
+    httpOnly: true,
+    maxAge: 6000,
+  });
+  res.redirect("/myaccount/signIn");
+};
+
+// Muestra formulario para ingresar nueva contraseña
+export const getResetPasswordForm = (req, res) => {
+  const { token } = req.params;
+  try {
+    jwt.verify(token, RESET_TOKEN_SECRET);
+    res.render("login/reset-password", { token });
+  } catch (error) {
+    res.send("El enlace ha expirado o no es válido.");
+  }
+};
+
+// Procesa la nueva contraseña
+export const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+  try {
+    const decoded = jwt.verify(token, RESET_TOKEN_SECRET);
+    validationInput(newPassword, res);
+    const passwordHash = await password.encryptPassword(newPassword);
+    const resDB = await User.updatePassword(decoded.id, passwordHash);
+    if (resDB.affectedRows > 0) {
+      res.cookie("success", ["¡Contraseña restablecida con éxito!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      });
+      res.redirect("/myaccount/signIn");
+    } else {
+      throw new Error("No se pudo actualizar la contraseña.");
+    }
+  } catch (error) {
+    res.cookie("error", ["Enlace inválido o expirado."], {
+      httpOnly: true,
+      maxAge: 6000,
+    });
+    res.redirect("/myaccount/signIn");
+  }
 };
 
 // función para validar que el usuario llene completamente el formulario de crear y actualizar productos

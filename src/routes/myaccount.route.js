@@ -21,5 +21,13 @@ router.post("/signIn", myaccountCtrl.signIn);
 router.get("/LogOut", requireToken, myaccountCtrl.logOut);
 router.put("/update:Id", requireToken, myaccountCtrl.updatePassword);
 
+
+// Recuperación de contraseña
+router.get("/forgot-password", myaccountCtrl.getForgotPasswordForm);
+router.post("/forgot-password", myaccountCtrl.sendResetPasswordLink);
+router.get("/reset-password/:token", myaccountCtrl.getResetPasswordForm);
+router.post("/reset-password", myaccountCtrl.resetPassword);
+
+
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

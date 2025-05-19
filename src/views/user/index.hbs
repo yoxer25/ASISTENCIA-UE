@@ -51,6 +51,7 @@
                                     <th class="text-center">Nombre I.E</th>
                                     <th class="text-center">Usuario</th>
                                     <th class="text-center">Nombres</th>
+                                    <th class="text-center">Email</th>
                                     <th class="text-center">Rol</th>
                                     <th class="text-center">Editar</th>
                                     <th class="text-center">Eliminar</th>
@@ -63,6 +64,7 @@
                                     <td>{{nombreInstitucion}}</td>
                                     <td>{{dni_usuario}}</td>
                                     <td>{{nombres}}</td>
+                                    <td>{{correo}}</td>
                                     <td>{{nombreRol}}</td>
                                     <td><a href="/users/{{idUsuario}}" class="btn btn-info btn-raised btn-xs"><i
                                                 class="zmdi zmdi-refresh"></i></a>
@@ -73,7 +75,7 @@
                                 </tr>
                                 {{else}}
                                 <tr>
-                                    <td colspan="7">No hay registros para mostrar</td>
+                                    <td colspan="8">No hay registros para mostrar</td>
                                 </tr>
                                 {{/each}}
                             </tbody>

@@ -146,42 +146,49 @@ export const getForgotPasswordForm = (req, res) => {
 
 // Envía enlace de reseteo por correo
 export const sendResetPasswordLink = async (req, res) => {
-  const { email } = req.body;
-  const [user] = await User.findByEmail(email); // Asegúrate de tener este método en tu modelo
+  const { user } = req.body;
+  const userDB = await User.findByUsuario(user); // Asegúrate de tener este método en tu modelo
 
-  if (!user) {
+  if (!userDB) {
     return res
-      .cookie("error", ["Correo no encontrado."])
+      .cookie("error", ["Usuario no encontrado."])
       .redirect("/myaccount/forgot-password");
   }
-  const token = jwt.sign({ id: user.idUsuario }, RESET_TOKEN_SECRET, {
-    expiresIn: RESET_TOKEN_EXPIRATION,
-  });
+  const usuario = userDB[0];
+  if (usuario.correo !== "") {
+    const token = jwt.sign({ id: usuario.idUsuario }, RESET_TOKEN_SECRET, {
+      expiresIn: RESET_TOKEN_EXPIRATION,
+    });
 
-  const resetLink = `http://localhost:3000/myaccount/reset-password/${token}`;
+    const resetLink = `http://localhost:3000/myaccount/reset-password/${token}`;
 
-  // Envío de correo (usa nodemailer con tu config real)
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER, // tu correo
-      pass: process.env.EMAIL_PASS, // tu clave
-    },
-  });
+    // Envío de correo (usa nodemailer con tu config real)
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER, // tu correo
+        pass: process.env.EMAIL_PASS, // tu clave
+      },
+    });
 
-  await transporter.sendMail({
-    from: '"Soporte" <soporte@example.com>',
-    to: email,
-    subject: "Restablecer contraseña",
-    html: `<p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+    await transporter.sendMail({
+      from: '"Soporte" <soporte@example.com>',
+      to: usuario.correo,
+      subject: "Restablecer contraseña",
+      html: `<p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
            <a href="${resetLink}">Restablecer Contraseña</a>`,
-  });
+    });
 
-  res.cookie("success", ["Revisa tu correo para continuar."], {
-    httpOnly: true,
-    maxAge: 6000,
-  });
-  res.redirect("/myaccount/signIn");
+    res.cookie("success", [`Se ha enviado un mensaje a ${usuario.correo}.`], {
+      httpOnly: true,
+      maxAge: 6000,
+    });
+    res.redirect("/myaccount/signIn");
+  } else {
+    return res
+      .cookie("error", ["No tiene un correo registrado. Actualice sus datos."])
+      .redirect("/myaccount/forgot-password");
+  }
 };
 
 // Muestra formulario para ingresar nueva contraseña

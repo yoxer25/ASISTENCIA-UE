@@ -59,11 +59,11 @@ export class User {
     }
   }
 
-  // para consultar dotos de un usuario por correo
-  static async findByEmail(email) {
+  // para consultar dotos de un usuario por dni_usuario
+  static async findByUsuario(user) {
     const [userDb] = await pool.query(
-      "SELECT u.idUsuario, u.idInstitucion, u.dni_usuario, u.idRol, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND u.correo = ?",
-      [email]
+      "SELECT u.idUsuario, u.idInstitucion, u.dni_usuario, u.idRol, u.correo, i.nombreInstitucion, r.nombreRol FROM usuarios u INNER JOIN institucion i ON u.idInstitucion = i.idInstitucion INNER JOIN rol_usuario r ON u.idRol = r.idRolUsuario WHERE u.estado != 0 AND u.dni_usuario = ?",
+      [user]
     );
     if (userDb != "") {
       return userDb;

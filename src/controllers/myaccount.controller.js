@@ -160,7 +160,9 @@ export const sendResetPasswordLink = async (req, res) => {
       expiresIn: RESET_TOKEN_EXPIRATION,
     });
 
-    const resetLink = `http://localhost:3000/myaccount/reset-password/${token}`;
+    const url = process.env.BASE_URL;
+
+    const resetLink = `${url}/myaccount/reset-password/${token}`;
 
     // Envío de correo (usa nodemailer con tu config real)
     const transporter = nodemailer.createTransport({

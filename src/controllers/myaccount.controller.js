@@ -42,7 +42,6 @@ export const signIn = async (req, res) => {
       const diasPasados = hoy.diff(fechaCambio, "day");
 
       if (diasPasados >= 30) {
-        // Cambiar la cookie para indicar que la contraseña ha caducado
         res.cookie(
           "notification",
           JSON.stringify({
@@ -51,14 +50,13 @@ export const signIn = async (req, res) => {
             forceChange: true,
           }),
           {
-            maxAge: 1000 * 60 * 60, // 1 hora (para hacer pruebas más largas)
-            httpOnly: false, // Esto es importante para que puedas acceder desde JS
+            maxAge: 1000 * 60 * 60,
+            httpOnly: false,
             sameSite: "Strict",
           }
         );
       } else if (diasPasados >= 23) {
         const diasFaltantes = 30 - diasPasados;
-        // Cambiar la cookie para indicar que la contraseña está cerca de caducar
         res.cookie(
           "notification",
           JSON.stringify({
@@ -66,8 +64,8 @@ export const signIn = async (req, res) => {
             forceChange: false,
           }),
           {
-            maxAge: 1000 * 60 * 60, // 1 hora
-            httpOnly: false, // Esto es importante para que puedas acceder desde JS
+            maxAge: 1000 * 60 * 60,
+            httpOnly: false,
             sameSite: "Strict",
           }
         );
@@ -94,13 +92,13 @@ export const signIn = async (req, res) => {
   }
 };
 
-// controlalo que se debe mostrar al seleccionar cambiar contraseña
+// controla lo que se debe mostrar al seleccionar cambiar contraseña
 export const getUpdatePassword = async (req, res) => {
   const user = req.user;
   if (!user) {
-    return res.redirect("/myaccount/signIn"); // por si accede sin sesión
+    return res.redirect("/myaccount/signIn");
   }
-  res.render("login/password", { user }); // ✅ ahora sí es el usuario real
+  res.render("login/password", { user });
 };
 
 /* función para actualizar la contraseña */
@@ -136,8 +134,10 @@ export const logOut = async (req, res) => {
   res.clearCookie("access_token").redirect("/myaccount/signIn");
 };
 
+/* para reestablecer la contraseña por medio de correo
+electrónico, cuando el usuario ha olvidado su contraseña */
 const RESET_TOKEN_SECRET = process.env.RESET_PASSWORD_SECRET;
-const RESET_TOKEN_EXPIRATION = "10m"; // o lo que prefieras
+const RESET_TOKEN_EXPIRATION = "10m"; // token expira en 10 minutos
 
 // Muestra formulario para ingresar el correo
 export const getForgotPasswordForm = (req, res) => {
@@ -147,7 +147,7 @@ export const getForgotPasswordForm = (req, res) => {
 // Envía enlace de reseteo por correo
 export const sendResetPasswordLink = async (req, res) => {
   const { user } = req.body;
-  const userDB = await User.findByUsuario(user); // Asegúrate de tener este método en tu modelo
+  const userDB = await User.findByUsuario(user);
 
   if (!userDB) {
     return res
@@ -164,12 +164,12 @@ export const sendResetPasswordLink = async (req, res) => {
 
     const resetLink = `${url}/myaccount/reset-password/${token}`;
 
-    // Envío de correo (usa nodemailer con tu config real)
+    // Envío de correo
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER, // tu correo
-        pass: process.env.EMAIL_PASS, // tu clave
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
@@ -236,7 +236,7 @@ const validationInput = (newPassword, res) => {
     res.cookie("error", ["¡Todos los campos son obligatorios!"], {
       httpOnly: true,
       maxAge: 6000,
-    }); // 6 segundos
+    });
     throw new Error("Todos los campos son obligatorios");
   }
 };

@@ -143,8 +143,10 @@ export class Personal {
     }
 
     if (_method === "PATCH") {
-      newPersonal.estado = 0;
-      newPersonal.fechaEliminado = helpers.formatDateTime();
+      const newPersonal = {
+        estado: 0,
+        fechaEliminado: helpers.formatDateTime()
+      }
       const [res] = await pool.query(
         "UPDATE personal p SET ? WHERE p.idPersonal = ?",
         [newPersonal, Id]

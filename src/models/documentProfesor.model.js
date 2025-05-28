@@ -11,7 +11,7 @@ export class DocumentProfesor {
   // para consultar los documentos por ie, carpeta y docente
   static async getDocument(file) {
     const [documentProfesor] = await pool.query(
-      "SELECT * FROM documento_profesor d WHERE d.idSubcarpeta = ?",
+      "SELECT * FROM documento_profesor d WHERE d.idSubcarpeta = ? ORDER BY d.fechaCreado DESC",
       [file]
     );
     if (documentProfesor != "") {

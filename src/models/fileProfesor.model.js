@@ -40,4 +40,13 @@ export class FileProfesor {
     );
     return fileProfesor;
   }
+
+   // para consultar datos de una carpeta por su ID
+  static async getByIdFolder(id) {
+    const [fileProfesor] = await pool.query(
+      "SELECT * FROM carpeta_docente c INNER JOIN anio_escolar a ON a.idAnio = c.idAnio WHERE c.idCarpetaDocente = ?",
+      [id]
+    );
+    return fileProfesor;
+  }
 }

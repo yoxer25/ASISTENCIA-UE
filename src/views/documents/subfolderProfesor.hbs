@@ -8,6 +8,11 @@
             <h1 class="text-titles"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Carpetas
                 <small>{{dataPersonal.nombrePersonal}}</small>
             </h1>
+            <a href="/documents/{{url}}/docente"><button class="btn btn-raised btn-sm"
+                    style="background-color: #01579B;">
+                    <p style="font-size: 15px; margin: auto; color: #fff;"><i class="zmdi zmdi-arrow-left"></i> Atrás
+                    </p>
+                </button></a>
         </div>
     </div>
     <div class="container-fluid">
@@ -24,7 +29,8 @@
                             <div class="row">
                                 <div class="col-lg-7">
                                     <div class="form-group" style="margin: auto;">
-                                        <select class="form-control" id="username" name="subFolder" style="width: 100%;">
+                                        <select class="form-control" id="username" name="subFolder"
+                                            style="width: 100%;">
                                             <option value="PLANIFICACIÓN ANUAL" selected>PLANIFICACIÓN ANUAL</option>
                                             <option value="UNIDADES DIDÁCTIVAS">UNIDADES DIDÁCTIVAS</option>
                                             <option value="SESIONES DE APRENDIZAJE">SESIONES DE APRENDIZAJE</option>
@@ -58,7 +64,7 @@
                         <div class="row" style="padding-top: 3%;">
                             {{#each subfolder}}
                             <div class="col-md-2" style="text-align: center;">
-                                <a href="/documents/file/{{idSubcarpeta}}_{{idPersonal}}">
+                                <a href="/documents/file/{{idSubcarpeta}}_{{idCarpeta}}_{{idPersonal}}">
                                     <img src="/assets/img/folder.png" alt="" width="100px">
                                     <p>{{nombreSubcarpeta}}</p>
                                 </a>

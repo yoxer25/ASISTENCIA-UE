@@ -145,8 +145,8 @@ export class Personal {
     if (_method === "PATCH") {
       const newPersonal = {
         estado: 0,
-        fechaEliminado: helpers.formatDateTime()
-      }
+        fechaEliminado: helpers.formatDateTime(),
+      };
       const [res] = await pool.query(
         "UPDATE personal p SET ? WHERE p.idPersonal = ?",
         [newPersonal, Id]
@@ -158,7 +158,7 @@ export class Personal {
   // para consultar dotos de todos de un trabajador por ID
   static async getPersonalById(Id) {
     const [personalDb] = await pool.query(
-      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj, p.idTurnoPersonal, p.idAreaPersonal, p.docente, t.nombreTurno, a.nombreArea, p.asignatura, asig.nombreAsignatura FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura INNER JOIN area a ON a.idArea = p.idAreaPersonal WHERE p.idPersonal = ?",
+      "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj, p.idTurnoPersonal, p.idAreaPersonal, p.docente, t.nombreTurno, a.nombreArea, p.asignatura, p.idInstitucion, asig.nombreAsignatura FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura INNER JOIN area a ON a.idArea = p.idAreaPersonal WHERE p.idPersonal = ?",
       [Id]
     );
     if (personalDb != "") {

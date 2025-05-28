@@ -157,17 +157,20 @@ export const getBySubFolder = async (req, res) => {
   const str = idCarpeta.split("_");
   const file = str[0];
   const personal = str[1];
+  const [dataPersonal] = await Personal.getPersonalById(personal);
+  const [anio] = await FileProfesor.getByIdFolder(file);
+  const url = anio.nombreAnio + "_" + dataPersonal.idInstitucion;
   try {
-    const [dataPersonal] = await Personal.getPersonalById(personal);
     const subfolder = await SubFolderProfesor.getFolder(file);
     res.render("documents/subfolderProfesor", {
       user,
       subfolder,
       idCarpeta,
       dataPersonal,
+      url,
     });
   } catch (error) {
-    res.render("documents/subfolderProfesor", { user, idCarpeta });
+    res.render("documents/subfolderProfesor", { user, idCarpeta, dataPersonal, url });
   }
 };
 
@@ -213,22 +216,34 @@ export const subfolderProfesor = async (req, res) => {
 una carpeta del docente, aquí veremos los documentos
 por cada docente */
 export const getDocumentByProfesor = async (req, res) => {
+  let forPage = 10;
+  let page = parseInt(req.query.page) || 1;
   const user = req.user;
   const { idCarpeta } = req.params;
   const str = idCarpeta.split("_");
-  const file = str[0];
-  const personal = str[1];
+  const subfile = str[0];
+  const file = str[1] + "_" + str[2];
+  const personal = str[2];
+  const [dataPersonal] = await Personal.getPersonalById(personal);
   try {
-    const [dataPersonal] = await Personal.getPersonalById(personal);
-    const documents = await DocumentProfesor.getDocument(file);
+    const documentsDB = await DocumentProfesor.getDocument(subfile);
+    let documents = documentsDB.slice(page * forPage - forPage, page * forPage);
     res.render("documents/indexByProfesor", {
       user,
       idCarpeta,
       documents,
       dataPersonal,
+      file,
+      current: page,
+      pages: Math.ceil(documentsDB.length / forPage),
     });
   } catch (error) {
-    res.render("documents/indexByProfesor", { user, idCarpeta });
+    res.render("documents/indexByProfesor", {
+      user,
+      idCarpeta,
+      dataPersonal,
+      file,
+    });
   }
 };
 

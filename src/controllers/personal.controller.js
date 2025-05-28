@@ -110,12 +110,17 @@ a crear un nuevo trabajador */
 export const set = async (req, res) => {
   const user = req.user;
   const institution = user.name;
-  const { documentNumber, fullName, idReloj, area, docente, course, _method } = req.body;
+  const { documentNumber, fullName, idReloj, area, docente, course, _method } =
+    req.body;
   let { turnPersonal } = req.body;
   const { Id } = req.params;
   const [institutionDB] = await Institution.getInstitutionById(institution);
   if (institutionDB.nombreHorario === "regular") {
-    turnPersonal = turnPersonal;
+    if (turnPersonal) {
+      turnPersonal = turnPersonal;
+    } else {
+      turnPersonal = 1;
+    }
   } else {
     const [turnPersonalDB] = await TurnPersonal.getByName(
       institutionDB.nombreHorario
@@ -329,7 +334,7 @@ export const set = async (req, res) => {
     }
   } catch (error) {
     res.redirect("/personals/create");
-  }
+  } 
 };
 
 // controla lo que se debe mostrar al momento de visitar la página de actualizar datos de un trabajador

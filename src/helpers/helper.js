@@ -27,6 +27,12 @@ helpers.formatDate = (date) => {
   return dayjs.utc(date).format("YYYY-MM-DD");
 };
 
+// para la hora en la tabla de sesiones de trabajo
+helpers.formatTimeDocument = (date) => {
+  // Convierte la hora a UTC antes de formatearla
+  return dayjs(date).format("HH:mm:ss");
+};
+
 helpers.formatTime = (date) => {
   // Convierte la hora a UTC antes de formatearla
   return dayjs.utc(date).format("HH:mm:ss");

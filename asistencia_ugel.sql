@@ -16,6 +16,145 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `anio_escolar`
+--
+
+DROP TABLE IF EXISTS `anio_escolar`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `anio_escolar` (
+  `idAnio` int NOT NULL AUTO_INCREMENT,
+  `nombreAnio` varchar(45) COLLATE utf8mb4_general_ci NOT NULL,
+  `estado` int NOT NULL DEFAULT '1',
+  PRIMARY KEY (`idAnio`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `anio_escolar`
+--
+
+LOCK TABLES `anio_escolar` WRITE;
+/*!40000 ALTER TABLE `anio_escolar` DISABLE KEYS */;
+INSERT INTO `anio_escolar` VALUES (1,'2025',1);
+/*!40000 ALTER TABLE `anio_escolar` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `area`
+--
+
+DROP TABLE IF EXISTS `area`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `area` (
+  `idArea` int NOT NULL AUTO_INCREMENT,
+  `nombreArea` varchar(45) NOT NULL,
+  `responsable` int DEFAULT NULL,
+  `estado` varchar(45) DEFAULT '1',
+  `fechaCreado` datetime DEFAULT NULL,
+  `fechaActualizado` datetime DEFAULT NULL,
+  `fechaEliminado` datetime DEFAULT NULL,
+  PRIMARY KEY (`idArea`),
+  KEY `fx_idResponsable_idx` (`responsable`),
+  CONSTRAINT `fx_idResponsable` FOREIGN KEY (`responsable`) REFERENCES `personal` (`idPersonal`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `area`
+--
+
+LOCK TABLES `area` WRITE;
+/*!40000 ALTER TABLE `area` DISABLE KEYS */;
+INSERT INTO `area` VALUES (1,'S/A',NULL,'1','2025-04-29 11:26:27',NULL,NULL);
+/*!40000 ALTER TABLE `area` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `asignatura`
+--
+
+DROP TABLE IF EXISTS `asignatura`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `asignatura` (
+  `idAsignatura` int NOT NULL AUTO_INCREMENT,
+  `nombreAsignatura` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `estado` int DEFAULT '1',
+  PRIMARY KEY (`idAsignatura`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `asignatura`
+--
+
+LOCK TABLES `asignatura` WRITE;
+/*!40000 ALTER TABLE `asignatura` DISABLE KEYS */;
+INSERT INTO `asignatura` VALUES (1,'S/A',1),(2,'GENERAL',1),(3,'COMUNICACIÓN',1),(4,'MATEMÁTICA',1),(5,'INGLÉS',1),(6,'EDUCACIÓN FÍSICA',1),(7,'EDUCACIÓN RELIGIOSA',1),(8,'ARTE Y CULTURA',1);
+/*!40000 ALTER TABLE `asignatura` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `carpeta_docente`
+--
+
+DROP TABLE IF EXISTS `carpeta_docente`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `carpeta_docente` (
+  `idCarpetaDocente` int NOT NULL AUTO_INCREMENT,
+  `idInstitucion` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `idAnio` int NOT NULL,
+  `idPersonal` int NOT NULL,
+  `estado` int DEFAULT '1',
+  `fechaCreado` datetime DEFAULT NULL,
+  PRIMARY KEY (`idCarpetaDocente`),
+  KEY `fx_idIIEE_idx` (`idInstitucion`),
+  KEY `fx_idAnio_idx` (`idAnio`),
+  KEY `fx_idDocente_idx` (`idPersonal`),
+  CONSTRAINT `fx_idAnio` FOREIGN KEY (`idAnio`) REFERENCES `anio_escolar` (`idAnio`),
+  CONSTRAINT `fx_idDocente` FOREIGN KEY (`idPersonal`) REFERENCES `personal` (`idPersonal`),
+  CONSTRAINT `fx_idIIEE` FOREIGN KEY (`idInstitucion`) REFERENCES `institucion` (`idInstitucion`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `carpeta_docente`
+--
+
+LOCK TABLES `carpeta_docente` WRITE;
+/*!40000 ALTER TABLE `carpeta_docente` DISABLE KEYS */;
+/*!40000 ALTER TABLE `carpeta_docente` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `correlativo_papeleta`
+--
+
+DROP TABLE IF EXISTS `correlativo_papeleta`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `correlativo_papeleta` (
+  `idCorrelativo` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(45) NOT NULL,
+  `ultimaPapeleta` int NOT NULL,
+  PRIMARY KEY (`idCorrelativo`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `correlativo_papeleta`
+--
+
+LOCK TABLES `correlativo_papeleta` WRITE;
+/*!40000 ALTER TABLE `correlativo_papeleta` DISABLE KEYS */;
+INSERT INTO `correlativo_papeleta` VALUES (1,'papeleta',126);
+/*!40000 ALTER TABLE `correlativo_papeleta` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `distrito`
 --
 
@@ -38,6 +177,95 @@ LOCK TABLES `distrito` WRITE;
 /*!40000 ALTER TABLE `distrito` DISABLE KEYS */;
 INSERT INTO `distrito` VALUES (1,'el carmen de la frontera',1),(2,'huancabamba',1),(3,'sóndor',1),(4,'sondorillo',1);
 /*!40000 ALTER TABLE `distrito` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `documento_institucion`
+--
+
+DROP TABLE IF EXISTS `documento_institucion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `documento_institucion` (
+  `idDocumento` int NOT NULL AUTO_INCREMENT,
+  `idInstitucion` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `idAnio` int NOT NULL,
+  `nombreOriginal` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nombreDocumento` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `fechaCreado` datetime DEFAULT NULL,
+  PRIMARY KEY (`idDocumento`),
+  KEY `fx_idDocumentoIE_idx` (`idInstitucion`),
+  KEY `fx_anio_ie_idx` (`idAnio`),
+  CONSTRAINT `fx_anio_ie` FOREIGN KEY (`idAnio`) REFERENCES `anio_escolar` (`idAnio`),
+  CONSTRAINT `fx_idDocumentoIE` FOREIGN KEY (`idInstitucion`) REFERENCES `institucion` (`idInstitucion`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `documento_institucion`
+--
+
+LOCK TABLES `documento_institucion` WRITE;
+/*!40000 ALTER TABLE `documento_institucion` DISABLE KEYS */;
+/*!40000 ALTER TABLE `documento_institucion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `documento_profesor`
+--
+
+DROP TABLE IF EXISTS `documento_profesor`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `documento_profesor` (
+  `idDocumento` int NOT NULL AUTO_INCREMENT,
+  `idSubcarpeta` int NOT NULL,
+  `nombreOriginal` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `nombreDocumento` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `fechaCreado` datetime DEFAULT NULL,
+  PRIMARY KEY (`idDocumento`),
+  KEY `fx_idSubcarpeta_idx` (`idSubcarpeta`),
+  CONSTRAINT `fx_idSubcarpeta` FOREIGN KEY (`idSubcarpeta`) REFERENCES `subcarpeta_profesor` (`idSubcarpeta`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `documento_profesor`
+--
+
+LOCK TABLES `documento_profesor` WRITE;
+/*!40000 ALTER TABLE `documento_profesor` DISABLE KEYS */;
+/*!40000 ALTER TABLE `documento_profesor` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `especialista`
+--
+
+DROP TABLE IF EXISTS `especialista`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `especialista` (
+  `idEspecialista` int NOT NULL AUTO_INCREMENT,
+  `idPersonal` int NOT NULL,
+  `especialidad` varchar(45) NOT NULL,
+  `estado` varchar(45) NOT NULL DEFAULT '1',
+  `fechaCreado` datetime DEFAULT NULL,
+  `fechaActualizado` datetime DEFAULT NULL,
+  `fechaEliminado` datetime DEFAULT NULL,
+  PRIMARY KEY (`idEspecialista`),
+  KEY `fx_idPersonal_especialista_idx` (`idPersonal`),
+  CONSTRAINT `fx_idPersonal_especialista` FOREIGN KEY (`idPersonal`) REFERENCES `personal` (`idPersonal`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `especialista`
+--
+
+LOCK TABLES `especialista` WRITE;
+/*!40000 ALTER TABLE `especialista` DISABLE KEYS */;
+/*!40000 ALTER TABLE `especialista` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -133,6 +361,46 @@ INSERT INTO `nivel_educativo` VALUES (1,'inicial - jardín',1),(2,'primaria',1),
 UNLOCK TABLES;
 
 --
+-- Table structure for table `papeleta`
+--
+
+DROP TABLE IF EXISTS `papeleta`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `papeleta` (
+  `idPapeleta` int NOT NULL AUTO_INCREMENT,
+  `numeroPapeleta` varchar(6) NOT NULL,
+  `fechaPapeleta` datetime NOT NULL,
+  `solicitante` int NOT NULL,
+  `dependencia` int NOT NULL,
+  `condicionLaboral` varchar(45) NOT NULL,
+  `desdeDia` date DEFAULT NULL,
+  `hastaDia` date DEFAULT NULL,
+  `desdeHora` time DEFAULT NULL,
+  `hastaHora` time DEFAULT NULL,
+  `motivo` varchar(45) NOT NULL,
+  `fundamento` varchar(500) NOT NULL,
+  `VBjefe` tinyint(1) DEFAULT '0',
+  `VBrrhh` tinyint(1) DEFAULT '0',
+  `VBadministracion` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`idPapeleta`),
+  KEY `fx_idAreaPapeleta_idx` (`dependencia`),
+  KEY `fx_solicitante_idx` (`solicitante`),
+  CONSTRAINT `fx_idAreaPapeleta` FOREIGN KEY (`dependencia`) REFERENCES `area` (`idArea`),
+  CONSTRAINT `fx_solicitante` FOREIGN KEY (`solicitante`) REFERENCES `personal` (`idPersonal`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `papeleta`
+--
+
+LOCK TABLES `papeleta` WRITE;
+/*!40000 ALTER TABLE `papeleta` DISABLE KEYS */;
+/*!40000 ALTER TABLE `papeleta` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `personal`
 --
 
@@ -141,11 +409,14 @@ DROP TABLE IF EXISTS `personal`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `personal` (
   `idPersonal` int NOT NULL AUTO_INCREMENT,
-  `idInstitucion` varchar(10) COLLATE utf8mb4_general_ci NOT NULL,
+  `idInstitucion` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `idTurnoPersonal` int DEFAULT '1',
-  `dniPersonal` varchar(8) COLLATE utf8mb4_general_ci NOT NULL,
-  `nombrePersonal` varchar(60) COLLATE utf8mb4_general_ci NOT NULL,
-  `idReloj` int NOT NULL,
+  `idAreaPersonal` int DEFAULT '1',
+  `asignatura` int NOT NULL DEFAULT '1',
+  `dniPersonal` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nombrePersonal` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `idReloj` int DEFAULT NULL,
+  `docente` varchar(4) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'NO',
   `estado` int DEFAULT '1',
   `fechaCreado` datetime DEFAULT NULL,
   `fechaActualizado` datetime DEFAULT NULL,
@@ -153,6 +424,10 @@ CREATE TABLE `personal` (
   PRIMARY KEY (`idPersonal`),
   KEY `fx_idInstitucion_idx` (`idInstitucion`),
   KEY `fx_idTurnoPersonal_idx` (`idTurnoPersonal`),
+  KEY `fx_idArea_idx` (`idAreaPersonal`),
+  KEY `fx_idAsignatura_idx` (`asignatura`),
+  CONSTRAINT `fx_idArea` FOREIGN KEY (`idAreaPersonal`) REFERENCES `area` (`idArea`),
+  CONSTRAINT `fx_idAsignatura` FOREIGN KEY (`asignatura`) REFERENCES `asignatura` (`idAsignatura`),
   CONSTRAINT `fx_idInstitucion_personal` FOREIGN KEY (`idInstitucion`) REFERENCES `institucion` (`idInstitucion`),
   CONSTRAINT `fx_idTurnoPersonal` FOREIGN KEY (`idTurnoPersonal`) REFERENCES `turno_personal` (`idTurnoPersonal`)
 ) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -164,7 +439,7 @@ CREATE TABLE `personal` (
 
 LOCK TABLES `personal` WRITE;
 /*!40000 ALTER TABLE `personal` DISABLE KEYS */;
-INSERT INTO `personal` VALUES (1,'200006',6,'03663152','MIGUEL AUGUSTO ARAMBULO GARCIA',1,1,'2025-04-09 10:59:56',NULL,NULL),(2,'200006',6,'46318530','RENEE SANDOVAL OLAYA',2,1,'2025-04-09 11:00:56',NULL,NULL),(3,'200006',6,'73701210','LUCIA DEL PILAR MAZA OROZCO',3,1,'2025-04-09 11:01:32',NULL,NULL),(4,'200006',6,'48070796','YURMICILA SANTOS OCUPA',4,1,'2025-04-09 11:12:04',NULL,NULL),(5,'200006',6,'47036177','DINORA ILVANIA GONZA PINTADO',5,1,'2025-04-09 11:13:00',NULL,NULL),(6,'200006',6,'70944387','ELMER NAIRA GUERRERO',6,1,'2025-04-09 11:13:34',NULL,NULL),(7,'200006',6,'41454318','JOHN WESSLEY FACUNDO HUAMAN',7,1,'2025-04-09 11:14:07',NULL,NULL),(8,'200006',6,'03657647','FRANCISCO GUTIERREZ GARCIA',8,1,'2025-04-09 11:14:42',NULL,NULL),(9,'200006',6,'02836235','WALTER CASTILLO GUERRERO',9,1,'2025-04-09 11:15:40',NULL,NULL),(10,'200006',6,'03244148','GUIDO VLADIMIR CORDOVA MEZONES',11,1,'2025-04-09 11:20:11',NULL,NULL),(11,'200006',6,'43601302','WILSON NEIRA MELENDRES',12,1,'2025-04-09 11:20:40',NULL,NULL),(12,'200006',6,'46924384','DORIS NATHALI RIVERA ADRIANO',13,1,'2025-04-09 11:21:18',NULL,NULL),(13,'200006',6,'47644018','MIRIAM YANATY NEYRA ALBERCA',14,1,'2025-04-09 11:21:46',NULL,NULL),(14,'200006',6,'21142436','DARSI PANDURO PEREZ',15,1,'2025-04-09 11:22:31',NULL,NULL),(15,'200006',6,'73146457','ROSALINA OZETA SILVA',16,1,'2025-04-09 11:52:19',NULL,NULL),(16,'200006',6,'41882264','MARIBEL JIMENEZ CÓRDOVA',17,1,'2025-04-09 11:53:12',NULL,NULL),(17,'200006',6,'02848808','OTILIA MARIANELA CARRASCO CASTILLO',18,1,'2025-04-09 11:53:44',NULL,NULL),(18,'200006',6,'71717520','MILAGROS DÍAZ ESPINOZA',19,1,'2025-04-09 11:54:16',NULL,NULL),(19,'200006',6,'40831132','JANET DE LOURDES FACUNDO TORRES',20,1,'2025-04-09 11:54:46',NULL,NULL),(20,'200006',6,'45214232','PEDRO HUAYAMA CALDERON',21,1,'2025-04-09 11:55:21',NULL,NULL),(21,'200006',6,'16785039','MARICELA DEL CARMEN CHUMACERO BARCO',22,1,'2025-04-09 11:55:56',NULL,NULL),(22,'200006',6,'41098129','MICHEL PALACIOS BERMEO',23,1,'2025-04-09 11:56:26',NULL,NULL),(23,'200006',6,'43944161','HENRY DOMINGUEZ BRAVO',24,1,'2025-04-09 11:56:59',NULL,NULL),(24,'200006',6,'46195460','MIXY ADRIANZEN GOMEZ',25,1,'2025-04-09 12:00:20',NULL,NULL),(25,'200006',6,'72167877','KARIN GIULIANA SANTIN HUANCA',26,1,'2025-04-09 12:00:51',NULL,NULL),(26,'200006',6,'02812284','VIVIANA JESUS TABOADA ROJAS',27,1,'2025-04-09 12:01:22',NULL,NULL),(27,'200006',6,'02772267','ABRAHAM ESPINOZA CHINCHAY',29,1,'2025-04-09 12:02:01',NULL,NULL),(28,'200006',6,'42395751','CYNTHIA PAOLA RAMIREZ POZO',30,1,'2025-04-09 12:02:38',NULL,NULL),(29,'200006',6,'03234950','MARIA DEL CARMEN OJEDA MAURIOLA',32,1,'2025-04-09 12:03:08',NULL,NULL),(30,'200006',6,'73014930','MARIA ELIZABETH PUELLES GARCIA',34,1,'2025-04-09 12:03:42',NULL,NULL),(31,'200006',6,'77502150','YOMIRA SOLEY FEBRE PARIATON',35,1,'2025-04-09 12:05:41',NULL,NULL),(32,'200006',6,'03234374','TOMAS WALDIR BOBADILLA PELTROCHE',37,1,'2025-04-09 12:06:16',NULL,NULL),(33,'200006',6,'47424009','GABRIEL SAAVEDRA COBA',39,1,'2025-04-09 12:07:08',NULL,NULL),(34,'200006',6,'40378498','DILCIA DEL MILAGRO ZETA GARCIA',40,1,'2025-04-09 12:07:36',NULL,NULL),(35,'200006',6,'00370845','MARY CEDELINDA MANCHAY PALACIOS',41,1,'2025-04-09 12:08:12',NULL,NULL),(36,'200006',6,'41529887','YANET CUTIN GARCIA',42,1,'2025-04-09 12:08:43',NULL,NULL),(37,'200006',6,'03233512','EULER HUAMAN UBILLUS',43,1,'2025-04-09 12:09:20',NULL,NULL),(38,'200006',6,'03234951','ROSARIO PETRONILA MARTINEZ SAAVEDRA',44,1,'2025-04-09 12:09:50',NULL,NULL),(39,'200006',6,'03244379','CESAR ELERA TORRES',45,1,'2025-04-09 12:10:23',NULL,NULL),(40,'200006',6,'47311359','SEGUNDO TOMAS GUEVARA CHINGUEL',46,1,'2025-04-09 12:10:53',NULL,NULL),(41,'200006',6,'43482096','CHRISTIAN RAMIRO CHOQUEHUANCA GARCIA',47,1,'2025-04-09 12:11:21',NULL,NULL),(42,'200006',6,'03206574','CARMEN MARIA PEÑA GUERRERO',48,1,'2025-04-09 12:11:54',NULL,NULL),(43,'200006',6,'03209520','ANGEL SALVADOR RAMIREZ',51,1,'2025-04-09 12:12:29',NULL,NULL),(44,'200006',6,'02883986','MARIELA ARACELIS VENCES CORONADO',52,1,'2025-04-09 12:13:17',NULL,NULL),(45,'200006',6,'03595398','CARMEN GIRON MANRIQUE',53,1,'2025-04-09 12:14:01',NULL,NULL),(46,'200006',6,'45940250','LASTENIA MILAGROS OCAÑA ALBERCA',54,1,'2025-04-09 12:14:26',NULL,NULL),(47,'200006',6,'03200557','ELIZABETH CHINGUEL CARHUATOCTO',55,1,'2025-04-09 12:14:56',NULL,NULL),(48,'200006',6,'46445247','LUZ MARIA RIVERA NEIRA',57,1,'2025-04-09 12:15:26',NULL,NULL),(49,'200006',6,'03233549','SILVIA ELENA VELASCO CHOQUEHUANCA',58,1,'2025-04-09 12:15:50',NULL,NULL),(50,'200006',6,'03655537','PERCY PAÚL CUBAS RAMIREZ',59,1,'2025-04-09 12:16:18',NULL,NULL),(51,'200006',6,'03300251','ALFREDO ALZAMORA AREVALO',60,1,'2025-04-09 12:16:46',NULL,NULL),(52,'200006',6,'42476081','PAQUITA CECILIA CARHUATOCTO CURAY',63,1,'2025-04-09 12:17:16',NULL,NULL),(53,'200006',6,'41789353','LESLIE EVELYN ELERA VELASCO',68,1,'2025-04-09 12:17:50',NULL,NULL),(54,'200006',6,'43919677','HENRY GUZMAN MOSCOL',31,1,'2025-04-09 16:11:57',NULL,NULL),(55,'200006',6,'03241717','JOSE HUMBERTO CRUZ ALVERCA',56,1,'2025-04-09 16:13:34',NULL,NULL),(56,'200006',6,'48129198','JESUS JOSEFINA CAMIZAN GARCIA',64,1,'2025-04-09 16:14:59',NULL,NULL),(57,'200006',6,'46738675','VICKY DE LOURDES PUSMA HUAMAN',71,1,'2025-04-09 16:15:49',NULL,NULL),(58,'200006',6,'44421439','HUMBERTO HIGIDIO GONZALES PASIGUAN',73,1,'2025-04-09 16:16:18',NULL,NULL),(59,'200006',6,'00372928','FRANCISCO GUARNIZO HERRERA',74,1,'2025-04-09 16:16:52',NULL,NULL),(60,'200006',6,'02820701','JUAN DANIEL PEÑA PEÑA',75,1,'2025-04-09 16:18:41',NULL,NULL),(61,'200006',6,'44435321','NELLY GARCIA CHASQUERO',76,1,'2025-04-09 16:19:41',NULL,NULL);
+INSERT INTO `personal` VALUES (1,'200006',6,6,1,'03663152','MIGUEL AUGUSTO ARAMBULO GARCIA',1,'NO',1,'2025-04-09 10:59:56',NULL,NULL),(2,'200006',6,2,1,'46318530','RENEE SANDOVAL OLAYA',2,'NO',1,'2025-04-09 11:00:56',NULL,NULL),(3,'200006',6,2,1,'73701210','LUCIA DEL PILAR MAZA OROZCO',3,'NO',1,'2025-04-09 11:01:32',NULL,NULL),(4,'200006',6,2,1,'48070796','YURMICILA SANTOS OCUPA',4,'NO',1,'2025-04-09 11:12:04',NULL,NULL),(5,'200006',6,2,1,'47036177','DINORA ILVANIA GONZA PINTADO',5,'NO',1,'2025-04-09 11:13:00',NULL,NULL),(6,'200006',6,6,1,'70944387','ELMER NAIRA GUERRERO',6,'NO',1,'2025-04-09 11:13:34',NULL,NULL),(7,'200006',6,2,1,'41454318','JOHN WESSLEY FACUNDO HUAMAN',7,'NO',1,'2025-04-09 11:14:07',NULL,NULL),(8,'200006',6,4,1,'03657647','FRANCISCO GUTIERREZ GARCIA',8,'NO',1,'2025-04-09 11:14:42',NULL,NULL),(9,'200006',6,4,1,'02836235','WALTER CASTILLO GUERRERO',9,'NO',1,'2025-04-09 11:15:40',NULL,NULL),(10,'200006',6,2,1,'03244148','GUIDO VLADIMIR CORDOVA MEZONES',11,'NO',1,'2025-04-09 11:20:11',NULL,NULL),(11,'200006',6,2,1,'43601302','WILSON NEIRA MELENDRES',12,'NO',1,'2025-04-09 11:20:40',NULL,NULL),(12,'200006',6,2,1,'46924384','DORIS NATHALI RIVERA ADRIANO',13,'NO',1,'2025-04-09 11:21:18',NULL,NULL),(13,'200006',6,2,1,'47644018','MIRIAM YANATY NEYRA ALBERCA',14,'NO',1,'2025-04-09 11:21:46',NULL,NULL),(14,'200006',6,4,1,'21142436','DARSI PANDURO PEREZ',15,'NO',1,'2025-04-09 11:22:31',NULL,NULL),(15,'200006',6,2,1,'73146457','ROSALINA OZETA SILVA',16,'NO',1,'2025-04-09 11:52:19',NULL,NULL),(16,'200006',6,3,1,'41882264','MARIBEL JIMENEZ CÓRDOVA',17,'NO',1,'2025-04-09 11:53:12',NULL,NULL),(17,'200006',6,2,1,'02848808','OTILIA MARIANELA CARRASCO CASTILLO',18,'NO',1,'2025-04-09 11:53:44',NULL,NULL),(18,'200006',6,3,1,'71717520','MILAGROS DÍAZ ESPINOZA',19,'NO',1,'2025-04-09 11:54:16',NULL,NULL),(19,'200006',6,3,1,'40831132','JANET DE LOURDES FACUNDO TORRES',20,'NO',1,'2025-04-09 11:54:46',NULL,NULL),(20,'200006',6,2,1,'45214232','PEDRO HUAYAMA CALDERON',21,'NO',1,'2025-04-09 11:55:21',NULL,NULL),(21,'200006',6,3,1,'16785039','MARICELA DEL CARMEN CHUMACERO BARCO',22,'NO',1,'2025-04-09 11:55:56',NULL,NULL),(22,'200006',6,3,1,'41098129','MICHEL PALACIOS BERMEO',23,'NO',1,'2025-04-09 11:56:26',NULL,NULL),(23,'200006',6,2,1,'43944161','HENRY DOMINGUEZ BRAVO',24,'NO',1,'2025-04-09 11:56:59',NULL,NULL),(24,'200006',6,1,1,'46195460','MIXY ADRIANZEN GOMEZ',25,'NO',1,'2025-04-09 12:00:20',NULL,NULL),(25,'200006',6,1,1,'72167877','KARIN GIULIANA SANTIN HUANCA',26,'NO',1,'2025-04-09 12:00:51',NULL,NULL),(26,'200006',6,4,1,'02812284','VIVIANA JESUS TABOADA ROJAS',27,'NO',1,'2025-04-09 12:01:22',NULL,NULL),(27,'200006',6,4,1,'02772267','ABRAHAM ESPINOZA CHINCHAY',29,'NO',1,'2025-04-09 12:02:01',NULL,NULL),(28,'200006',6,5,1,'42395751','CYNTHIA PAOLA RAMIREZ POZO',30,'NO',1,'2025-04-09 12:02:38',NULL,NULL),(29,'200006',6,5,1,'03234950','MARIA DEL CARMEN OJEDA MAURIOLA',32,'NO',1,'2025-04-09 12:03:08',NULL,NULL),(30,'200006',6,5,1,'73014930','MARIA ELIZABETH PUELLES GARCIA',34,'NO',1,'2025-04-09 12:03:42',NULL,NULL),(31,'200006',6,2,1,'77502150','YOMIRA SOLEY FEBRE PARIATON',35,'NO',1,'2025-04-09 12:05:41',NULL,NULL),(32,'200006',6,2,1,'03234374','TOMAS WALDIR BOBADILLA PELTROCHE',37,'NO',1,'2025-04-09 12:06:16',NULL,NULL),(33,'200006',6,2,1,'47424009','GABRIEL SAAVEDRA COBA',39,'NO',1,'2025-04-09 12:07:08',NULL,NULL),(34,'200006',6,5,1,'40378498','DILCIA DEL MILAGRO ZETA GARCIA',40,'NO',1,'2025-04-09 12:07:36',NULL,NULL),(35,'200006',6,5,1,'00370845','MARY CEDELINDA MANCHAY PALACIOS',41,'NO',1,'2025-04-09 12:08:12',NULL,NULL),(36,'200006',6,2,1,'41529887','YANET CUTIN GARCIA',42,'NO',1,'2025-04-09 12:08:43',NULL,NULL),(37,'200006',6,5,1,'03233512','EULER HUAMAN UBILLUS',43,'NO',1,'2025-04-09 12:09:20',NULL,NULL),(38,'200006',6,5,1,'03234951','ROSARIO PETRONILA MARTINEZ SAAVEDRA',44,'NO',1,'2025-04-09 12:09:50',NULL,NULL),(39,'200006',6,5,1,'03244379','CESAR ELERA TORRES',45,'NO',1,'2025-04-09 12:10:23',NULL,NULL),(40,'200006',6,5,1,'47311359','SEGUNDO TOMAS GUEVARA CHINGUEL',46,'NO',1,'2025-04-09 12:10:53',NULL,NULL),(41,'200006',6,3,1,'43482096','CHRISTIAN RAMIRO CHOQUEHUANCA GARCIA',47,'NO',1,'2025-04-09 12:11:21',NULL,NULL),(42,'200006',6,4,1,'03206574','CARMEN MARIA PEÑA GUERRERO',48,'NO',1,'2025-04-09 12:11:54',NULL,NULL),(43,'200006',6,2,1,'03209520','ANGEL SALVADOR RAMIREZ',51,'NO',1,'2025-04-09 12:12:29',NULL,NULL),(44,'200006',6,4,1,'02883986','MARIELA ARACELIS VENCES CORONADO',52,'NO',1,'2025-04-09 12:13:17',NULL,NULL),(45,'200006',6,4,1,'03595398','CARMEN GIRON MANRIQUE',53,'NO',1,'2025-04-09 12:14:01',NULL,NULL),(46,'200006',6,3,1,'45940250','LASTENIA MILAGROS OCAÑA ALBERCA',54,'NO',1,'2025-04-09 12:14:26',NULL,NULL),(47,'200006',6,5,1,'03200557','ELIZABETH CHINGUEL CARHUATOCTO',55,'NO',1,'2025-04-09 12:14:56',NULL,NULL),(48,'200006',6,1,1,'46445247','LUZ MARIA RIVERA NEIRA',57,'NO',1,'2025-04-09 12:15:26',NULL,NULL),(49,'200006',6,4,1,'03233549','SILVIA ELENA VELASCO CHOQUEHUANCA',58,'NO',1,'2025-04-09 12:15:50',NULL,NULL),(50,'200006',6,4,1,'03655537','PERCY PAÚL CUBAS RAMIREZ',59,'NO',1,'2025-04-09 12:16:18',NULL,NULL),(51,'200006',6,4,1,'03300251','ALFREDO ALZAMORA AREVALO',60,'NO',1,'2025-04-09 12:16:46',NULL,NULL),(52,'200006',6,4,1,'42476081','PAQUITA CECILIA CARHUATOCTO CURAY',63,'NO',1,'2025-04-09 12:17:16',NULL,NULL),(53,'200006',6,2,1,'41789353','LESLIE EVELYN ELERA VELASCO',68,'NO',1,'2025-04-09 12:17:50',NULL,NULL),(54,'200006',6,5,1,'43919677','HENRY GUZMAN MOSCOL',31,'NO',1,'2025-04-09 16:11:57',NULL,NULL),(55,'200006',6,2,1,'03241717','JOSE HUMBERTO CRUZ ALVERCA',56,'NO',1,'2025-04-09 16:13:34',NULL,NULL),(56,'200006',6,1,1,'48129198','JESUS JOSEFINA CAMIZAN GARCIA',64,'NO',1,'2025-04-09 16:14:59',NULL,NULL),(57,'200006',6,2,1,'46738675','VICKY DE LOURDES PUSMA HUAMAN',71,'NO',1,'2025-04-09 16:15:49',NULL,NULL),(58,'200006',6,4,1,'44421439','HUMBERTO HIGIDIO GONZALES PASIGUAN',73,'NO',1,'2025-04-09 16:16:18',NULL,NULL),(59,'200006',6,4,1,'00372928','FRANCISCO GUARNIZO HERRERA',74,'NO',1,'2025-04-09 16:16:52',NULL,NULL),(60,'200006',6,1,1,'02820701','JUAN DANIEL PEÑA PEÑA',75,'NO',1,'2025-04-09 16:18:41',NULL,NULL),(61,'200006',6,5,1,'44435321','NELLY GARCIA CHASQUERO',76,'NO',1,'2025-04-09 16:19:41',NULL,NULL);
 /*!40000 ALTER TABLE `personal` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -217,7 +492,7 @@ CREATE TABLE `rol_usuario` (
   `nombreRol` varchar(45) COLLATE utf8mb4_general_ci NOT NULL,
   `estado` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`idRolUsuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -226,8 +501,36 @@ CREATE TABLE `rol_usuario` (
 
 LOCK TABLES `rol_usuario` WRITE;
 /*!40000 ALTER TABLE `rol_usuario` DISABLE KEYS */;
-INSERT INTO `rol_usuario` VALUES (1,'administrador',1),(2,'directivo',1);
+INSERT INTO `rol_usuario` VALUES (1,'administrador',1),(2,'directivo',1),(3,'otros',1);
 /*!40000 ALTER TABLE `rol_usuario` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `subcarpeta_profesor`
+--
+
+DROP TABLE IF EXISTS `subcarpeta_profesor`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `subcarpeta_profesor` (
+  `idSubcarpeta` int NOT NULL AUTO_INCREMENT,
+  `idCarpeta` int NOT NULL,
+  `nombreSubcarpeta` varchar(45) NOT NULL,
+  `estado` int NOT NULL DEFAULT '1',
+  `fechaCreado` datetime DEFAULT NULL,
+  PRIMARY KEY (`idSubcarpeta`),
+  KEY `fx_idCarpetaDocente_idx` (`idCarpeta`),
+  CONSTRAINT `fx_idCarpetaDocente` FOREIGN KEY (`idCarpeta`) REFERENCES `carpeta_docente` (`idCarpetaDocente`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `subcarpeta_profesor`
+--
+
+LOCK TABLES `subcarpeta_profesor` WRITE;
+/*!40000 ALTER TABLE `subcarpeta_profesor` DISABLE KEYS */;
+/*!40000 ALTER TABLE `subcarpeta_profesor` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -242,7 +545,7 @@ CREATE TABLE `turno_institucion` (
   `nombreTurno` varchar(45) NOT NULL,
   `estado` int DEFAULT '1',
   PRIMARY KEY (`idTurnoInstitucion`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -267,7 +570,7 @@ CREATE TABLE `turno_personal` (
   `nombreTurno` varchar(45) NOT NULL,
   `estado` int DEFAULT '1',
   PRIMARY KEY (`idTurnoPersonal`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -289,13 +592,16 @@ DROP TABLE IF EXISTS `usuarios`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `usuarios` (
   `idUsuario` int NOT NULL AUTO_INCREMENT,
-  `idInstitucion` varchar(10) COLLATE utf8mb4_general_ci NOT NULL,
+  `idInstitucion` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `idRol` int NOT NULL,
-  `contrasena` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `dni_usuario` varchar(8) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `contrasena` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `correo` varchar(45) COLLATE utf8mb4_general_ci NOT NULL,
   `estado` int DEFAULT '1',
   `fechaCreado` datetime DEFAULT NULL,
   `fechaActualizado` datetime DEFAULT NULL,
   `fechaEliminado` datetime DEFAULT NULL,
+  `fechaCambioContrasena` datetime DEFAULT NULL,
   PRIMARY KEY (`idUsuario`),
   KEY `fx_idInstitucion_idx` (`idInstitucion`),
   KEY `fx_idRol_idx` (`idRol`),
@@ -310,7 +616,7 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'200006',1,'$2b$15$KswPPokrxbiAmAKpcCF1g.J0bszFpKEFrWwfmYI36tu0a7y5ET7/S',1,'2025-03-05 16:55:51','2025-04-02 10:31:09',NULL);
+INSERT INTO `usuarios` VALUES (1,'200006',1,'200006','$2b$15$emcqLdLNZwVhvI/S0EGw7.MjxZB8E0/ol9/Amk7lkE12toDBdsheO','',1,'2025-03-05 16:55:51','2025-05-20 16:28:35',NULL,'2025-05-20 16:28:35');
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

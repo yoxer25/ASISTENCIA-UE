@@ -218,6 +218,60 @@ $(".btn-delete-specialist").on("click", function () {
   });
 });
 
+// modal para ver la información de la papeleta
+$(".btn-info-ballot").on("click", function () {
+  // Obtener los datos del trabajador desde los atributos `data-*` del enlace
+  var dateBallot = $(this).data("dateballot");
+  var ballot = $(this).data("ballot");
+  var applicant = $(this).data("applicant");
+  var dependency = $(this).data("dependency");
+  var workingCondition = $(this).data("workingcondition");
+  var reason = $(this).data("reason");
+  var foundation = $(this).data("foundation");
+  var startDate = $(this).data("startdate");
+  var endDate = $(this).data("enddate");
+  var startTime = $(this).data("starttime");
+  var endTime = $(this).data("endtime");
+
+  var desde = startDate || startTime;
+  var hasta = endDate || endTime;
+
+  swal({
+    title: `PAPELETA N° ${ballot}
+    FECHA: ${dateBallot}`,
+    text: `<div class="row" style="text-align: justify;">
+      <div class="col-lg-12"style="margin-bottom: -7%">
+        <p><b>SOLICITANTE: </b> ${applicant}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>DEPENDENCIA: </b> ${dependency}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>CONDICIÓN LABORAL: </b> ${workingCondition}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>MOTIVO: </b> ${reason}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>FUNDAMENTO: </b> ${foundation}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -11%">
+        <p><b>SE AUSENTARÁ </b></p>
+      </div>
+      <div class="col-lg-6" style="margin-bottom: -8%">
+        <p><b>DESDE: </b> ${desde}</p>
+      </div>
+      <div class="col-lg-6" style="margin-bottom: -8%">
+        <p><b>HASTA: </b> ${hasta}</p>
+      </div>
+    </div>`,
+    type: "info",
+    confirmButtonColor: "#03A9F4",
+    confirmButtonText: '<i class="zmdi zmdi-close-circle"></i> Cerrar',
+  });
+});
+
+
 // para hacer Scroll en la web
 (function ($) {
   $(window).on("load", function () {

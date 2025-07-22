@@ -11,18 +11,22 @@ export const getBallot = async (req, res) => {
   const dni = user.dniUser;
   try {
     let ballots = [];
-    const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
-    const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
     let area = 0;
-    if (jefeArea) {
-      area = jefeArea.idArea;
-      if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
-        ballots = await Ballot.getBallots();
-      } else {
-        ballots = await Ballot.getBallots(null, jefeArea.idArea);
-      }
+    const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
+    if (Number(dni) === 200006) {
+      ballots = await Ballot.getBallots();
     } else {
-      ballots = await Ballot.getBallots(personal.idPersonal);
+      const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
+      if (jefeArea) {
+        area = jefeArea.idArea;
+        if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
+          ballots = await Ballot.getBallots();
+        } else {
+          ballots = await Ballot.getBallots(null, jefeArea.idArea);
+        }
+      } else {
+        ballots = await Ballot.getBallots(personal.idPersonal);
+      }
     }
     res.render("ballot/ballot", {
       user,
@@ -96,7 +100,7 @@ export const approve = async (req, res) => {
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
     const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
     const [ballot] = await Ballot.getBallotById(id);
-    await Ballot.update(id, jefeArea.idArea, ballot.idArea);
+    await Ballot.update(id, jefeArea.idArea, ballot.idAreaPersonal);
     res.redirect("/ballots");
   } catch (error) {
     // Si el registro falla

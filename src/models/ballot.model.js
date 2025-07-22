@@ -33,7 +33,7 @@ export class Ballot {
     this.fundamento = foundation;
   }
 
-  /* para consultar todas las áreas registradas en la base de datos */
+  /* para consultar las papeletas registradas en la base de datos (según usuario, excepto admin) */
   static async getBallots(applicant, dependency) {
     let ballots = [];
     // cuando el usuario es jefe de RRHH o administración
@@ -103,6 +103,7 @@ export class Ballot {
 
   // para aprobar una área
   static async update(id, dependency, areaPersonal) {
+    console.log(dependency, areaPersonal);
     if (
       dependency === 1 ||
       dependency === 3 ||

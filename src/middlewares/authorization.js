@@ -8,7 +8,7 @@ export const authorize = (roles, allowedSpecialties) => {
 
     const { rol, especialista, lastPasswordUpdate } = user;
 
-    // 1. Chequeo de contraseña caducada
+    // Chequeo de contraseña caducada
     const now = dayjs();
     const lastUpdate = dayjs(lastPasswordUpdate);
     const daysSinceUpdate = now.diff(lastUpdate, "day");
@@ -21,12 +21,12 @@ export const authorize = (roles, allowedSpecialties) => {
       return res.redirect("/myaccount/changePassword");
     }
 
-    // 2. Verificar rol permitido
+    // Verificar rol permitido
     if (!roles.includes(rol)) {
       return res.render("errors/403");
     }
 
-    // 3. Verificar especialidad si es "otros"
+    // Verificar especialidad si es "otros"
     if (rol === "otros") {
       if (!allowedSpecialties || !allowedSpecialties.includes(especialista)) {
         return res.render("errors/403");

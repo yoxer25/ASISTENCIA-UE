@@ -79,6 +79,9 @@ export const signIn = async (req, res) => {
       if (user.especialista === "RECURSOS HUMANOS") {
         return res.redirect("/");
       }
+      if (user.especialista === "S/E") {
+        return res.redirect("/ballots");
+      }
     } else {
       return res.redirect("/");
     }

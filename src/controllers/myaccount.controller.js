@@ -80,7 +80,7 @@ export const signIn = async (req, res) => {
         return res.redirect("/");
       }
       if (user.especialista === "S/E") {
-        return res.redirect("/ballots");
+        return res.redirect("/ballots/page1");
       }
     } else {
       return res.redirect("/");

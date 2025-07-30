@@ -55,7 +55,7 @@
 
             <li><a href="/documents"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Documentos de Gestión</a></li>
             <li>
-                <a href="/ballots">
+                <a href="/ballots/page1">
                     <i class="zmdi zmdi-collection-text zmdi-hc-fw"></i> Papeletas
                 </a>
             </li>
@@ -117,7 +117,7 @@
 
             <li><a href="/documents"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Documentos de Gestión</a></li>
             <li>
-                <a href="/ballots">
+                <a href="/ballots/page1">
                     <i class="zmdi zmdi-collection-text zmdi-hc-fw"></i> Papeletas
                 </a>
             </li>
@@ -126,7 +126,7 @@
             {{else if (and (eq user.rol "otros") (eq user.especialista "AGP"))}}
             <li><a href="/documents"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Documentos de Gestión</a></li>
             <li>
-                <a href="/ballots">
+                <a href="/ballots/page1">
                     <i class="zmdi zmdi-collection-text zmdi-hc-fw"></i> Papeletas
                 </a>
             </li>
@@ -134,7 +134,7 @@
             {{!-- OTROS + S/E --}}
             {{else if (and (eq user.rol "otros") (eq user.especialista "S/E"))}}
             <li>
-                <a href="/ballots">
+                <a href="/ballots/page1">
                     <i class="zmdi zmdi-collection-text zmdi-hc-fw"></i> Papeletas
                 </a>
             </li>

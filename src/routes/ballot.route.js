@@ -18,7 +18,7 @@ import { authorize } from "../middlewares/authorization.js";
 const router = Router();
 
 // rutas de la página de papeletas
-router.get("/", requireToken, authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]), ballotCtrl.getBallot);
+router.get("/page:num", requireToken, authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]), ballotCtrl.getBallot);
 router.post("/", requireToken, authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]), ballotCtrl.createBallot);
 router.patch("/approve/:id", requireToken, authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]), ballotCtrl.approve);
 

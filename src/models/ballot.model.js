@@ -39,14 +39,14 @@ export class Ballot {
     // cuando el usuario es jefe de RRHH o administración
     if (!applicant && !dependency) {
       [ballots] = await pool.query(
-        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante"
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante ORDER BY p.numeroPapeleta DESC"
       );
     }
 
     // cuando el usuario no es jefe de área
     if (applicant && !dependency) {
       [ballots] = await pool.query(
-        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ?",
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? ORDER BY p.numeroPapeleta DESC",
         [applicant]
       );
     }
@@ -54,7 +54,7 @@ export class Ballot {
     // cuando el usuario es jefe de área excepto de RRHH o administración
     if (!applicant && dependency) {
       [ballots] = await pool.query(
-        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ?",
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? ORDER BY p.numeroPapeleta DESC",
         [dependency]
       );
     }

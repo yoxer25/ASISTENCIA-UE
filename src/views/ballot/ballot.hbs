@@ -242,3 +242,36 @@
 </section>
 
 {{>navigation/navigation}}
+
+<script>
+    const current = ({{{ convertJson current }}});
+    const pages = ({{{ convertJson pages }}});
+    const numPages = (num) => {
+        let navPages = '';
+
+        if (num) {
+            var i = (Number(current) > 5 ? Number(current) - 4 : 1);
+            for (; i <= (Number(current) + 4) && i <= num; i++) {
+                let fila = '<ul class="pagination pagination-sm" id="pagination">';
+                if (i == current) {
+                    fila += '<li class="active">';
+                } else {
+                    fila += '<li>';
+                }
+                if (i === Number(current) - 4 && i < num) {
+                    fila += `<a href="#">...</a>`;
+                }
+                if (i === Number(current) + 4 && i < num) {
+                    fila += `<a href="#">...</a>`;
+                }
+                fila += `<a href="/ballots/page${i}">${i}</a>`;
+                fila += "</li></ul>";
+                navPages += fila;
+            }
+        }
+        return navPages
+    }
+    document.getElementById("pagination").innerHTML =
+        numPages(pages);
+
+</script>

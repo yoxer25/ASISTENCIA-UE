@@ -7,32 +7,37 @@ la carpeta "routes" que tienen todas las rutas de la web */
 
 // controla lo que se debe mostrar al momento de vistar la página de papeletas
 export const getBallot = async (req, res) => {
+  let forPage = 10;
+  let page = req.params.num || 1;
   const user = req.user;
   const dni = user.dniUser;
   try {
-    let ballots = [];
+    let ballotsDB = [];
     let area = 0;
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
     if (Number(dni) === 200006) {
-      ballots = await Ballot.getBallots();
+      ballotsDB = await Ballot.getBallots();
     } else {
       const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
       if (jefeArea) {
         area = jefeArea.idArea;
         if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
-          ballots = await Ballot.getBallots();
+          ballotsDB = await Ballot.getBallots();
         } else {
-          ballots = await Ballot.getBallots(null, jefeArea.idArea);
+          ballotsDB = await Ballot.getBallots(null, jefeArea.idArea);
         }
       } else {
-        ballots = await Ballot.getBallots(personal.idPersonal);
+        ballotsDB = await Ballot.getBallots(personal.idPersonal);
       }
     }
+    const ballots = ballotsDB.slice(page * forPage - forPage, page * forPage);
     res.render("ballot/ballot", {
       user,
       personal,
       ballots,
       area,
+      current: page,
+      pages: Math.ceil(ballotsDB.length / forPage),
     });
   } catch (error) {
     res.render("ballot/ballot", { user });
@@ -77,7 +82,7 @@ export const createBallot = async (req, res) => {
         httpOnly: true,
         maxAge: 6000,
       }); // 6 segundos
-      res.redirect("/ballots");
+      res.redirect("/ballots/page1");
     } else {
       // Si el registro falla
       res.cookie("error", ["¡Error al agregar registro!"], {
@@ -87,7 +92,7 @@ export const createBallot = async (req, res) => {
       throw new Error("Error al agregar registro");
     }
   } catch (error) {
-    res.redirect("/ballots");
+    res.redirect("/ballots/page1");
   }
 };
 
@@ -101,14 +106,14 @@ export const approve = async (req, res) => {
     const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
     const [ballot] = await Ballot.getBallotById(id);
     await Ballot.update(id, jefeArea.idArea, ballot.idAreaPersonal);
-    res.redirect("/ballots");
+    res.redirect("/ballots/page1");
   } catch (error) {
     // Si el registro falla
     res.cookie("error", ["¡Error al aprobar papeleta!"], {
       httpOnly: true,
       maxAge: 6000,
     }); // 6 segundos
-    res.redirect("/ballots");
+    res.redirect("/ballots/page1");
   }
 };
 

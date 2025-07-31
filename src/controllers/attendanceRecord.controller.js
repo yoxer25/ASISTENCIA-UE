@@ -165,26 +165,41 @@ export const postAttendanceRecord = async (req, res) => {
 // para descargar el consolidado de la asistencia mensual
 export const download = async (req, res) => {
   const { archive } = req.params;
+
   try {
     const nameExcel = archive + ".xlsx";
-    // para establecer la ruta hasta la carpeta "src"
     const _filename = fileURLToPath(import.meta.url);
     const _dirname = path.dirname(_filename);
     const rutaExcel = path.resolve(_dirname, "..", "asistencia", nameExcel);
+
+    // Verifica si el archivo existe antes de intentar descargarlo
+    if (!fs.existsSync(rutaExcel)) {
+      res.cookie("error", ["¡No se encontró el archivo!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      });
+      return res.redirect("/attendanceRecords");
+    }
 
     res.download(rutaExcel, (err) => {
       if (err) {
         res.cookie("error", ["¡Hubo un problema al descargar el archivo!"], {
           httpOnly: true,
           maxAge: 6000,
-        }); // 6 segundos
-        throw new Error("Hubo un problema al descargar el archivo");
+        });
+        // Redirige desde el callback en lugar de lanzar una excepción
+        return res.redirect("/attendanceRecords");
       }
     });
   } catch (error) {
+    res.cookie("error", ["¡Error inesperado al procesar la descarga!"], {
+      httpOnly: true,
+      maxAge: 6000,
+    });
     res.redirect("/attendanceRecords");
   }
 };
+
 
 // de aquí en adelante se usan en la página de reportes
 

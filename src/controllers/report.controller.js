@@ -241,22 +241,26 @@ export const generateExcel = async (req, res, next) => {
     let horaEntrada2 = convertirATotalMinutos("14:15:00"); // 855
     let horaSalida2 = convertirATotalMinutos("17:00:00"); // 1020
 
+    //según RI pasados 30 min en la hora de entra es una inasistencia
+    let horaRI = convertirATotalMinutos("08:31:00"); //510
+
     const [turnoIE] = await Institution.getInstitutionById(ie);
 
     const workbook = await XlsxPopulate.fromBlankAsync();
     workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
     workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
-    workbook.sheet("Sheet1").cell("C1").value("FECHA_REGISTRO");
-    workbook.sheet("Sheet1").cell("D1").value("PRIMERA ENTRADA");
-    workbook.sheet("Sheet1").cell("E1").value("PRIMERA SALIDA");
+    workbook.sheet("Sheet1").cell("C1").value("ID RELOJ");
+    workbook.sheet("Sheet1").cell("D1").value("FECHA_REGISTRO");
+    workbook.sheet("Sheet1").cell("E1").value("PRIMERA ENTRADA");
+    workbook.sheet("Sheet1").cell("F1").value("PRIMERA SALIDA");
     if (turnoIE.nombreHorario === "ue") {
-      workbook.sheet("Sheet1").cell("F1").value("SEGUNDA ENTRADA");
-      workbook.sheet("Sheet1").cell("G1").value("SEGUNDA SALIDA");
-      workbook.sheet("Sheet1").cell("H1").value("TIEMPO NO TRABAJADO");
-      workbook.sheet("Sheet1").cell("I1").value("OBSERVACIONES");
+      workbook.sheet("Sheet1").cell("G1").value("SEGUNDA ENTRADA");
+      workbook.sheet("Sheet1").cell("H1").value("SEGUNDA SALIDA");
+      workbook.sheet("Sheet1").cell("I1").value("TIEMPO NO TRABAJADO");
+      workbook.sheet("Sheet1").cell("J1").value("OBSERVACIONES");
     } else {
-      workbook.sheet("Sheet1").cell("F1").value("TIEMPO NO TRABAJADO");
-      workbook.sheet("Sheet1").cell("G1").value("OBSERVACIONES");
+      workbook.sheet("Sheet1").cell("G1").value("TIEMPO NO TRABAJADO");
+      workbook.sheet("Sheet1").cell("H1").value("OBSERVACIONES");
     }
 
     let reportes = [];
@@ -367,13 +371,17 @@ export const generateExcel = async (req, res, next) => {
 
       let message = "";
       if (element.nombreTurno === "ue") {
-        if (
+        const tieneHorasSinMarcar =
           element.primeraEntrada === null ||
           element.primeraSalida === null ||
           element.segundaEntrada === null ||
-          element.segundaSalida === null
-        ) {
+          element.segundaSalida === null;
+        if (tieneHorasSinMarcar && minutosPrimeraEntrada >= horaRI) {
+          message = "Tiene horas sin marcar e inasistencia según RI";
+        } else if (tieneHorasSinMarcar) {
           message = "Tiene horas sin marcar";
+        } else if (minutosPrimeraEntrada >= horaRI) {
+          message = "Inasistencia según RI";
         }
       } else {
         if (element.primeraEntrada === null || element.primeraSalida === null) {
@@ -394,14 +402,18 @@ export const generateExcel = async (req, res, next) => {
       workbook
         .sheet("Sheet1")
         .cell("C" + (i + 2))
-        .value(dateTimeFormat);
+        .value(element.idReloj);
       workbook
         .sheet("Sheet1")
         .cell("D" + (i + 2))
-        .value(element.primeraEntrada);
+        .value(dateTimeFormat);
       workbook
         .sheet("Sheet1")
         .cell("E" + (i + 2))
+        .value(element.primeraEntrada);
+      workbook
+        .sheet("Sheet1")
+        .cell("F" + (i + 2))
         .value(element.primeraSalida);
 
       if (element.nombreTurno === "ue") {
@@ -413,29 +425,29 @@ export const generateExcel = async (req, res, next) => {
 
         workbook
           .sheet("Sheet1")
-          .cell("F" + (i + 2))
+          .cell("G" + (i + 2))
           .value(element.segundaEntrada);
         workbook
           .sheet("Sheet1")
-          .cell("G" + (i + 2))
+          .cell("H" + (i + 2))
           .value(element.segundaSalida);
 
         // Mostrar las horas y minutos correctamente si hay más de 0 minutos
         if (hrs > 0) {
           workbook
             .sheet("Sheet1")
-            .cell("H" + (i + 2))
+            .cell("I" + (i + 2))
             .value(hrs + "h " + Math.floor(minutosRestantes) + " minutos");
         } else {
           workbook
             .sheet("Sheet1")
-            .cell("H" + (i + 2))
+            .cell("I" + (i + 2))
             .value(Math.floor(minutosRestantes) + " minutos");
         }
 
         workbook
           .sheet("Sheet1")
-          .cell("I" + (i + 2))
+          .cell("J" + (i + 2))
           .value(message);
       } else {
         minNoTrabajados = primeraTardanza + primeraFalta;
@@ -445,17 +457,17 @@ export const generateExcel = async (req, res, next) => {
         if (hrs > 0) {
           workbook
             .sheet("Sheet1")
-            .cell("F" + (i + 2))
+            .cell("G" + (i + 2))
             .value(hrs + "h " + Math.floor(minutosRestantes) + " minutos");
         } else {
           workbook
             .sheet("Sheet1")
-            .cell("F" + (i + 2))
+            .cell("G" + (i + 2))
             .value(Math.floor(minutosRestantes) + " minutos");
         }
         workbook
           .sheet("Sheet1")
-          .cell("G" + (i + 2))
+          .cell("H" + (i + 2))
           .value(message);
       }
     }

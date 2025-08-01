@@ -55,6 +55,7 @@
                                 <tr>
                                     <th class="text-center">Documento</th>
                                     <th class="text-center">Nombres y Apellidos</th>
+                                    <th class="text-center">ID Reloj</th>
                                     <th class="text-center">Fecha Registro</th>
                                     <th class="text-center">Primera Entrada</th>
                                     <th class="text-center">Primera Salida</th>
@@ -69,7 +70,7 @@
                             </thead>
                             <tbody id="list">
                                 <tr>
-                                    <td colspan="10">No hay registros para mostrar</td>
+                                    <td colspan="11">No hay registros para mostrar</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -108,6 +109,9 @@
         let horaSalida = convertirATotalMinutos("13:00:00"); // 780
         let horaEntrada2 = convertirATotalMinutos("14:15:00"); // 855
         let horaSalida2 = convertirATotalMinutos("17:00:00"); // 1020
+
+        //según RI pasados 30 min en la hora de entra es una inasistencia
+        let horaRI = convertirATotalMinutos("08:31:00"); //510
 
         let stringTable = '';
         for (const dato of lista) {
@@ -164,8 +168,18 @@
 
             let message = "";
             if (dato.nombreTurno === "ue") {
-                if (dato.primeraEntrada === null || dato.primeraSalida === null || dato.segundaEntrada === null || dato.segundaSalida === null) {
+                const tieneHorasSinMarcar =
+                    dato.primeraEntrada === null ||
+                    dato.primeraSalida === null ||
+                    dato.segundaEntrada === null ||
+                    dato.segundaSalida === null;
+
+                if (tieneHorasSinMarcar && minutosPrimeraEntrada >= horaRI) {
+                    message = "Tiene horas sin marcar e inasistencia según RI";
+                } else if (tieneHorasSinMarcar) {
                     message = "Tiene horas sin marcar";
+                } else if (minutosPrimeraEntrada >= horaRI) {
+                    message = "Inasistencia según RI";
                 }
             } else {
                 if (dato.primeraEntrada === null || dato.primeraSalida === null) {
@@ -189,6 +203,9 @@
             fila += "</td>";
             fila += "<td>";
             fila += dato.nombrePersonal;
+            fila += "</td>";
+            fila += "<td>";
+            fila += dato.idReloj;
             fila += "</td>";
             fila += "<td>";
             fila += fechaFormateada;

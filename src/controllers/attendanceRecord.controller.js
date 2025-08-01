@@ -200,7 +200,6 @@ export const download = async (req, res) => {
   }
 };
 
-
 // de aquí en adelante se usan en la página de reportes
 
 // controla lo que se debe mostrar al momento de visitar la página de importar data

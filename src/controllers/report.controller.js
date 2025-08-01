@@ -235,150 +235,159 @@ export const getReport = async (req, res) => {
 export const generateExcel = async (req, res, next) => {
   try {
     const { ie, option, username, startDate, endDate } = req.body;
-    // si element.nombreTurno === "ue"
-    let horaEntrada = convertirATotalMinutos("08:00:00"); // 480
-    let horaSalida = convertirATotalMinutos("13:00:00"); // 780
-    let horaEntrada2 = convertirATotalMinutos("14:15:00"); // 855
-    let horaSalida2 = convertirATotalMinutos("17:00:00"); // 1020
 
-    //según RI pasados 30 min en la hora de entra es una inasistencia
-    let horaRI = convertirATotalMinutos("08:31:00"); //510
+    let horaEntrada = convertirATotalMinutos("08:00:00");
+    let horaSalida = convertirATotalMinutos("13:00:00");
+    let horaEntrada2 = convertirATotalMinutos("14:15:00");
+    let horaSalida2 = convertirATotalMinutos("17:00:00");
+    let horaRI = convertirATotalMinutos("08:31:00");
 
     const [turnoIE] = await Institution.getInstitutionById(ie);
-
     const workbook = await XlsxPopulate.fromBlankAsync();
-    workbook.sheet("Sheet1").cell("A1").value("DOCUMENTO");
-    workbook.sheet("Sheet1").cell("B1").value("NOMBRES Y APELLIDOS");
-    workbook.sheet("Sheet1").cell("C1").value("ID RELOJ");
-    workbook.sheet("Sheet1").cell("D1").value("FECHA_REGISTRO");
-    workbook.sheet("Sheet1").cell("E1").value("PRIMERA ENTRADA");
-    workbook.sheet("Sheet1").cell("F1").value("PRIMERA SALIDA");
+    const sheet = workbook.sheet("Sheet1");
+
+    sheet.cell("A1").value("DOCUMENTO");
+    sheet.cell("B1").value("NOMBRES Y APELLIDOS");
+    sheet.cell("C1").value("ID RELOJ");
+    sheet.cell("D1").value("FECHA_REGISTRO");
+    sheet.cell("E1").value("PRIMERA ENTRADA");
+    sheet.cell("F1").value("PRIMERA SALIDA");
     if (turnoIE.nombreHorario === "ue") {
-      workbook.sheet("Sheet1").cell("G1").value("SEGUNDA ENTRADA");
-      workbook.sheet("Sheet1").cell("H1").value("SEGUNDA SALIDA");
-      workbook.sheet("Sheet1").cell("I1").value("TIEMPO NO TRABAJADO");
-      workbook.sheet("Sheet1").cell("J1").value("OBSERVACIONES");
+      sheet.cell("G1").value("SEGUNDA ENTRADA");
+      sheet.cell("H1").value("SEGUNDA SALIDA");
+      sheet.cell("I1").value("TIEMPO NO TRABAJADO");
+      sheet.cell("J1").value("OBSERVACIONES");
     } else {
-      workbook.sheet("Sheet1").cell("G1").value("TIEMPO NO TRABAJADO");
-      workbook.sheet("Sheet1").cell("H1").value("OBSERVACIONES");
+      sheet.cell("G1").value("TIEMPO NO TRABAJADO");
+      sheet.cell("H1").value("OBSERVACIONES");
     }
 
     let reportes = [];
     if (username) {
-      if (option === "dni") {
-        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          ie,
-          startDate,
-          endDate,
-          undefined,
-          username
-        );
-        reportes.push(...attendanceRecordDB);
-      }
-      if (option === "name") {
-        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
-          ie,
-          startDate,
-          endDate,
-          username,
-          undefined
-        );
-        reportes.push(...attendanceRecordDB);
-      }
+      const records = await AttendanceRecord.getAttendanceRecord(
+        ie,
+        startDate,
+        endDate,
+        option === "name" ? username : undefined,
+        option === "dni" ? username : undefined
+      );
+      reportes.push(...records);
     } else {
-      const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+      const records = await AttendanceRecord.getAttendanceRecord(
         ie,
         startDate,
         endDate
       );
-      reportes.push(...attendanceRecordDB);
+      reportes.push(...records);
     }
+
+    // Ordenar por idReloj, luego por fecha
+    reportes.sort((a, b) => {
+      if (a.idReloj !== b.idReloj) return a.idReloj - b.idReloj;
+      return new Date(a.fechaRegistro) - new Date(b.fechaRegistro);
+    });
+
+    let currentIdReloj = null;
+    let subtotalMinutos = 0;
+    let filaExcel = 2;
 
     for (let i = 0; i < reportes.length; i++) {
       const element = reportes[i];
-      if (element.nombreTurno === "jec") {
-        horaEntrada = convertirATotalMinutos("08:00:00"); // 480
-        horaSalida = convertirATotalMinutos("15:30:00"); // 930
-      }
-      if (element.nombreTurno === "ceba") {
-        horaEntrada = convertirATotalMinutos("18:00:00"); // 1080
-        horaSalida = convertirATotalMinutos("23:00:00"); // 1380
-      }
-      if (element.nombreTurno === "tarde") {
-        horaEntrada = convertirATotalMinutos("13:00:00"); // 780
-        horaSalida = convertirATotalMinutos("18:00:00"); //1080
-      }
-      if (element.nombreTurno === "jer") {
-        horaEntrada = convertirATotalMinutos("08:00:00"); // 480
-        horaSalida = convertirATotalMinutos("13:45:00"); // 825
-      }
-      if (element.nombreTurno === "mañana") {
-        horaEntrada = convertirATotalMinutos("08:00:00"); // 480
-        horaSalida = convertirATotalMinutos("13:00:00"); // 780
-      }
-      const dateTimeFormat = helpers.formatDate(element.fechaRegistro);
 
+      if (currentIdReloj !== null && element.idReloj !== currentIdReloj) {
+        const hrs = Math.floor(subtotalMinutos / 60);
+        const minutosRestantes = subtotalMinutos % 60;
+        sheet
+          .cell("H" + filaExcel)
+          .value(`TOTAL ID ${currentIdReloj}`)
+          .style("bold", true);
+        if (hrs > 0) {
+          sheet
+            .cell("I" + filaExcel)
+            .value(hrs + "h " + Math.floor(minutosRestantes) + " minutos")
+            .style("bold", true);
+        } else {
+          sheet
+            .cell("I" + filaExcel)
+            .value(Math.floor(minutosRestantes) + " minutos")
+            .style("bold", true);
+        }
+        filaExcel++;
+        subtotalMinutos = 0;
+      }
+
+      currentIdReloj = element.idReloj;
+
+      if (element.nombreTurno === "jec") {
+        horaEntrada = convertirATotalMinutos("08:00:00");
+        horaSalida = convertirATotalMinutos("15:30:00");
+      } else if (element.nombreTurno === "ceba") {
+        horaEntrada = convertirATotalMinutos("18:00:00");
+        horaSalida = convertirATotalMinutos("23:00:00");
+      } else if (element.nombreTurno === "tarde") {
+        horaEntrada = convertirATotalMinutos("13:00:00");
+        horaSalida = convertirATotalMinutos("18:00:00");
+      } else if (element.nombreTurno === "jer") {
+        horaEntrada = convertirATotalMinutos("08:00:00");
+        horaSalida = convertirATotalMinutos("13:45:00");
+      } else if (element.nombreTurno === "mañana") {
+        horaEntrada = convertirATotalMinutos("08:00:00");
+        horaSalida = convertirATotalMinutos("13:00:00");
+      }
+
+      const dateTimeFormat = helpers.formatDate(element.fechaRegistro);
       let minutosPrimeraEntrada = convertirATotalMinutos(
         element.primeraEntrada
       );
-      let minustosPrimeraSalida = convertirATotalMinutos(element.primeraSalida);
-      let minustosSegundaEntrada = convertirATotalMinutos(
+      let minutosPrimeraSalida = convertirATotalMinutos(element.primeraSalida);
+      let minutosSegundaEntrada = convertirATotalMinutos(
         element.segundaEntrada
       );
-      let minustosSegundaSalida = convertirATotalMinutos(element.segundaSalida);
+      let minutosSegundaSalida = convertirATotalMinutos(element.segundaSalida);
 
       if (
         minutosPrimeraEntrada === null ||
         minutosPrimeraEntrada <= horaEntrada
-      ) {
+      )
         minutosPrimeraEntrada = 0;
-      }
+      if (minutosPrimeraSalida === null || minutosPrimeraSalida > horaSalida)
+        minutosPrimeraSalida = 0;
       if (
-        minustosPrimeraSalida === null ||
-        minustosPrimeraSalida > horaSalida
-      ) {
-        minustosPrimeraSalida = 0;
-      }
-      if (
-        minustosSegundaEntrada === null ||
-        minustosSegundaEntrada <= horaEntrada2
-      ) {
-        minustosSegundaEntrada = 0;
-      }
-      if (
-        minustosSegundaSalida === null ||
-        minustosSegundaSalida > horaSalida2
-      ) {
-        minustosSegundaSalida = 0;
-      }
+        minutosSegundaEntrada === null ||
+        minutosSegundaEntrada <= horaEntrada2
+      )
+        minutosSegundaEntrada = 0;
+      if (minutosSegundaSalida === null || minutosSegundaSalida > horaSalida2)
+        minutosSegundaSalida = 0;
+
       let primeraTardanza = minutosPrimeraEntrada - horaEntrada;
-      let segundaTardanza = minustosSegundaEntrada - horaEntrada2;
-      let primeraFalta = horaSalida - minustosPrimeraSalida;
-      let segundaFalta = horaSalida2 - minustosSegundaSalida;
+      let segundaTardanza = minutosSegundaEntrada - horaEntrada2;
+      let primeraFalta = horaSalida - minutosPrimeraSalida;
+      let segundaFalta = horaSalida2 - minutosSegundaSalida;
 
       if (minutosPrimeraEntrada <= 0) {
         primeraTardanza = 0;
       }
-      if (minustosPrimeraSalida <= 0) {
+      if (minutosPrimeraSalida <= 0) {
         primeraFalta = 0;
       }
-      if (minustosSegundaEntrada <= 0) {
+      if (minutosSegundaEntrada <= 0) {
         segundaTardanza = 0;
       }
-      if (minustosSegundaSalida <= 0) {
+      if (minutosSegundaSalida <= 0) {
         segundaFalta = 0;
       }
 
       let message = "";
       if (element.nombreTurno === "ue") {
-        const tieneHorasSinMarcar =
+        const sinMarcar =
           element.primeraEntrada === null ||
           element.primeraSalida === null ||
           element.segundaEntrada === null ||
           element.segundaSalida === null;
-        if (tieneHorasSinMarcar && minutosPrimeraEntrada >= horaRI) {
+        if (sinMarcar && minutosPrimeraEntrada >= horaRI) {
           message = "Tiene horas sin marcar e inasistencia según RI";
-        } else if (tieneHorasSinMarcar) {
+        } else if (sinMarcar) {
           message = "Tiene horas sin marcar";
         } else if (minutosPrimeraEntrada >= horaRI) {
           message = "Inasistencia según RI";
@@ -391,93 +400,77 @@ export const generateExcel = async (req, res, next) => {
 
       let minNoTrabajados = 0;
 
-      workbook
-        .sheet("Sheet1")
-        .cell("A" + (i + 2))
-        .value(element.dniPersonal);
-      workbook
-        .sheet("Sheet1")
-        .cell("B" + (i + 2))
-        .value(element.nombrePersonal);
-      workbook
-        .sheet("Sheet1")
-        .cell("C" + (i + 2))
-        .value(element.idReloj);
-      workbook
-        .sheet("Sheet1")
-        .cell("D" + (i + 2))
-        .value(dateTimeFormat);
-      workbook
-        .sheet("Sheet1")
-        .cell("E" + (i + 2))
-        .value(element.primeraEntrada);
-      workbook
-        .sheet("Sheet1")
-        .cell("F" + (i + 2))
-        .value(element.primeraSalida);
+      sheet.cell("A" + filaExcel).value(element.dniPersonal);
+      sheet.cell("B" + filaExcel).value(element.nombrePersonal);
+      sheet.cell("C" + filaExcel).value(element.idReloj);
+      sheet.cell("D" + filaExcel).value(dateTimeFormat);
+      sheet.cell("E" + filaExcel).value(element.primeraEntrada);
+      sheet.cell("F" + filaExcel).value(element.primeraSalida);
 
       if (element.nombreTurno === "ue") {
         minNoTrabajados =
           primeraTardanza + primeraFalta + segundaTardanza + segundaFalta;
+
+        subtotalMinutos += Math.floor(minNoTrabajados);
+
         // Convertir minutos en horas y minutos (si supera los 59 minutos)
         const hrs = Math.floor(minNoTrabajados / 60);
         const minutosRestantes = minNoTrabajados % 60;
 
-        workbook
-          .sheet("Sheet1")
-          .cell("G" + (i + 2))
-          .value(element.segundaEntrada);
-        workbook
-          .sheet("Sheet1")
-          .cell("H" + (i + 2))
-          .value(element.segundaSalida);
-
+        sheet.cell("G" + filaExcel).value(element.segundaEntrada);
+        sheet.cell("H" + filaExcel).value(element.segundaSalida);
         // Mostrar las horas y minutos correctamente si hay más de 0 minutos
         if (hrs > 0) {
-          workbook
-            .sheet("Sheet1")
-            .cell("I" + (i + 2))
+          sheet
+            .cell("I" + filaExcel)
             .value(hrs + "h " + Math.floor(minutosRestantes) + " minutos");
         } else {
-          workbook
-            .sheet("Sheet1")
-            .cell("I" + (i + 2))
+          sheet
+            .cell("I" + filaExcel)
             .value(Math.floor(minutosRestantes) + " minutos");
         }
-
-        workbook
-          .sheet("Sheet1")
-          .cell("J" + (i + 2))
-          .value(message);
+        sheet.cell("J" + filaExcel).value(message);
       } else {
         minNoTrabajados = primeraTardanza + primeraFalta;
+
+        subtotalMinutos += minNoTrabajados;
+
         // Convertir minutos en horas y minutos (si supera los 59 minutos)
         const hrs = Math.floor(minNoTrabajados / 60);
         const minutosRestantes = minNoTrabajados % 60;
         if (hrs > 0) {
-          workbook
-            .sheet("Sheet1")
-            .cell("G" + (i + 2))
+          sheet
+            .cell("G" + filaExcel)
             .value(hrs + "h " + Math.floor(minutosRestantes) + " minutos");
         } else {
-          workbook
-            .sheet("Sheet1")
-            .cell("G" + (i + 2))
+          sheet
+            .cell("G" + filaExcel)
             .value(Math.floor(minutosRestantes) + " minutos");
         }
-        workbook
-          .sheet("Sheet1")
-          .cell("H" + (i + 2))
-          .value(message);
+        sheet.cell("H" + filaExcel).value(message);
       }
+      filaExcel++;
     }
-    workbook.toFileAsync("./src/archives/reporte.xlsx");
+
+    // Agregar subtotal final
+    if (currentIdReloj !== null && subtotalMinutos > 0) {
+      sheet
+        .cell("J" + filaExcel)
+        .value(`TOTAL MINUTOS ID ${currentIdReloj}`)
+        .style("bold", true);
+      sheet
+        .cell("K" + filaExcel)
+        .value(subtotalMinutos)
+        .style("bold", true);
+    }
+
+    await workbook.toFileAsync("./src/archives/reporte.xlsx");
     next();
   } catch (error) {
     res.cookie("error", ["¡Ocurrió un error al generar el reporte!"], {
       httpOnly: true,
       maxAge: 6000,
-    }); // 6 segundos
+    });
     res.redirect("/reports/page1");
   }
 };

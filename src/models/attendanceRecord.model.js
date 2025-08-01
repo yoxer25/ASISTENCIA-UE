@@ -30,7 +30,7 @@ export class AttendanceRecord {
   // para mostrar la data según corresponda al momento de visitar la página de reportes
   static async getData(institution) {
     const [attendanceRecord] = await pool.query(
-      "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND r.fechaRegistro >= CURDATE() - INTERVAL 5 DAY ORDER BY r.idRegistroAsistencia",
+      "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND r.fechaRegistro >= CURDATE() - INTERVAL 5 DAY ORDER BY p.idReloj, r.fechaRegistro",
       [institution]
     );
     if (attendanceRecord != "") {
@@ -55,7 +55,7 @@ export class AttendanceRecord {
   ) {
     if (username === undefined && dni !== undefined) {
       const [attendanceRecord] = await pool.query(
-        "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY r.idRegistroAsistencia",
+        "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY p.idReloj, r.fechaRegistro",
         [institution, startDate, endDate, dni]
       );
       if (attendanceRecord != "") {
@@ -66,7 +66,7 @@ export class AttendanceRecord {
     }
     if (username !== undefined && dni === undefined) {
       const [attendanceRecord] = await pool.query(
-        `SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.nombrePersonal LIKE '%${username}%' ORDER BY r.idRegistroAsistencia`,
+        `SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.nombrePersonal LIKE '%${username}%' ORDER BY p.idReloj, r.fechaRegistro`,
         [institution, startDate, endDate]
       );
       if (attendanceRecord != "") {
@@ -77,7 +77,7 @@ export class AttendanceRecord {
     }
     if (username === undefined && dni === undefined) {
       const [attendanceRecord] = await pool.query(
-        "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) ORDER BY r.idRegistroAsistencia",
+        "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) ORDER BY p.idReloj, r.fechaRegistro",
         [institution, startDate, endDate]
       );
       if (attendanceRecord != "") {

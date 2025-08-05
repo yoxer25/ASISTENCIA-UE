@@ -33,20 +33,20 @@ export class Ballot {
     this.fundamento = foundation;
   }
 
-  /* para consultar las papeletas registradas en la base de datos (según usuario, excepto admin) */
+  /* para consultar las papeletas registradas en la base de datos (según usuario) */
   static async getBallots(applicant, dependency) {
     let ballots = [];
     // cuando el usuario es jefe de RRHH o administración
     if (!applicant && !dependency) {
       [ballots] = await pool.query(
-        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante ORDER BY p.numeroPapeleta DESC"
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.fechaPapeleta >= CURDATE() - INTERVAL 5 DAY ORDER BY p.numeroPapeleta DESC"
       );
     }
 
     // cuando el usuario no es jefe de área
     if (applicant && !dependency) {
       [ballots] = await pool.query(
-        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? ORDER BY p.numeroPapeleta DESC",
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.fechaPapeleta >= CURDATE() - INTERVAL 5 DAY ORDER BY p.numeroPapeleta DESC",
         [applicant]
       );
     }
@@ -54,9 +54,62 @@ export class Ballot {
     // cuando el usuario es jefe de área excepto de RRHH o administración
     if (!applicant && dependency) {
       [ballots] = await pool.query(
-        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? ORDER BY p.numeroPapeleta DESC",
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND p.fechaPapeleta >= CURDATE() - INTERVAL 5 DAY ORDER BY p.numeroPapeleta DESC",
         [dependency]
       );
+    }
+
+    return ballots;
+  }
+
+  /* para consultar las papeletas registradas en la base de datos
+  por usuario o fecha de ausencia (según usuario) */
+  static async getBallotsSearch(applicant, area, username, dependency, date) {
+    let ballots = [];
+    console.log(applicant, area, username, dependency, date);
+    // cuando el usuario es jefe de RRHH o administración
+    if (!applicant && !area) {
+      if (username) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          [username, date]
+        );
+      }
+      if (dependency) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          [dependency, date]
+        );
+      }
+      if (!username && !dependency) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          [date]
+        );
+      }
+    }
+
+    // cuando el usuario no es jefe de área
+    if (applicant) {
+      [ballots] = await pool.query(
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+        [applicant, date]
+      );
+    }
+
+    // cuando el usuario es jefe de área excepto de RRHH o administración
+    if (area) {
+      if (username) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE (p.dependencia = ? AND p.desdeDia = ?) AND p.solicitante ORDER BY p.numeroPapeleta DESC",
+          [area, date, username]
+        );
+      } else {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          [area, date]
+        );
+      }
     }
 
     return ballots;
@@ -101,7 +154,7 @@ export class Ballot {
     return res;
   }
 
-  // para aprobar una área
+  // para aprobar una papeleta
   static async update(id, dependency, areaPersonal) {
     console.log(dependency, areaPersonal);
     if (

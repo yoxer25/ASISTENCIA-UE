@@ -1,0 +1,42 @@
+<div class="row">
+    <input type="hidden" class="form-control" name="page" id="page">
+    <div class="col-lg-6">
+        <div class="form-group label-floating">
+            <label class="control-label">Colaborador</label>
+            <select class="form-control" id="username" name="username" style="width: 100%;">
+                <option value="" selected></option>
+                {{#each personalUE}}
+                <option value="{{idPersonal}}">{{nombrePersonal}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+    </div>
+    {{#if (or (eq user.rol "administrador") (and (eq user.rol "otros") (eq user.especialista
+    "RECURSOS HUMANOS")))}}
+    <div class="col-lg-3">
+        <div class="form-group label-floating">
+            <label class="control-label">Área / Oficina</label>
+            <select class="form-control" id="dependency" name="dependency" style="width: 100%;">
+                <option value="" selected></option>
+                {{#each areas}}
+                <option value="{{idArea}}">{{nombreArea}}</option>
+                {{/each}}
+            </select>
+        </div>
+    </div>
+    {{/if}}
+    <div class="col-lg-3">
+        <div class="form-group" style="margin: auto;">
+            <label class="control-label">Fecha</label>
+            <input class="form-control" type="date" id="date" name="date" value="{{date}}">
+        </div>
+    </div>
+    <div class="col-lg-2">
+        <div class="form-group" style="margin: auto; text-align: center;">
+            <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                <p style="font-size: 20px; margin: auto; color: #fff;"><i class="zmdi zmdi-search"></i> Consultar</p>
+            </button>
+        </div>
+    </div>
+</div>

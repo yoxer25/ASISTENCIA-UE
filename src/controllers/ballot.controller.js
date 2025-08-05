@@ -11,10 +11,14 @@ export const getBallot = async (req, res) => {
   let page = req.params.num || 1;
   const user = req.user;
   const dni = user.dniUser;
+  const ie = user.name;
+
   try {
     let ballotsDB = [];
     let area = 0;
+    const personalUE = await Personal.getPersonal(ie);
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
+    const areas = await Area.getAreas();
     if (Number(dni) === 200006) {
       ballotsDB = await Ballot.getBallots();
     } else {
@@ -33,14 +37,144 @@ export const getBallot = async (req, res) => {
     const ballots = ballotsDB.slice(page * forPage - forPage, page * forPage);
     res.render("ballot/ballot", {
       user,
-      personal,
       ballots,
+      personalUE,
+      areas,
       area,
       current: page,
       pages: Math.ceil(ballotsDB.length / forPage),
     });
   } catch (error) {
     res.render("ballot/ballot", { user });
+  }
+};
+
+// controla lo que se debe visualizar en el formulario de nueva papeleta
+export const getBallotCreate = async (req, res) => {
+  const user = req.user;
+  const dni = user.dniUser;
+  try {
+    const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
+    res.render("ballot/create", {
+      user,
+      personal,
+    });
+  } catch (error) {
+    res.render("ballot/create", { user });
+  }
+};
+
+/* controla lo que se debe mostrar al momento de visitar la página de papeletas
+de salida consultando por fecha o usuario (solo administrador y recursos humanos) */
+export const getBallotSearch = async (req, res) => {
+  let forPage = 10;
+  const user = req.user;
+  const ie = user.name;
+  const dni = user.dniUser;
+  const fechaActual = new Date();
+  let year = fechaActual.getFullYear();
+  let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0
+  let day = String(fechaActual.getDate()).padStart(2, "0");
+  const personalUE = await Personal.getPersonal(ie);
+  const areas = await Area.getAreas();
+  console.log(user);
+
+  try {
+    let { date, page, username, dependency } = req.body;
+    if (date !== "") {
+      date = date;
+    } else {
+      date = `${year}-${month}-${day}`;
+    }
+    page = page || 1;
+    let ballotsDB = [];
+    let area = 0;
+    const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
+    if (Number(dni) === 200006) {
+      if (username) {
+        ballotsDB = await Ballot.getBallotsSearch(
+          null,
+          null,
+          username,
+          null,
+          date
+        );
+      }
+      if (dependency) {
+        ballotsDB = await Ballot.getBallotsSearch(
+          null,
+          null,
+          null,
+          dependency,
+          date
+        );
+      }
+    } else {
+      const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
+      if (jefeArea) {
+        area = jefeArea.idArea;
+        if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
+          if (username) {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              null,
+              username,
+              null,
+              date
+            );
+          }
+          if (dependency) {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              null,
+              null,
+              dependency,
+              date
+            );
+          }
+        } else {
+          if (username) {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              jefeArea.idArea,
+              username,
+              null,
+              date
+            );
+          } else {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              jefeArea.idArea,
+              null,
+              null,
+              date
+            );
+          }
+        }
+      } else {
+        ballotsDB = await Ballot.getBallotsSearch(
+          personal.idPersonal,
+          null,
+          null,
+          null,
+          date
+        );
+      }
+    }
+    const ballots = ballotsDB.slice(page * forPage - forPage, page * forPage);
+    res.render("ballot/ballot", {
+      user,
+      ballots,
+      area,
+      areas,
+      personalUE,
+      date,
+      current: page,
+      pages: Math.ceil(ballotsDB.length / forPage),
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.render("ballot/ballot", { user, personalUE, areas });
   }
 };
 

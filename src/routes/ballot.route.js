@@ -18,9 +18,36 @@ import { authorize } from "../middlewares/authorization.js";
 const router = Router();
 
 // rutas de la página de papeletas
-router.get("/page:num", requireToken, authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]), ballotCtrl.getBallot);
-router.post("/", requireToken, authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]), ballotCtrl.createBallot);
-router.patch("/approve/:id", requireToken, authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]), ballotCtrl.approve);
+router.get(
+  "/create",
+  requireToken,
+  authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]),
+  ballotCtrl.getBallotCreate
+);
+router.get(
+  "/page:num",
+  requireToken,
+  authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]),
+  ballotCtrl.getBallot
+);
+router.post(
+  "/",
+  requireToken,
+  authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]),
+  ballotCtrl.getBallotSearch
+);
+router.post(
+  "/create",
+  requireToken,
+  authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]),
+  ballotCtrl.createBallot
+);
+router.patch(
+  "/approve/:id",
+  requireToken,
+  authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]),
+  ballotCtrl.approve
+);
 
 // exportamos la constante "router" para llamarla desde "app.js" que es el archivo donde se configura toda la web
 export default router;

@@ -161,11 +161,7 @@ export class Personal {
       "SELECT p.idPersonal, p.dniPersonal, p.nombrePersonal, p.idReloj, p.idTurnoPersonal, p.idAreaPersonal, p.docente, t.nombreTurno, a.nombreArea, p.asignatura, p.idInstitucion, asig.nombreAsignatura FROM personal p INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal INNER JOIN asignatura asig ON p.asignatura = asig.idAsignatura INNER JOIN area a ON a.idArea = p.idAreaPersonal WHERE p.idPersonal = ?",
       [Id]
     );
-    if (personalDb != "") {
-      return personalDb;
-    } else {
-      throw new Error("Datos no encontrados");
-    }
+    return personalDb;
   }
   // para consultar dotos de todos de un trabajador por dni
   static async getPersonalByDNI(dni) {

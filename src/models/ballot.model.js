@@ -66,7 +66,6 @@ export class Ballot {
   por usuario o fecha de ausencia (según usuario) */
   static async getBallotsSearch(applicant, area, username, dependency, date) {
     let ballots = [];
-    console.log(applicant, area, username, dependency, date);
     // cuando el usuario es jefe de RRHH o administración
     if (!applicant && !area) {
       if (username) {
@@ -118,7 +117,7 @@ export class Ballot {
   // para consultar datos de una papeleta por id
   static async getBallotById(id) {
     const [ballots] = await pool.query(
-      "SELECT * FROM papeleta pa INNER JOIN personal p ON p.idPersonal = pa.solicitante WHERE pa.idPapeleta = ?",
+      "SELECT * FROM papeleta pa INNER JOIN personal p ON p.idPersonal = pa.solicitante INNER JOIN area a ON pa.dependencia = a.idArea WHERE pa.idPapeleta = ?",
       [id]
     );
     return ballots;

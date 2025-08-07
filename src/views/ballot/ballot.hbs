@@ -96,11 +96,12 @@
                                     </td>
                                     {{/if}}
                                     <td><a href="#!" class="btn-info-ballot btn btn-info btn-raised btn-xs"
+                                            data-id="{{idPapeleta}}"
                                             data-dateballot="{{formatDate fechaPapeleta}}"
                                             data-ballot="{{numeroPapeleta}}" data-applicant="{{nombrePersonal}}"
                                             data-dependency="{{nombreArea}}"
                                             data-workingcondition="{{condicionLaboral}}" data-reason="{{motivo}}"
-                                            data-foundation="{{fundamento}}" {{#if desdeDia}}
+                                            data-foundation="{{idPapeleta}}" {{#if desdeDia}}
                                             data-startDate="{{formatDate desdeDia}}" {{else}}
                                             data-startTime="{{desdeHora}}" {{/if}} {{#if hastaDia}}
                                             data-endDate="{{formatDate hastaDia}}" {{else}} data-endTime="{{hastaHora}}"

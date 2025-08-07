@@ -42,6 +42,12 @@ router.post(
   authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]),
   ballotCtrl.createBallot
 );
+router.get(
+  "/:id",
+  requireToken,
+  authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]),
+  ballotCtrl.viewBallot
+);
 router.patch(
   "/approve/:id",
   requireToken,

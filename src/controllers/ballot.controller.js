@@ -1,3 +1,14 @@
+// para generar PDF
+import PDFDocument from "pdfkit";
+
+// para ver la ruta del logo para el comprobante
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+import { helpers } from "../helpers/helper.js";
+
+// models
 import { Area } from "../models/area.model.js";
 import { Ballot } from "../models/ballot.model.js";
 import { Correlative } from "../models/correlative.model.js";
@@ -77,7 +88,6 @@ export const getBallotSearch = async (req, res) => {
   let day = String(fechaActual.getDate()).padStart(2, "0");
   const personalUE = await Personal.getPersonal(ie);
   const areas = await Area.getAreas();
-  console.log(user);
 
   try {
     let { date, page, username, dependency } = req.body;
@@ -173,7 +183,6 @@ export const getBallotSearch = async (req, res) => {
       pages: Math.ceil(ballotsDB.length / forPage),
     });
   } catch (error) {
-    console.log(error.message);
     res.render("ballot/ballot", { user, personalUE, areas });
   }
 };
@@ -248,6 +257,146 @@ export const approve = async (req, res) => {
       maxAge: 6000,
     }); // 6 segundos
     res.redirect("/ballots/page1");
+  }
+};
+
+// para ver la información completa de la papeleta
+export const viewBallot = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [ballot] = await Ballot.getBallotById(id);
+    const dateBallot = helpers.formatDate(ballot.fechaPapeleta);
+    const dateStart = helpers.formatDate(ballot.desdeDia);
+    const dateEnd = helpers.formatDate(ballot.hastaDia);
+    const timeStart = ballot.desdeHora;
+    const timeEnd = ballot.hastaHora;
+    let desde, hasta;
+    if (ballot.desdeDia !== null) {
+      desde = dateStart;
+    } else {
+      desde = timeStart;
+    }
+    if (ballot.hastaDia !== null) {
+      hasta = dateEnd;
+    } else {
+      hasta = timeEnd;
+    }
+    // Crear un documento PDF
+    const doc = new PDFDocument();
+
+    // Configurar las cabeceras para que el navegador lo muestre como PDF
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="Papeleta_${ballot.numeroPapeleta}.pdf"`
+    );
+    // Pasa el stream del documento PDF directamente a la respuesta
+    doc.pipe(res);
+
+    // para establecer la ruta hasta la carpeta "src"
+    const _filename = fileURLToPath(import.meta.url);
+    const _dirname = path.dirname(_filename);
+
+    // Agregar contenido al PDF
+    // Ruta de la imagen a agregar (puedes cambiarla a la ruta local o url que prefieras)
+    const imagePath = path.resolve(
+      _dirname,
+      "../public/assets/img/logo-ue.png"
+    );
+
+    // Verificar si la imagen existe
+    if (fs.existsSync(imagePath)) {
+      // Agregar la imagen al PDF (esto va a la posición 100, 150 en el PDF)
+      doc.image(imagePath, {
+        fit: [50, 50],
+        align: "center",
+      });
+    } else {
+      // Puedes insertar un texto alternativo o un placeholder
+      doc.text("Imagen no disponible", {
+        align: "center",
+      });
+    }
+    doc
+      .fontSize(7)
+      .font("Courier-Bold")
+      .text(`DIRECCIÓN REGIONAL DE EDUCACIÓN`, 120, 80);
+    doc.text(`PIURA`, 170, 90);
+    doc.text(`UGEL HUANCABAMBA`, 145, 100);
+
+    doc.fontSize(15).text(`PAPELETA DE COMISIÓN DE`, 280, 80);
+    doc.fontSize(15).text(`SERVICIOS Y/O PERMISOS`, 285, 95);
+
+    doc.fontSize(15).text(`PAPELETA N° ${ballot.numeroPapeleta}`, 220, 150);
+    doc.fontSize(10).text(`FECHA: ${dateBallot}`, 70, 185);
+    doc.text(`NOMBRES Y APELLIDOS: ${ballot.nombrePersonal}`, 70, 200);
+    doc.text(`DEPENDENCIA / ÁREA: ${ballot.nombreArea}`, 70, 215);
+    doc.text(`CONDICIÓN LABORAL: ${ballot.condicionLaboral}`, 350, 215);
+    doc.text(`SE AUSENTARÁ:`, 70, 230);
+    doc.text(`DESDE: ${desde}`, 70, 245);
+    doc.text(`HASTA: ${hasta}`, 220, 245);
+    doc.text(`MOTIVO: ${ballot.motivo}`, 70, 260);
+    doc.text(`FUNDAMENTACIÓN: ${ballot.fundamento}`, 70, 275);
+
+    doc.fontSize(7).text(`Firmado digitalmente por:`, 70, 330);
+    doc.fontSize(7).text(`${ballot.nombrePersonal}`, 70, 340);
+    doc.fontSize(7).text(`DNI: ${ballot.dniPersonal}`, 70, 350);
+    doc.text(`_______________________________________`, 70, 355);
+    doc.fontSize(10).text(`SOLICITANTE`, 115, 370);
+
+    doc.fontSize(7).text(`Firmado digitalmente por:`, 350, 330);
+    doc.fontSize(7).text(`${ballot.nombrePersonal}`, 350, 340);
+    doc.fontSize(7).text(`DNI: ${ballot.dniPersonal}`, 350, 350);
+    doc.text(`_______________________________________`, 350, 355);
+    doc.fontSize(10).text(`JEFE DE ÁREA Y / O UNIDAD`, 355, 370);
+
+    doc.fontSize(7).text(`Firmado digitalmente por:`, 70, 430);
+    doc.fontSize(7).text(`${ballot.nombrePersonal}`, 70, 440);
+    doc.fontSize(7).text(`DNI: ${ballot.dniPersonal}`, 70, 450);
+    doc.text(`_______________________________________`, 70, 455);
+    doc.fontSize(10).text(`EPECIALISTA RR.HH.`, 100, 470);
+
+    doc.fontSize(7).text(`Firmado digitalmente por:`, 350, 430);
+    doc.fontSize(7).text(`${ballot.nombrePersonal}`, 350, 440);
+    doc.fontSize(7).text(`DNI: ${ballot.dniPersonal}`, 350, 450);
+
+    doc.text(`_______________________________________`, 350, 455);
+    doc.fontSize(10).text(`V°B° ADMINISTRACIÓN`, 370, 470);
+
+    // Finalizar el documento
+    doc.end();
+  } catch (error) {
+    /*   idPapeleta: 24,
+  numeroPapeleta: '000139',
+  fechaPapeleta: 2025-08-05T15:57:41.000Z,       
+  solicitante: 1,
+  dependencia: 6,
+  condicionLaboral: '276',
+  desdeDia: 2025-08-05T05:00:00.000Z,
+  hastaDia: 2025-08-06T05:00:00.000Z,
+  desdeHora: null,
+  hastaHora: null,
+  motivo: 'MOTIVOS PERSONALES',
+  fundamento: 'por motivos personales',
+  VBjefe: 1,
+  VBrrhh: 1,
+  VBadministracion: 0,
+  idPersonal: 1,
+  idInstitucion: '200006',
+  idTurnoPersonal: 6,
+  idAreaPersonal: 6,
+  asignatura: 1,
+  dniPersonal: '03663152',
+  nombrePersonal: 'MIGUEL AUGUSTO ARAMBULO GARCIA',
+  idReloj: 1,
+  docente: 'NO',
+  estado: '1',
+  fechaCreado: 2025-05-06T14:59:59.000Z,
+  fechaActualizado: null,
+  fechaEliminado: 2025-05-08T20:09:44.000Z,      
+  idArea: 6,
+  nombreArea: 'RECURSOS HUMANOS',
+  responsable: 1 */
   }
 };
 

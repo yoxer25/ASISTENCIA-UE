@@ -221,6 +221,7 @@ $(".btn-delete-specialist").on("click", function () {
 // modal para ver la información de la papeleta
 $(".btn-info-ballot").on("click", function () {
   // Obtener los datos del trabajador desde los atributos `data-*` del enlace
+  var id = $(this).data("id");
   var dateBallot = $(this).data("dateballot");
   var ballot = $(this).data("ballot");
   var applicant = $(this).data("applicant");
@@ -236,10 +237,9 @@ $(".btn-info-ballot").on("click", function () {
   var desde = startDate || startTime;
   var hasta = endDate || endTime;
 
-  swal({
-    title: `PAPELETA N° ${ballot}
-    FECHA: ${dateBallot}`,
-    text: `<div class="row" style="text-align: justify;">
+  // HTML común para modal
+  var printableContent = `
+    <div class="row" style="text-align: justify;">
       <div class="col-lg-12"style="margin-bottom: -7%">
         <p><b>SOLICITANTE: </b> ${applicant}</p>
       </div>
@@ -264,13 +264,25 @@ $(".btn-info-ballot").on("click", function () {
       <div class="col-lg-6" style="margin-bottom: -8%">
         <p><b>HASTA: </b> ${hasta}</p>
       </div>
-    </div>`,
+    </div>
+  `;
+
+  swal({
+    title: `PAPELETA N° ${ballot}
+    FECHA: ${dateBallot}`,
+    text: printableContent,
     type: "info",
+    showCancelButton: true,
     confirmButtonColor: "#03A9F4",
-    confirmButtonText: '<i class="zmdi zmdi-close-circle"></i> Cerrar',
+    cancelButtonColor: "#F44336",
+    confirmButtonText: '<i class="zmdi zmdi zmdi-print"></i> ¡Imprimir!',
+    cancelButtonText: '<i class="zmdi zmdi-close-circle"></i> ¡Cerrar!',
+    preConfirm: () => {
+      // Esta función sí es considerada acción directa
+      window.open(`/ballots/${id}`, "_blank");
+    },
   });
 });
-
 
 // para hacer Scroll en la web
 (function ($) {

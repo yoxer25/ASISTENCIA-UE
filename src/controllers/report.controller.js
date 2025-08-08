@@ -256,7 +256,8 @@ export const generateExcel = async (req, res, next) => {
       sheet.cell("G1").value("SEGUNDA ENTRADA");
       sheet.cell("H1").value("SEGUNDA SALIDA");
       sheet.cell("I1").value("TIEMPO NO TRABAJADO");
-      sheet.cell("J1").value("OBSERVACIONES");
+      sheet.cell("J1").value("PAPELETA N°");
+      sheet.cell("K1").value("OBSERVACIONES");
     } else {
       sheet.cell("G1").value("TIEMPO NO TRABAJADO");
       sheet.cell("H1").value("OBSERVACIONES");
@@ -429,7 +430,8 @@ export const generateExcel = async (req, res, next) => {
             .cell("I" + filaExcel)
             .value(Math.floor(minutosRestantes) + " minutos");
         }
-        sheet.cell("J" + filaExcel).value(message);
+        sheet.cell("J" + filaExcel).value(element.numeroPapeleta);
+        sheet.cell("K" + filaExcel).value(message);
       } else {
         minNoTrabajados = primeraTardanza + primeraFalta;
 

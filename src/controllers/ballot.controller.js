@@ -265,6 +265,7 @@ export const viewBallot = async (req, res) => {
   const { id } = req.params;
   try {
     const [ballot] = await Ballot.getBallotById(id);
+    const [jefe] = await Area.getAreaById(ballot.idAreaPersonal);
     const [rrhh] = await Area.getAreaById(6);
     const [adm] = await Area.getAreaById(2);
     const dateBallot = helpers.formatDate(ballot.fechaPapeleta);
@@ -404,7 +405,7 @@ export const viewBallot = async (req, res) => {
     drawSignature("SOLICITANTE", ballot, leftX, 330);
     drawSignature(
       "JEFE DE ÁREA Y/O UNIDAD",
-      ballot,
+      jefe,
       rightX,
       330,
       ballot.VBjefe === 1

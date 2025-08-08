@@ -260,11 +260,13 @@ export const approve = async (req, res) => {
   }
 };
 
-// para ver la información completa de la papeleta
+// para ver la información completa de la papeleta, imprimirla o descargarla
 export const viewBallot = async (req, res) => {
   const { id } = req.params;
   try {
     const [ballot] = await Ballot.getBallotById(id);
+    const [rrhh] = await Area.getAreaById(6);
+    const [adm] = await Area.getAreaById(2);
     const dateBallot = helpers.formatDate(ballot.fechaPapeleta);
     const dateStart = helpers.formatDate(ballot.desdeDia);
     const dateEnd = helpers.formatDate(ballot.hastaDia);
@@ -282,7 +284,7 @@ export const viewBallot = async (req, res) => {
       hasta = timeEnd;
     }
     // Crear un documento PDF
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ size: "A4" });
 
     // Configurar las cabeceras para que el navegador lo muestre como PDF
     res.setHeader("Content-Type", "application/pdf");
@@ -292,6 +294,9 @@ export const viewBallot = async (req, res) => {
     );
     // Pasa el stream del documento PDF directamente a la respuesta
     doc.pipe(res);
+
+    // Configurar fuente antes de medir texto
+    doc.font("Courier-Bold");
 
     // para establecer la ruta hasta la carpeta "src"
     const _filename = fileURLToPath(import.meta.url);
@@ -317,86 +322,111 @@ export const viewBallot = async (req, res) => {
         align: "center",
       });
     }
-    doc
-      .fontSize(7)
-      .font("Courier-Bold")
-      .text(`DIRECCIÓN REGIONAL DE EDUCACIÓN`, 120, 80);
+    doc.fontSize(7).text(`DIRECCIÓN REGIONAL DE EDUCACIÓN`, 120, 80);
     doc.text(`PIURA`, 170, 90);
     doc.text(`UGEL HUANCABAMBA`, 145, 100);
 
     doc.fontSize(15).text(`PAPELETA DE COMISIÓN DE`, 280, 80);
     doc.fontSize(15).text(`SERVICIOS Y/O PERMISOS`, 285, 95);
 
+    // Datos principales
     doc.fontSize(15).text(`PAPELETA N° ${ballot.numeroPapeleta}`, 220, 150);
-    doc.fontSize(10).text(`FECHA: ${dateBallot}`, 70, 185);
-    doc.text(`NOMBRES Y APELLIDOS: ${ballot.nombrePersonal}`, 70, 200);
-    doc.text(`DEPENDENCIA / ÁREA: ${ballot.nombreArea}`, 70, 215);
-    doc.text(`CONDICIÓN LABORAL: ${ballot.condicionLaboral}`, 350, 215);
-    doc.text(`SE AUSENTARÁ:`, 70, 230);
-    doc.text(`DESDE: ${desde}`, 70, 245);
-    doc.text(`HASTA: ${hasta}`, 220, 245);
-    doc.text(`MOTIVO: ${ballot.motivo}`, 70, 260);
-    doc.text(`FUNDAMENTACIÓN: ${ballot.fundamento}`, 70, 275);
+    doc
+      .fontSize(10)
+      .text("FECHA: ", 70, 185, { continued: true })
+      .font("Courier")
+      .text(dateBallot)
+      .font("Courier-Bold")
+      .text("NOMBRES Y APELLIDOS: ", 70, 200, { continued: true })
+      .font("Courier")
+      .text(ballot.nombrePersonal)
+      .font("Courier-Bold")
+      .text("DEPENDENCIA/ÁREA: ", 70, 215, { continued: true })
+      .font("Courier")
+      .text(ballot.nombreArea)
+      .font("Courier-Bold")
+      .text("CONDICIÓN LABORAL: ", 350, 215, { continued: true })
+      .font("Courier")
+      .text(ballot.condicionLaboral)
+      .font("Courier-Bold")
+      .text(`SE AUSENTARÁ:`, 70, 230)
+      .text("DESDE: ", 70, 245, { continued: true })
+      .font("Courier")
+      .text(desde)
+      .font("Courier-Bold")
+      .text("HASTA: ", 220, 245, { continued: true })
+      .font("Courier")
+      .text(hasta)
+      .font("Courier-Bold")
+      .text("MOTIVO: ", 70, 260, { continued: true })
+      .font("Courier")
+      .text(ballot.motivo)
+      .font("Courier-Bold")
+      .text("FUNDAMENTACIÓN: ", 70, 275, { continued: true })
+      .font("Courier")
+      .text(ballot.fundamento)
+      .font("Courier-Bold");
 
-    doc.fontSize(7).text(`Firmado digitalmente por:`, 70, 330);
-    doc.fontSize(7).text(`${ballot.nombrePersonal}`, 70, 340);
-    doc.fontSize(7).text(`DNI: ${ballot.dniPersonal}`, 70, 350);
-    doc.text(`_______________________________________`, 70, 355);
-    doc.fontSize(10).text(`SOLICITANTE`, 115, 370);
+    // Firmas
+    const drawSignature = (label, person, posX, posY, signed = true) => {
+      const lineWidth = 180; // Longitud de la línea de firma
+      const lineY = posY + 25;
 
-    doc.fontSize(7).text(`Firmado digitalmente por:`, 350, 330);
-    doc.fontSize(7).text(`${ballot.nombrePersonal}`, 350, 340);
-    doc.fontSize(7).text(`DNI: ${ballot.dniPersonal}`, 350, 350);
-    doc.text(`_______________________________________`, 350, 355);
-    doc.fontSize(10).text(`JEFE DE ÁREA Y / O UNIDAD`, 355, 370);
+      // Firmado digitalmente (si corresponde)
+      if (signed && person) {
+        doc
+          .fontSize(7)
+          .text("Firmado digitalmente por:", posX, posY)
+          .text(person.nombrePersonal, posX, posY + 10)
+          .text(`DNI: ${person.dniPersonal}`, posX, posY + 20);
+      }
 
-    doc.fontSize(7).text(`Firmado digitalmente por:`, 70, 430);
-    doc.fontSize(7).text(`${ballot.nombrePersonal}`, 70, 440);
-    doc.fontSize(7).text(`DNI: ${ballot.dniPersonal}`, 70, 450);
-    doc.text(`_______________________________________`, 70, 455);
-    doc.fontSize(10).text(`EPECIALISTA RR.HH.`, 100, 470);
+      // Dibuja línea de firma (centrada respecto a posX)
+      const lineStartX = posX;
+      const lineEndX = posX + lineWidth;
+      doc
+        .moveTo(lineStartX, lineY + 5)
+        .lineTo(lineEndX, lineY + 5)
+        .stroke();
 
-    doc.fontSize(7).text(`Firmado digitalmente por:`, 350, 430);
-    doc.fontSize(7).text(`${ballot.nombrePersonal}`, 350, 440);
-    doc.fontSize(7).text(`DNI: ${ballot.dniPersonal}`, 350, 450);
+      doc.fontSize(10);
 
-    doc.text(`_______________________________________`, 350, 455);
-    doc.fontSize(10).text(`V°B° ADMINISTRACIÓN`, 370, 470);
+      // Centrar la etiqueta debajo de la línea
+      const labelWidth = doc.widthOfString(label);
+      const labelX = lineStartX + (lineWidth - labelWidth) / 2;
+      doc.text(label, labelX, lineY + 10);
+    };
+
+    // Posiciones izquierda y derecha (coherentes)
+    const leftX = 70;
+    const rightX = 350;
+
+    drawSignature("SOLICITANTE", ballot, leftX, 330);
+    drawSignature(
+      "JEFE DE ÁREA Y/O UNIDAD",
+      ballot,
+      rightX,
+      330,
+      ballot.VBjefe === 1
+    );
+    drawSignature("ESPECIALISTA RR.HH.", rrhh, leftX, 430, ballot.VBrrhh === 1);
+    drawSignature(
+      "V°B° ADMINISTRACIÓN",
+      adm,
+      rightX,
+      430,
+      ballot.VBadministracion === 1
+    );
 
     // Finalizar el documento
     doc.end();
   } catch (error) {
-    /*   idPapeleta: 24,
-  numeroPapeleta: '000139',
-  fechaPapeleta: 2025-08-05T15:57:41.000Z,       
-  solicitante: 1,
-  dependencia: 6,
-  condicionLaboral: '276',
-  desdeDia: 2025-08-05T05:00:00.000Z,
-  hastaDia: 2025-08-06T05:00:00.000Z,
-  desdeHora: null,
-  hastaHora: null,
-  motivo: 'MOTIVOS PERSONALES',
-  fundamento: 'por motivos personales',
-  VBjefe: 1,
-  VBrrhh: 1,
-  VBadministracion: 0,
-  idPersonal: 1,
-  idInstitucion: '200006',
-  idTurnoPersonal: 6,
-  idAreaPersonal: 6,
-  asignatura: 1,
-  dniPersonal: '03663152',
-  nombrePersonal: 'MIGUEL AUGUSTO ARAMBULO GARCIA',
-  idReloj: 1,
-  docente: 'NO',
-  estado: '1',
-  fechaCreado: 2025-05-06T14:59:59.000Z,
-  fechaActualizado: null,
-  fechaEliminado: 2025-05-08T20:09:44.000Z,      
-  idArea: 6,
-  nombreArea: 'RECURSOS HUMANOS',
-  responsable: 1 */
+    res
+      .cookie("error", ["¡Ocurrió un problema!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      })
+      .redirect("/ballots/page1");
   }
 };
 

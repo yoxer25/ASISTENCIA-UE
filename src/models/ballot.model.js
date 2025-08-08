@@ -117,7 +117,7 @@ export class Ballot {
   // para consultar datos de una papeleta por id
   static async getBallotById(id) {
     const [ballots] = await pool.query(
-      "SELECT * FROM papeleta pa INNER JOIN personal p ON p.idPersonal = pa.solicitante INNER JOIN area a ON pa.dependencia = a.idArea WHERE pa.idPapeleta = ?",
+      "SELECT pa.numeroPapeleta, pa.fechaPapeleta, pa.condicionLaboral, pa.desdeDia, pa.hastaDia, pa.desdeHora, pa.hastaHora, pa.motivo, pa.fundamento, pa.VBjefe, pa.VBrrhh, pa.VBadministracion, p.nombrePersonal, p.dniPersonal, p.idAreaPersonal, a.nombreArea, pr.nombrePersonal as nombreJefe, pr.dniPersonal as dniJefe FROM papeleta pa INNER JOIN personal p ON p.idPersonal = pa.solicitante INNER JOIN area a ON pa.dependencia = a.idArea LEFT JOIN personal pr ON a.responsable = pr.idPersonal WHERE pa.idPapeleta = ?",
       [id]
     );
     return ballots;
@@ -155,13 +155,7 @@ export class Ballot {
 
   // para aprobar una papeleta
   static async update(id, dependency, areaPersonal) {
-    console.log(dependency, areaPersonal);
-    if (
-      dependency === 1 ||
-      dependency === 3 ||
-      dependency === 4 ||
-      dependency === 5
-    ) {
+    if (dependency === 3 || dependency === 4 || dependency === 5) {
       return await pool.query(
         "UPDATE papeleta p SET p.VBjefe = 1 WHERE p.idPapeleta = ?",
         [id]

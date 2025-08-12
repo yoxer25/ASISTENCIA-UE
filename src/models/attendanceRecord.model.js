@@ -39,7 +39,7 @@ export class AttendanceRecord {
       throw new Error("Datos no encontrados");
     }
   }
- 
+
   /* para mostrar el registro de asistencia;
   si el usuario que ingresa tiene rol
   de "directivo", podrá ver el registro de
@@ -53,38 +53,86 @@ export class AttendanceRecord {
     username,
     dni
   ) {
-    if (username === undefined && dni !== undefined) {
-      const [attendanceRecord] = await pool.query(
-        "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida, pap.idPapeleta, pap.numeroPapeleta FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal LEFT JOIN papeleta pap ON pap.solicitante = r.idPersonal AND DATE(pap.fechaPapeleta) = r.fechaRegistro WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.dnipersonal = ? ORDER BY p.idReloj, r.fechaRegistro",
-        [institution, startDate, endDate, dni]
-      );
-      if (attendanceRecord != "") {
-        return attendanceRecord;
-      } else {
-        throw new Error("Datos no encontrados");
-      }
+    let filterQuery = "";
+    let filterParams = [];
+
+    if (username) {
+      filterQuery = "AND p.nombrePersonal LIKE ?";
+      filterParams.push(`%${username}%`);
+    } else if (dni) {
+      filterQuery = "AND p.dniPersonal = ?";
+      filterParams.push(dni);
     }
-    if (username !== undefined && dni === undefined) {
-      const [attendanceRecord] = await pool.query(
-        `SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida, pap.idPapeleta, pap.numeroPapeleta FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal LEFT JOIN papeleta pap ON pap.solicitante = r.idPersonal AND DATE(pap.fechaPapeleta) = r.fechaRegistro WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) AND p.nombrePersonal LIKE '%${username}%' ORDER BY p.idReloj, r.fechaRegistro`,
-        [institution, startDate, endDate]
-      );
-      if (attendanceRecord != "") {
-        return attendanceRecord;
-      } else {
-        throw new Error("Datos no encontrados");
-      }
-    }
-    if (username === undefined && dni === undefined) {
-      const [attendanceRecord] = await pool.query(
-        "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida, pap.idPapeleta, pap.numeroPapeleta FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal LEFT JOIN papeleta pap ON pap.solicitante = r.idPersonal AND DATE(pap.fechaPapeleta) = r.fechaRegistro WHERE (r.idInstitucion = ? AND r.estado != 0) AND (r.fechaRegistro BETWEEN ? AND ?) ORDER BY p.idReloj, r.fechaRegistro",
-        [institution, startDate, endDate]
-      );
-      if (attendanceRecord != "") {
-        return attendanceRecord;
-      } else {
-        throw new Error("Datos no encontrados");
-      }
+
+    const [attendanceRecord] = await pool.query(
+      `
+    WITH RECURSIVE fechas AS (
+      SELECT DATE(?) AS fecha
+      UNION ALL
+      SELECT DATE_ADD(fecha, INTERVAL 1 DAY)
+      FROM fechas
+      WHERE fecha < DATE(?)
+    )
+    SELECT 
+      f.fecha AS fechaRegistro,
+      p.idPersonal,
+      p.nombrePersonal,
+      p.dniPersonal,
+      p.idReloj,
+      t.nombreTurno,
+      r.idRegistroAsistencia,
+      r.primeraEntrada,
+      r.primeraSalida,
+      r.segundaEntrada,
+      r.segundaSalida,
+      pap.idPapeleta,
+      pap.numeroPapeleta,
+      pap.fechaPapeleta,
+      CASE 
+        WHEN pap.desdeDia IS NOT NULL AND f.fecha BETWEEN pap.desdeDia AND pap.hastaDia THEN 'PAPELETA_FECHAS'
+        WHEN pap.desdeHora IS NOT NULL 
+             AND (
+               (pap.desdeHora = '08:00:00' AND f.fecha = DATE_ADD(DATE(pap.fechaPapeleta), INTERVAL 1 DAY))
+               OR
+               (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
+             )
+          THEN 'PAPELETA_HORAS'
+        ELSE NULL
+      END AS tipoPapeleta
+    FROM (
+      SELECT * FROM fechas WHERE DAYOFWEEK(fecha) BETWEEN 2 AND 6
+    ) AS f
+    CROSS JOIN personal p
+    LEFT JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal
+    LEFT JOIN registro_asistencia r 
+      ON r.idPersonal = p.idPersonal 
+      AND r.fechaRegistro = f.fecha
+      AND r.idInstitucion = ?
+      AND r.estado != 0
+    LEFT JOIN papeleta pap 
+      ON pap.solicitante = p.idPersonal 
+      AND (
+        (pap.desdeDia IS NOT NULL AND f.fecha BETWEEN pap.desdeDia AND pap.hastaDia)
+        OR 
+        (pap.desdeHora IS NOT NULL AND (
+          (pap.desdeHora = '08:00:00' AND f.fecha = DATE_ADD(DATE(pap.fechaPapeleta), INTERVAL 1 DAY))
+          OR
+          (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
+        ))
+      )
+    WHERE 
+      p.idInstitucion = ?
+      AND p.estado = 1
+      ${filterQuery}
+    ORDER BY p.idReloj, f.fecha
+    `,
+      [startDate, endDate, institution, institution, ...filterParams]
+    );
+
+    if (attendanceRecord.length > 0) {
+      return attendanceRecord;
+    } else {
+      throw new Error("Datos no encontrados");
     }
   }
 

@@ -263,7 +263,7 @@ export const generateExcel = async (req, res, next) => {
       sheet.cell("G1").value("SEGUNDA ENTRADA").style("bold", true);
       sheet.cell("H1").value("SEGUNDA SALIDA").style("bold", true);
       sheet.cell("I1").value("TIEMPO NO TRABAJADO").style("bold", true);
-      sheet.cell("J1").value("PAPELETA N°").style("bold", true);
+      sheet.cell("J1").value("PAPELETA DE SALIDA N°").style("bold", true);
       sheet.cell("K1").value("OBSERVACIONES").style("bold", true);
     } else {
       sheet.cell("G1").value("TIEMPO NO TRABAJADO").style("bold", true);
@@ -326,20 +326,31 @@ export const generateExcel = async (req, res, next) => {
         sheet.cell("D" + filaExcel).value(fecha);
 
         if (!element) {
+          // Buscar si hay una papeleta en el mismo día
+          const papeleta = reportes.find(
+            (r) =>
+              r.idReloj === trabajador.idReloj &&
+              dayjs(r.fechaRegistro).format("YYYY-MM-DD") === fecha &&
+              r.numeroPapeleta // Asegura que haya una papeleta
+          );
+
+          const numeroPapeleta = papeleta?.numeroPapeleta || "-";
+
           if (turnoIE.nombreHorario === "ue") {
             sheet.cell("E" + filaExcel).value("-");
             sheet.cell("F" + filaExcel).value("-");
             sheet.cell("G" + filaExcel).value("-");
             sheet.cell("H" + filaExcel).value("-");
             sheet.cell("I" + filaExcel).value("-");
-            sheet.cell("J" + filaExcel).value("-");
+            sheet.cell("J" + filaExcel).value(numeroPapeleta);
             sheet.cell("K" + filaExcel).value("Inasistencia");
           } else {
             sheet.cell("E" + filaExcel).value("-");
             sheet.cell("F" + filaExcel).value("-");
-            sheet.cell("G" + filaExcel).value("-");
+            sheet.cell("G" + filaExcel).value(numeroPapeleta);
             sheet.cell("H" + filaExcel).value("Inasistencia");
           }
+
           filaExcel++;
           continue;
         }

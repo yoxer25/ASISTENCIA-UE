@@ -29,6 +29,7 @@ import documentsRoutes from "./routes/documents.route.js";
 import areaRoutes from "./routes/area.route.js";
 import specialistRoutes from "./routes/specialist.route.js";
 import ballotRoutes from "./routes/ballot.route.js";
+import vacationTicketRoutes from "./routes/vacationTicket.route.js";
 
 //constantes
 // para iniciar el servidor
@@ -86,6 +87,7 @@ app.use("/documents", documentsRoutes);
 app.use("/areas", areaRoutes);
 app.use("/specialists", specialistRoutes);
 app.use("/ballots", ballotRoutes);
+app.use("/vacationTickets", vacationTicketRoutes);
 
 // ruta 404
 app.use((req, res) => {

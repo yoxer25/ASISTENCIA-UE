@@ -85,6 +85,7 @@ export class AttendanceRecord {
       r.primeraSalida,
       r.segundaEntrada,
       r.segundaSalida,
+      r.fechaCreado,
       pap.idPapeleta,
       pap.numeroPapeleta,
       pap.fechaPapeleta,

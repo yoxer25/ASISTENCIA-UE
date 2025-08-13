@@ -1,0 +1,141 @@
+<!-- Content page-->
+<section class="full-box dashboard-contentPage">
+    {{>navigation/navbar}}
+    </nav>
+    <!-- Content page -->
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="text-titles"><i class="zmdi zmdi-collection-text zmdi-hc-fw"></i> Papeletas de vacaciones
+                <small>Listado</small>
+            </h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-lg-4">
+                {{#if (eq user.rol "otros")}}
+                <a href="/vacationTickets/create">{{>btn-new}}</a>
+                {{/if}}
+            </div>
+            {{#if (or (eq user.rol "administrador") (eq user.rol "otros"))}}
+            <div class="col-lg-8" id="formSearchPersonal">
+                <div class="card">
+                    <div class="card-body rounded-bottom bg-white">
+                        <form action="/ballots" method="POST" id="consultForm">
+                            {{>ballot/search}}
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="card table-wrapper">
+                    <div class="card-body rounded-bottom bg-white p-5">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Fecha</th>
+                                    <th class="text-center">N° Papeleta</th>
+                                    <th class="text-center">Solicitante</th>
+                                    <th class="text-center">Ausente Desde</th>
+                                    <th class="text-center">Ausente Hasta</th>
+                                    <th class="text-center">VB Jefe de Área</th>
+                                    <th class="text-center">Ver Papeleta</th>
+                                    {{#if (noeq area 0)}}
+                                    <th class="text-center">Acciones</th>
+                                    {{/if}}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each tickets}}
+                                <tr>
+                                    <td>{{formatDate fechaPV}}</td>
+                                    <td>{{numeroPV}}</td>
+                                    <td>{{nombrePersonal}}</td>
+                                    <td>{{formatDate desde}}</td>
+                                    <td>{{formatDate hasta}}</td>
+                                    {{#if VBjefe}}
+                                    <td>
+                                        <p style="background-color: rgb(2, 255, 2);">Aceptado</p>
+                                    </td>
+                                    {{else}}
+                                    <td>
+                                        <p style="background-color: rgb(2, 238, 255);">Pendiente</p>
+                                    </td>
+                                    {{/if}}
+                                    <td><a href="#!" class="btn-info-ticket btn btn-info btn-raised btn-xs"
+                                            data-id="{{idPapeletaVacacion}}" data-dateticket="{{formatDate fechaPV}}" data-ticket="{{numeroPV}}" data-applicant="{{nombrePersonal}}"
+                                            data-dependency="{{nombreArea}}" data-charge="{{cargo}}"
+                                            data-workcenter="{{institucion}}" data-reference="{{referencia}}"
+                                            data-period="{{periodo}}" data-observation="{{observacion}}"
+                                            data-startDate="{{formatDate desde}}" data-endDate="{{formatDate hasta}}"><i
+                                                class="zmdi zmdi-eye"></i></a></td>
+                                    {{#if (and (or (eq ../area 2) (eq ../area 3) (eq ../area 4) (eq ../area 5) (eq
+                                    ../area 6)) (not
+                                    VBjefe))}}
+                                    <td>
+                                        <form action="/vacationTickets/approve/{{idPapeletaVacacion}}?_method=PATCH" method="POST">
+                                            <input type="hidden" name="_method" value="PATCH">
+                                            <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
+                                                <p style="font-size: 15px; margin: auto; color: #fff;"><i
+                                                        class="zmdi zmdi-badge-check"></i> Aprobar</p>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    {{else}}
+                                    <td></td>
+                                    {{/if}}
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="8">No hay registros para mostrar</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                        <ul class="pagination pagination-sm" id="pagination">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{>footer/footer}}
+</section>
+
+{{>navigation/navigation}}
+
+<script>
+    const current = ({{{ convertJson current }}});
+    const pages = ({{{ convertJson pages }}});
+    const numPages = (num) => {
+        let navPages = '';
+
+        if (num) {
+            var i = (Number(current) > 5 ? Number(current) - 4 : 1);
+            for (; i <= (Number(current) + 4) && i <= num; i++) {
+                let fila = '<ul class="pagination pagination-sm" id="pagination">';
+                if (i == current) {
+                    fila += '<li class="active">';
+                } else {
+                    fila += '<li>';
+                }
+                if (i === Number(current) - 4 && i < num) {
+                    fila += `<a href="#">...</a>`;
+                }
+                if (i === Number(current) + 4 && i < num) {
+                    fila += `<a href="#">...</a>`;
+                }
+                fila += `<a href="/ballots/page${i}">${i}</a>`;
+                fila += "</li></ul>";
+                navPages += fila;
+            }
+        }
+        return navPages
+    }
+    document.getElementById("pagination").innerHTML =
+        numPages(pages);
+
+</script>

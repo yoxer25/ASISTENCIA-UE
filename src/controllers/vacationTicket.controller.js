@@ -1,6 +1,9 @@
 // para generar PDF
 import PDFDocument from "pdfkit";
 
+// para calcular los días
+import dayjs from "dayjs";
+
 // para ver la ruta del logo para el comprobante
 import fs from "fs";
 import path from "path";
@@ -13,11 +16,12 @@ import { Area } from "../models/area.model.js";
 import { Ballot } from "../models/ballot.model.js";
 import { Correlative } from "../models/correlative.model.js";
 import { Personal } from "../models/personal.model.js";
+import { VacationTicket } from "../models/vacationTicket.model.js";
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
 
 // controla lo que se debe mostrar al momento de vistar la página de papeletas
-export const getBallot = async (req, res) => {
+export const getTicket = async (req, res) => {
   let forPage = 10;
   let page = req.params.num || 1;
   const user = req.user;
@@ -25,53 +29,53 @@ export const getBallot = async (req, res) => {
   const ie = user.name;
 
   try {
-    let ballotsDB = [];
+    let ticketsDB = [];
     let area = 0;
     const personalUE = await Personal.getPersonal(ie);
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
     const areas = await Area.getAreas();
     if (Number(dni) === 200006) {
-      ballotsDB = await Ballot.getBallots();
+      ticketsDB = await VacationTicket.getTickets();
     } else {
       const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
       if (jefeArea) {
         area = jefeArea.idArea;
-        if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
-          ballotsDB = await Ballot.getBallots();
+        if (jefeArea.idArea === 6) {
+          ticketsDB = await VacationTicket.getTickets();
         } else {
-          ballotsDB = await Ballot.getBallots(null, jefeArea.idArea);
+          ticketsDB = await VacationTicket.getTickets(null, jefeArea.idArea);
         }
       } else {
-        ballotsDB = await Ballot.getBallots(personal.idPersonal);
+        ticketsDB = await VacationTicket.getTickets(personal.idPersonal);
       }
     }
-    const ballots = ballotsDB.slice(page * forPage - forPage, page * forPage);
-    res.render("ballot/ballot", {
+    const tickets = ticketsDB.slice(page * forPage - forPage, page * forPage);
+    res.render("vacationTicket/ticket", {
       user,
-      ballots,
+      tickets,
       personalUE,
       areas,
       area,
       current: page,
-      pages: Math.ceil(ballotsDB.length / forPage),
+      pages: Math.ceil(ticketsDB.length / forPage),
     });
   } catch (error) {
-    res.render("ballot/ballot", { user });
+    res.render("vacationTicket/ticket", { user });
   }
 };
 
 // controla lo que se debe visualizar en el formulario de nueva papeleta
-export const getBallotCreate = async (req, res) => {
+export const getTicketCreate = async (req, res) => {
   const user = req.user;
   const dni = user.dniUser;
   try {
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
-    res.render("ballot/create", {
+    res.render("vacationTicket/create", {
       user,
       personal,
     });
   } catch (error) {
-    res.render("ballot/create", { user });
+    res.render("vacationTicket/create", { user });
   }
 };
 
@@ -188,35 +192,43 @@ export const getBallotSearch = async (req, res) => {
 };
 
 // para registrar una papeleta
-export const createBallot = async (req, res) => {
-  const { applicant, dependency, workingCondition, reason, foundation } =
-    req.body;
-  let { startDate, endDate, startTime, endTime } = req.body;
-  startDate = startDate || null;
-  endDate = endDate || null;
-  startTime = startTime || null;
-  endTime = endTime || null;
+export const createTicket = async (req, res) => {
+  const {
+    applicant,
+    dependency,
+    charge,
+    workCenter,
+    reference,
+    period,
+    observation,
+    startDate,
+    endDate,
+  } = req.body;
   try {
     validationInput(
       applicant,
       dependency,
-      workingCondition,
-      reason,
-      foundation,
+      charge,
+      workCenter,
+      reference,
+      period,
+      observation,
+      startDate,
+      endDate,
       res
     );
     const correlative = await generateCorrelativo();
-    const resDB = await Ballot.create(
+    const resDB = await VacationTicket.create(
       correlative,
       applicant,
       dependency,
-      workingCondition,
-      reason,
-      foundation,
+      charge,
+      workCenter,
+      reference,
+      period,
+      observation,
       startDate,
-      endDate,
-      startTime,
-      endTime
+      endDate
     );
     if (resDB.affectedRows > 0) {
       await updateCorrelativo();
@@ -225,7 +237,7 @@ export const createBallot = async (req, res) => {
         httpOnly: true,
         maxAge: 6000,
       }); // 6 segundos
-      res.redirect("/ballots/page1");
+      res.redirect("/vacationTickets/page1");
     } else {
       // Si el registro falla
       res.cookie("error", ["¡Error al agregar registro!"], {
@@ -235,7 +247,7 @@ export const createBallot = async (req, res) => {
       throw new Error("Error al agregar registro");
     }
   } catch (error) {
-    res.redirect("/ballots/page1");
+    res.redirect("/vacationTickets/page1");
   }
 };
 
@@ -249,41 +261,26 @@ export const approve = async (req, res) => {
     const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
     const [ballot] = await Ballot.getBallotById(id);
     await Ballot.update(id, jefeArea.idArea, ballot.idAreaPersonal);
-    res.redirect("/ballots/page1");
+    res.redirect("/vacationTickets/page1");
   } catch (error) {
     // Si el registro falla
     res.cookie("error", ["¡Error al aprobar papeleta!"], {
       httpOnly: true,
       maxAge: 6000,
     }); // 6 segundos
-    res.redirect("/ballots/page1");
+    res.redirect("/vacationTickets/page1");
   }
 };
 
-// para ver la información completa de la papeleta, imprimirla o descargarla
-export const viewBallot = async (req, res) => {
+// para ver la información completa de la papeleta de vacaciones, imprimirla o descargarla
+export const viewTicket = async (req, res) => {
   const { id } = req.params;
   try {
-    const [ballot] = await Ballot.getBallotById(id);
-    const [jefe] = await Area.getAreaById(ballot.idAreaPersonal);
-    const [rrhh] = await Area.getAreaById(6);
-    const [adm] = await Area.getAreaById(2);
-    const dateBallot = helpers.formatDate(ballot.fechaPapeleta);
-    const dateStart = helpers.formatDate(ballot.desdeDia);
-    const dateEnd = helpers.formatDate(ballot.hastaDia);
-    const timeStart = ballot.desdeHora;
-    const timeEnd = ballot.hastaHora;
-    let desde, hasta;
-    if (ballot.desdeDia !== null) {
-      desde = dateStart;
-    } else {
-      desde = timeStart;
-    }
-    if (ballot.hastaDia !== null) {
-      hasta = dateEnd;
-    } else {
-      hasta = timeEnd;
-    }
+    const [ticket] = await VacationTicket.getTicketById(id);
+    const [jefe] = await Area.getAreaById(ticket.idAreaPersonal);
+    const dateTicket = helpers.formatDate(ticket.fechaPV);
+    const dateStart = helpers.formatDate(ticket.desde);
+    const dateEnd = helpers.formatDate(ticket.hasta);
     // Crear un documento PDF
     const doc = new PDFDocument({ size: "A4" });
 
@@ -291,10 +288,24 @@ export const viewBallot = async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `inline; filename="Papeleta_${ballot.numeroPapeleta}.pdf"`
+      `inline; filename="Papeleta_${ticket.numeroPV}.pdf"`
     );
     // Pasa el stream del documento PDF directamente a la respuesta
     doc.pipe(res);
+    // Función para dibujar encabezado
+    function drawHeader(doc) {
+      doc
+        .fontSize(12)
+        .text("GERENCIA REGIONAL DE DESARROLLO SOCIAL", 160, 40)
+        .text("DIRECCIÓN GENERAL DE EDUCACIÓN", 190, 55)
+        .text("UNIDAD DE GESTIÓN EDUCATIVA LOCAL HUANCABAMBA", 138, 70)
+        .moveTo(50, 85)
+        .lineTo(550, 85)
+        .stroke();
+    }
+
+    // Dibujar encabezado en la primera página
+    drawHeader(doc);
 
     // Configurar fuente antes de medir texto
     doc.font("Courier-Bold");
@@ -310,63 +321,77 @@ export const viewBallot = async (req, res) => {
       "../public/assets/img/logo-ue.png"
     );
 
+    const imageGore = path.resolve(
+      _dirname,
+      "../public/assets/img/logo-gore.jpg"
+    );
+
     // Verificar si la imagen existe
     if (fs.existsSync(imagePath)) {
       // Agregar la imagen al PDF (esto va a la posición 100, 150 en el PDF)
-      doc.image(imagePath, {
-        fit: [50, 50],
-        align: "center",
-      });
+      doc.image(imagePath, 490, 40, { width: 60 });
     } else {
       // Puedes insertar un texto alternativo o un placeholder
       doc.text("Imagen no disponible", {
         align: "center",
       });
     }
-    doc.fontSize(7).text(`DIRECCIÓN REGIONAL DE EDUCACIÓN`, 120, 80);
-    doc.text(`PIURA`, 170, 90);
-    doc.text(`UGEL HUANCABAMBA`, 145, 100);
 
-    doc.fontSize(15).text(`PAPELETA DE COMISIÓN DE`, 280, 80);
-    doc.fontSize(15).text(`SERVICIOS Y/O PERMISOS`, 285, 95);
+    if (fs.existsSync(imageGore)) {
+      // Agregar la imagen al PDF (esto va a la posición 100, 150 en el PDF)
+      doc.image(imageGore, 50, 35, { width: 60 });
+    } else {
+      // Puedes insertar un texto alternativo o un placeholder
+      doc.text("Imagen no disponible", {
+        align: "center",
+      });
+    }
 
     // Datos principales
-    doc.fontSize(15).text(`PAPELETA N° ${ballot.numeroPapeleta}`, 220, 150);
     doc
-      .fontSize(10)
-      .text("FECHA: ", 70, 185, { continued: true })
-      .font("Courier")
-      .text(dateBallot)
-      .font("Courier-Bold")
-      .text("NOMBRES Y APELLIDOS: ", 70, 200, { continued: true })
-      .font("Courier")
-      .text(ballot.nombrePersonal)
-      .font("Courier-Bold")
-      .text("DEPENDENCIA/ÁREA: ", 70, 215, { continued: true })
-      .font("Courier")
-      .text(ballot.nombreArea)
-      .font("Courier-Bold")
-      .text("CONDICIÓN LABORAL: ", 350, 215, { continued: true })
-      .font("Courier")
-      .text(ballot.condicionLaboral)
-      .font("Courier-Bold")
-      .text(`SE AUSENTARÁ:`, 70, 230)
-      .text("DESDE: ", 70, 245, { continued: true })
-      .font("Courier")
-      .text(desde)
-      .font("Courier-Bold")
-      .text("HASTA: ", 220, 245, { continued: true })
-      .font("Courier")
-      .text(hasta)
-      .font("Courier-Bold")
-      .text("MOTIVO: ", 70, 260, { continued: true })
-      .font("Courier")
-      .text(ballot.motivo)
-      .font("Courier-Bold")
-      .text("FUNDAMENTACIÓN: ", 70, 275, { continued: true })
-      .font("Courier")
-      .text(ballot.fundamento)
-      .font("Courier-Bold");
+      .fontSize(14)
+      .text(`PAPELETA DE SALIDA DE VACACIONES N° ${ticket.numeroPV}`, 120, 120);
+    doc.fontSize(10);
+
+    const tableX = 70; // margen izquierdo de la tabla
+    const tableY = 160; // posición inicial vertical
+    const col1Width = 140; // ancho de columna 1 (etiquetas)
+    const col2Width = 300; // ancho de columna 2 (valores)
+    const rowHeight = 20; // altura de cada fila
+
+    const days = calcularDiasEntreFechas(dateStart, dateEnd);
+
+    const rows = [
+      ["NOMBRES Y APELLIDOS", ticket.nombrePersonal],
+      ["CARGO", ticket.cargo],
+      ["CENTRO DE TRABAJO", ticket.institucion],
+      ["REFERENCIA", ticket.referencia],
+      ["PERIODO", ticket.periodo],
+      ["FECHA DE INICIO", dateStart],
+      ["FECHA DE TERMINO", dateEnd],
+      ["DÍAS", days],
+      ["OBSERVACIÓN", ticket.observacion],
+      ["FECHA DE EXPEDICIÓN", dateTicket],
+    ];
+
+    // Dibujar filas
+    rows.forEach((row, i) => {
+      const y = tableY + i * rowHeight;
+
+      // Dibujar celda izquierda
+      doc.rect(tableX, y, col1Width, rowHeight).stroke();
+      doc.font("Courier-Bold").text(row[0], tableX + 5, y + 5, {
+        width: col1Width - 10,
+        height: rowHeight - 10,
+      });
+
+      // Dibujar celda derecha
+      doc.rect(tableX + col1Width, y, col2Width, rowHeight).stroke();
+      doc.font("Courier").text(row[1], tableX + col1Width + 5, y + 5, {
+        width: col2Width - 10,
+        height: rowHeight - 10,
+      });
+    });
 
     // Firmas
     const drawSignature = (label, person, posX, posY, signed = true) => {
@@ -377,6 +402,7 @@ export const viewBallot = async (req, res) => {
       if (signed && person) {
         doc
           .fontSize(7)
+          .font("Courier-Bold")
           .text("Firmado digitalmente por:", posX, posY)
           .text(person.nombrePersonal, posX, posY + 10)
           .text(`DNI: ${person.dniPersonal}`, posX, posY + 20);
@@ -402,39 +428,32 @@ export const viewBallot = async (req, res) => {
     const leftX = 70;
     const rightX = 350;
 
-    drawSignature("SOLICITANTE", ballot, leftX, 330);
+    drawSignature("SOLICITANTE", ticket, leftX, 420);
     drawSignature(
       "JEFE DE ÁREA Y/O UNIDAD",
       jefe,
       rightX,
-      330,
-      ballot.VBjefe === 1
-    );
-    drawSignature("ESPECIALISTA RR.HH.", rrhh, leftX, 430, ballot.VBrrhh === 1);
-    drawSignature(
-      "V°B° ADMINISTRACIÓN",
-      adm,
-      rightX,
-      430,
-      ballot.VBadministracion === 1
+      420,
+      ticket.VBjefe === 1
     );
 
     // Finalizar el documento
     doc.end();
   } catch (error) {
+    console.log(error.message);
     res
       .cookie("error", ["¡Ocurrió un problema!"], {
         httpOnly: true,
         maxAge: 6000,
       })
-      .redirect("/ballots/page1");
+      .redirect("/vacationTickets/page1");
   }
 };
 
 // Función para obtener y generar el número de las papeletas
 const generateCorrelativo = async () => {
   // Primero obtenemos el último correlativo
-  const [results] = await Correlative.getCorrelative();
+  const [results] = await Correlative.getCorrelativeVacation();
   let nuevoCorrelativo = results.ultimaPapeleta + 1; // Incrementamos el correlativo
 
   // Formateamos el correlativo con ceros a la izquierda
@@ -446,27 +465,42 @@ const generateCorrelativo = async () => {
 // Función para obtener y actualizar el correlativo en la tabla "correlativo"
 const updateCorrelativo = async () => {
   // Primero obtenemos el último correlativo
-  const [results] = await Correlative.getCorrelative();
+  const [results] = await Correlative.getCorrelativeVacation();
   let nuevoCorrelativo = results.ultimaPapeleta + 1; // Incrementamos el correlativo
   // Actualizamos el correlativo en la base de datos
-  await Correlative.updateCorrelative(nuevoCorrelativo);
+  await Correlative.updateCorrelativeVacation(nuevoCorrelativo);
 };
 
-// función para validar que el usuario llene completamente el formulario de crear papeleta de salida
+// calcular días para las papeletas
+const calcularDiasEntreFechas = (fechaInicio, fechaFin) => {
+  const inicio = dayjs(fechaInicio);
+  const fin = dayjs(fechaFin);
+  return fin.diff(inicio, "day") + 1;
+};
+
+// función para validar que el usuario llene completamente el formulario de crear papeleta de vacaciones
 const validationInput = (
   applicant,
   dependency,
-  workingCondition,
-  reason,
-  foundation,
+  charge,
+  workCenter,
+  reference,
+  period,
+  observation,
+  startDate,
+  endDate,
   res
 ) => {
   if (
     applicant === "" ||
     dependency === "" ||
-    workingCondition === "" ||
-    reason === "" ||
-    foundation === ""
+    charge === "" ||
+    workCenter === "" ||
+    reference === "" ||
+    period === "" ||
+    observation === "" ||
+    startDate === "" ||
+    endDate === ""
   ) {
     res.cookie("error", ["¡Todos los campos son obligatorios!"], {
       httpOnly: true,

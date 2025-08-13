@@ -218,7 +218,8 @@ $(".btn-delete-specialist").on("click", function () {
   });
 });
 
-// modal para ver la información de la papeleta
+/* modal para ver la información de la papeleta de comisión de
+servicios y/o permisos */
 $(".btn-info-ballot").on("click", function () {
   // Obtener los datos del trabajador desde los atributos `data-*` del enlace
   var id = $(this).data("id");
@@ -280,6 +281,71 @@ $(".btn-info-ballot").on("click", function () {
     preConfirm: () => {
       // Esta función sí es considerada acción directa
       window.open(`/ballots/${id}`, "_blank");
+    },
+  });
+});
+
+// modal para ver la información de la papeleta de vacaciones
+$(".btn-info-ticket").on("click", function () {
+  // Obtener los datos del trabajador desde los atributos `data-*` del enlace
+  var id = $(this).data("id");
+  var dateticket = $(this).data("dateticket");
+  var ticket = $(this).data("ticket");
+  var applicant = $(this).data("applicant");
+  var dependency = $(this).data("dependency");
+  var workcenter = $(this).data("workcenter");
+  var reference = $(this).data("reference");
+  var period = $(this).data("period");
+  var observation = $(this).data("observation");
+  var startDate = $(this).data("startdate");
+  var endDate = $(this).data("enddate");
+
+  // HTML común para modal
+  var printableContent = `
+    <div class="row" style="text-align: justify;">
+      <div class="col-lg-12"style="margin-bottom: -7%">
+        <p><b>SOLICITANTE: </b> ${applicant}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>DEPENDENCIA: </b> ${dependency}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>CENTRO DE TRABAJO: </b> ${workcenter}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>REFERENCIA: </b> ${reference}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>PERIODO: </b> ${period}</p>
+      </div>
+      <div class="col-lg-12" style="margin-bottom: -11%">
+        <p><b>SE AUSENTARÁ </b></p>
+      </div>
+      <div class="col-lg-6" style="margin-bottom: -8%">
+        <p><b>DESDE: </b> ${startDate}</p>
+      </div>
+      <div class="col-lg-6" style="margin-bottom: -8%">
+        <p><b>HASTA: </b> ${endDate}</p>
+      </div>
+       <div class="col-lg-12" style="margin-bottom: -7%">
+        <p><b>OBSERVACIÓN: </b> ${observation}</p>
+      </div>
+    </div>
+  `;
+
+  swal({
+    title: `PAPELETA N° ${ticket}
+    FECHA: ${dateticket}`,
+    text: printableContent,
+    type: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#03A9F4",
+    cancelButtonColor: "#F44336",
+    confirmButtonText: '<i class="zmdi zmdi zmdi-print"></i> ¡Imprimir!',
+    cancelButtonText: '<i class="zmdi zmdi-close-circle"></i> ¡Cerrar!',
+    preConfirm: () => {
+      // Esta función sí es considerada acción directa
+      window.open(`/vacationTickets/${id}`, "_blank");
     },
   });
 });

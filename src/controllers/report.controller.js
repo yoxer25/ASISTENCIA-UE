@@ -264,7 +264,8 @@ export const generateExcel = async (req, res, next) => {
       sheet.cell("H1").value("SEGUNDA SALIDA").style("bold", true);
       sheet.cell("I1").value("TIEMPO NO TRABAJADO").style("bold", true);
       sheet.cell("J1").value("PAPELETA DE SALIDA N°").style("bold", true);
-      sheet.cell("K1").value("OBSERVACIONES").style("bold", true);
+      sheet.cell("K1").value("PAPELETA DE VACACIONES N°").style("bold", true);
+      sheet.cell("L1").value("OBSERVACIONES").style("bold", true);
     } else {
       sheet.cell("G1").value("TIEMPO NO TRABAJADO").style("bold", true);
       sheet.cell("H1").value("OBSERVACIONES").style("bold", true);
@@ -465,7 +466,8 @@ export const generateExcel = async (req, res, next) => {
                 : `${Math.floor(minutosRestantes)} minutos`
             );
           sheet.cell("J" + filaExcel).value(element.numeroPapeleta);
-          sheet.cell("K" + filaExcel).value(message);
+          sheet.cell("K" + filaExcel).value(element.numeroPV);
+          sheet.cell("L" + filaExcel).value(message);
         } else {
           minNoTrabajados = primeraTardanza + primeraFalta;
           subtotalMinutos += minNoTrabajados;

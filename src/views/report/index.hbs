@@ -65,13 +65,16 @@
                                     {{/if}}
                                     <th class="text-center">Tiempo no trabajado</th>
                                     <th class="text-center">Observaciones</th>
+                                    {{#if (eq turno "ue")}}
                                     <th class="text-center">Salida P N°</th>
+                                    <th class="text-center">Vacaciones P N°</th>
+                                    {{/if}}
                                     <th class="text-center">Eliminar</th>
                                 </tr>
                             </thead>
                             <tbody id="list">
                                 <tr>
-                                    <td colspan="12">No hay registros para mostrar</td>
+                                    <td colspan="13">No hay registros para mostrar</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -260,13 +263,22 @@
             fila += "<td>";
             fila += message;
             fila += "</td>";
-            fila += "<td>";
-            if (dato.idPapeleta) {
-                fila += `<a href="/ballots/${dato.idPapeleta}" target="_blank">${dato.numeroPapeleta}</a>`;
-            } else {
-                fila += " ";
+            if (turno === "ue") {
+                fila += "<td>";
+                if (dato.idPapeleta) {
+                    fila += `<a href="/ballots/${dato.idPapeleta}" target="_blank">${dato.numeroPapeleta}</a>`;
+                } else {
+                    fila += " ";
+                }
+                fila += "</td>";
+                fila += "<td>";
+                if (dato.idPapeletaVacacion) {
+                    fila += `<a href="/vacationTickets/${dato.idPapeletaVacacion}" target="_blank">${dato.numeroPV}</a>`;
+                } else {
+                    fila += " ";
+                }
+                fila += "</td>";
             }
-            fila += "</td>";
             fila += "<td>";
             fila += `<a href="#!" id="myButton" class="btn-delete-attendanceRecord btn btn-danger btn-raised btn-xs" data-id="${dato.idRegistroAsistencia}" data-personal="${dato.idPersonal}" data-institucion="${dato.idInstitucion}"><i class="zmdi zmdi-delete"></i></a>`;
             fila += "</td>"

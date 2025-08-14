@@ -30,10 +30,76 @@ export class AttendanceRecord {
   // para mostrar la data según corresponda al momento de visitar la página de reportes
   static async getData(institution) {
     const [attendanceRecord] = await pool.query(
-      "SELECT r.idRegistroAsistencia, r.idInstitucion, r.idPersonal, r.fechaCreado, p.nombrePersonal, p.dniPersonal, p.idReloj, t.nombreTurno, r.fechaRegistro, r.primeraEntrada, r.primeraSalida, r.segundaEntrada, r.segundaSalida, pap.idPapeleta, pap.numeroPapeleta FROM personal p INNER JOIN registro_asistencia r ON p.idPersonal = r.idPersonal INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal LEFT JOIN papeleta pap ON pap.solicitante = r.idPersonal AND DATE(pap.fechaPapeleta) = r.fechaRegistro WHERE (r.idInstitucion = ? AND r.estado != 0) AND r.fechaRegistro >= CURDATE() - INTERVAL 5 DAY ORDER BY p.idReloj, r.fechaRegistro",
-      [institution]
+      `
+    WITH RECURSIVE fechas AS (
+      SELECT CURDATE() - INTERVAL 4 DAY AS fecha
+      UNION ALL
+      SELECT DATE_ADD(fecha, INTERVAL 1 DAY)
+      FROM fechas
+      WHERE fecha < CURDATE()
+    )
+    SELECT 
+      f.fecha AS fechaRegistro,
+      p.idPersonal,
+      p.nombrePersonal,
+      p.dniPersonal,
+      p.idReloj,
+      t.nombreTurno,
+
+      r.idRegistroAsistencia,
+      r.idInstitucion,
+      r.fechaCreado,
+      r.primeraEntrada,
+      r.primeraSalida,
+      r.segundaEntrada,
+      r.segundaSalida,
+
+      -- Datos de papeleta normal
+      pap.idPapeleta,
+      pap.numeroPapeleta,
+      pap.fechaPapeleta,
+
+      -- Datos de papeleta de vacación
+      pv.idPapeletaVacacion,
+      pv.numeroPV AS numeroPV,
+      pv.desde AS desdeVacacion,
+      pv.hasta AS hastaVacacion,
+
+      -- Tipo de papeleta (prioridad: VACACION > PAPELETA)
+      CASE 
+        WHEN pv.idPapeletaVacacion IS NOT NULL THEN 'VACACION'
+        WHEN pap.idPapeleta IS NOT NULL THEN 'PAPELETA'
+        ELSE NULL
+      END AS tipoPapeleta
+
+    FROM fechas f
+    CROSS JOIN personal p
+    INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal
+
+    LEFT JOIN registro_asistencia r 
+      ON r.idPersonal = p.idPersonal
+      AND r.fechaRegistro = f.fecha
+      AND r.idInstitucion = ?
+      AND r.estado != 0
+
+    LEFT JOIN papeleta pap 
+      ON pap.solicitante = p.idPersonal 
+      AND DATE(pap.fechaPapeleta) = f.fecha
+
+    LEFT JOIN papeleta_vacacion pv 
+      ON pv.solicitante = p.idPersonal 
+      AND f.fecha BETWEEN pv.desde AND pv.hasta
+
+    WHERE 
+      p.idInstitucion = ?
+      AND p.estado = 1
+
+    ORDER BY p.idReloj, f.fecha
+    `,
+      [institution, institution]
     );
-    if (attendanceRecord != "") {
+
+    if (attendanceRecord.length > 0) {
       return attendanceRecord;
     } else {
       throw new Error("Datos no encontrados");
@@ -86,9 +152,16 @@ export class AttendanceRecord {
       r.segundaEntrada,
       r.segundaSalida,
       r.fechaCreado,
+
       pap.idPapeleta,
       pap.numeroPapeleta,
       pap.fechaPapeleta,
+
+      pv.idPapeletaVacacion,
+      pv.numeroPV AS numeroPV,
+      pv.desde AS desdeVacacion,
+      pv.hasta AS hastaVacacion,
+
       CASE 
         WHEN pap.desdeDia IS NOT NULL AND f.fecha BETWEEN pap.desdeDia AND pap.hastaDia THEN 'PAPELETA_FECHAS'
         WHEN pap.desdeHora IS NOT NULL 
@@ -98,8 +171,10 @@ export class AttendanceRecord {
                (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
              )
           THEN 'PAPELETA_HORAS'
+        WHEN pv.idPapeletaVacacion IS NOT NULL THEN 'VACACION'
         ELSE NULL
       END AS tipoPapeleta
+
     FROM (
       SELECT * FROM fechas WHERE DAYOFWEEK(fecha) BETWEEN 2 AND 6
     ) AS f
@@ -121,6 +196,9 @@ export class AttendanceRecord {
           (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
         ))
       )
+    LEFT JOIN papeleta_vacacion pv
+      ON pv.solicitante = p.idPersonal
+      AND f.fecha BETWEEN pv.desde AND pv.hasta
     WHERE 
       p.idInstitucion = ?
       AND p.estado = 1

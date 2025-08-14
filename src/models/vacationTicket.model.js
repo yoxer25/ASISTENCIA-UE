@@ -65,48 +65,82 @@ export class VacationTicket {
   /* para consultar las papeletas registradas en la base de datos
   por usuario o fecha de ausencia (según usuario) */
   static async getTicketsSearch(applicant, area, username, dependency, date) {
+    console.log(applicant, area, username, dependency, date);
     let ballots = [];
     // cuando el usuario es jefe de RRHH o administración
     if (!applicant && !area) {
-      if (username) {
+      if (username && date) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND DATE(p.fechaPV) = ? ORDER BY p.numeroPV DESC",
           [username, date]
         );
       }
-      if (dependency) {
+      if (username && !date) {
+        console.log("solo user");
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? ORDER BY p.numeroPV DESC",
+          [username]
+        );
+      }
+
+      if (dependency && date) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND DATE(p.fechaPV) = ? ORDER BY p.numeroPV DESC",
           [dependency, date]
+        );
+      }
+      if (dependency && !date) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? ORDER BY p.numeroPV DESC",
+          [dependency]
         );
       }
       if (!username && !dependency) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE DATE(p.fechaPV) = ? ORDER BY p.numeroPV DESC",
           [date]
         );
       }
     }
 
     // cuando el usuario no es jefe de área
-    if (applicant) {
+    if (applicant && date) {
       [ballots] = await pool.query(
-        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+        "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND DATE(p.fechaPV) = ? ORDER BY p.numeroPV DESC",
         [applicant, date]
+      );
+    }
+    if (applicant && !date) {
+      [ballots] = await pool.query(
+        "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? ORDER BY p.numeroPV DESC",
+        [applicant]
       );
     }
 
     // cuando el usuario es jefe de área excepto de RRHH o administración
     if (area) {
-      if (username) {
+      if (username && date) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE (p.dependencia = ? AND p.desdeDia = ?) AND p.solicitante ORDER BY p.numeroPapeleta DESC",
-          [area, date, username]
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE (p.solicitante = ? AND p.dependencia = ?) AND DATE(p.fechaPV) = ? ORDER BY p.numeroPV DESC",
+          [username, area, date]
         );
-      } else {
+      }
+      if (username && !date) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.dependencia = ? ORDER BY p.numeroPV DESC",
+          [username, area]
+        );
+      }
+      if (!username && date) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND DATE(p.fechaPV) = ? ORDER BY p.numeroPV DESC",
           [area, date]
+        );
+      }
+      if (!username && !date) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? ORDER BY p.numeroPV DESC",
+          [area]
         );
       }
     }
@@ -149,43 +183,19 @@ export class VacationTicket {
       endDate
     );
     newTicket.fechaPV = helpers.formatDateTime();
-    const [res] = await pool.query("INSERT INTO papeleta_vacacion SET ?", [newTicket]);
+    const [res] = await pool.query("INSERT INTO papeleta_vacacion SET ?", [
+      newTicket,
+    ]);
     return res;
   }
 
   // para aprobar una papeleta
-  static async update(id, dependency, areaPersonal) {
-    if (dependency === 3 || dependency === 4 || dependency === 5) {
+  static async update(id, dependency) {
+    if (dependency !== 1) {
       return await pool.query(
-        "UPDATE papeleta p SET p.VBjefe = 1 WHERE p.idPapeleta = ?",
+        "UPDATE papeleta_vacacion p SET p.VBjefe = 1 WHERE p.idPapeletaVacacion = ?",
         [id]
       );
-    }
-    if (dependency === 2) {
-      if (areaPersonal === 2) {
-        return await pool.query(
-          "UPDATE papeleta p SET p.VBjefe = 1, p.VBadministracion = 1 WHERE p.idPapeleta = ?",
-          [id]
-        );
-      } else {
-        return await pool.query(
-          "UPDATE papeleta p SET p.VBadministracion = 1 WHERE p.idPapeleta = ?",
-          [id]
-        );
-      }
-    }
-    if (dependency === 6) {
-      if (areaPersonal === 6) {
-        return await pool.query(
-          "UPDATE papeleta p SET p.VBjefe = 1, p.VBrrhh = 1 WHERE p.idPapeleta = ?",
-          [id]
-        );
-      } else {
-        return await pool.query(
-          "UPDATE papeleta p SET p.VBrrhh = 1 WHERE p.idPapeleta = ?",
-          [id]
-        );
-      }
     }
   }
 }

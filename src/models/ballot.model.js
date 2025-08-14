@@ -68,45 +68,76 @@ export class Ballot {
     let ballots = [];
     // cuando el usuario es jefe de RRHH o administración
     if (!applicant && !area) {
-      if (username) {
+      if (username && date) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND DATE(p.fechaPapeleta) = ? ORDER BY p.numeroPapeleta DESC",
           [username, date]
         );
       }
-      if (dependency) {
+      if (username && !date) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? ORDER BY p.numeroPapeleta DESC",
+          [username]
+        );
+      }
+      if (dependency && date) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND DATE(p.fechaPapeleta) = ? ORDER BY p.numeroPapeleta DESC",
           [dependency, date]
+        );
+      }
+      if (dependency && !date) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? ORDER BY p.numeroPapeleta DESC",
+          [dependency]
         );
       }
       if (!username && !dependency) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE DATE(p.fechaPapeleta) = ? ORDER BY p.numeroPapeleta DESC",
           [date]
         );
       }
     }
 
     // cuando el usuario no es jefe de área
-    if (applicant) {
+    if (applicant && date) {
       [ballots] = await pool.query(
-        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND DATE(p.fechaPapeleta) = ? ORDER BY p.numeroPapeleta DESC",
         [applicant, date]
+      );
+    }
+    if (applicant && !date) {
+      [ballots] = await pool.query(
+        "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? ORDER BY p.numeroPapeleta DESC",
+        [applicant]
       );
     }
 
     // cuando el usuario es jefe de área excepto de RRHH o administración
     if (area) {
-      if (username) {
+      if (username && date) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE (p.dependencia = ? AND p.desdeDia = ?) AND p.solicitante ORDER BY p.numeroPapeleta DESC",
-          [area, date, username]
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE (p.solicitante = ? AND p.dependencia = ?) AND DATE(p.fechaPapeleta) = ? ORDER BY p.numeroPapeleta DESC",
+          [username, area, date]
         );
-      } else {
+      }
+      if (username && !date) {
         [ballots] = await pool.query(
-          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND p.desdeDia = ? ORDER BY p.numeroPapeleta DESC",
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? AND p.dependencia = ? ORDER BY p.numeroPapeleta DESC",
+          [username, area]
+        );
+      }
+      if (!username && date) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? AND DATE(p.fechaPapeleta) = ? ORDER BY p.numeroPapeleta DESC",
           [area, date]
+        );
+      }
+      if (!username && !date) {
+        [ballots] = await pool.query(
+          "SELECT * FROM papeleta p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.dependencia = ? ORDER BY p.numeroPapeleta DESC",
+          [area]
         );
       }
     }

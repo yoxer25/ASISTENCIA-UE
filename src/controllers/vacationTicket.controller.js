@@ -13,7 +13,6 @@ import { helpers } from "../helpers/helper.js";
 
 // models
 import { Area } from "../models/area.model.js";
-import { Ballot } from "../models/ballot.model.js";
 import { Correlative } from "../models/correlative.model.js";
 import { Personal } from "../models/personal.model.js";
 import { VacationTicket } from "../models/vacationTicket.model.js";
@@ -58,6 +57,7 @@ export const getTicket = async (req, res) => {
       area,
       current: page,
       pages: Math.ceil(ticketsDB.length / forPage),
+      option: null,
     });
   } catch (error) {
     res.render("vacationTicket/ticket", { user });
@@ -81,32 +81,29 @@ export const getTicketCreate = async (req, res) => {
 
 /* controla lo que se debe mostrar al momento de visitar la página de papeletas
 de salida consultando por fecha o usuario (solo administrador y recursos humanos) */
-export const getBallotSearch = async (req, res) => {
+export const getTicketSearch = async (req, res) => {
   let forPage = 10;
   const user = req.user;
   const ie = user.name;
   const dni = user.dniUser;
-  const fechaActual = new Date();
-  let year = fechaActual.getFullYear();
-  let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0
-  let day = String(fechaActual.getDate()).padStart(2, "0");
   const personalUE = await Personal.getPersonal(ie);
   const areas = await Area.getAreas();
 
   try {
     let { date, page, username, dependency } = req.body;
-    if (date !== "") {
-      date = date;
+    if (page !== "") {
+      page = page;
     } else {
-      date = `${year}-${month}-${day}`;
+      page = 1;
     }
-    page = page || 1;
-    let ballotsDB = [];
+    let ticketsDB = [];
     let area = 0;
+    const [person] = await Personal.getPersonalById(username);
+    const [office] = await Area.getAreaById(dependency);
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
     if (Number(dni) === 200006) {
-      if (username) {
-        ballotsDB = await Ballot.getBallotsSearch(
+      if (username && date) {
+        ticketsDB = await VacationTicket.getTicketsSearch(
           null,
           null,
           username,
@@ -114,12 +111,39 @@ export const getBallotSearch = async (req, res) => {
           date
         );
       }
-      if (dependency) {
-        ballotsDB = await Ballot.getBallotsSearch(
+      if (username && !date) {
+        ticketsDB = await VacationTicket.getTicketsSearch(
+          null,
+          null,
+          username,
+          null,
+          null
+        );
+      }
+      if (dependency && date) {
+        ticketsDB = await VacationTicket.getTicketsSearch(
           null,
           null,
           null,
           dependency,
+          date
+        );
+      }
+      if (dependency && !date) {
+        ticketsDB = await VacationTicket.getTicketsSearch(
+          null,
+          null,
+          null,
+          dependency,
+          null
+        );
+      }
+      if (!dependency && !username) {
+        ticketsDB = await VacationTicket.getTicketsSearch(
+          null,
+          null,
+          null,
+          null,
           date
         );
       }
@@ -128,8 +152,8 @@ export const getBallotSearch = async (req, res) => {
       if (jefeArea) {
         area = jefeArea.idArea;
         if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
-          if (username) {
-            ballotsDB = await Ballot.getBallotsSearch(
+          if (username && date) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
               null,
               null,
               username,
@@ -137,8 +161,35 @@ export const getBallotSearch = async (req, res) => {
               date
             );
           }
-          if (dependency) {
-            ballotsDB = await Ballot.getBallotsSearch(
+          if (username && !date) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
+              null,
+              null,
+              username,
+              null,
+              null
+            );
+          }
+          if (dependency && date) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
+              null,
+              null,
+              null,
+              dependency,
+              date
+            );
+          }
+          if (dependency && !date) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
+              null,
+              null,
+              null,
+              dependency,
+              null
+            );
+          }
+          if (!dependency && !username) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
               null,
               null,
               null,
@@ -147,16 +198,26 @@ export const getBallotSearch = async (req, res) => {
             );
           }
         } else {
-          if (username) {
-            ballotsDB = await Ballot.getBallotsSearch(
+          if (username && date) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
               null,
               jefeArea.idArea,
               username,
               null,
               date
             );
-          } else {
-            ballotsDB = await Ballot.getBallotsSearch(
+          }
+          if (username && !date) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
+              null,
+              jefeArea.idArea,
+              username,
+              null,
+              null
+            );
+          }
+          if (!username && date) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
               null,
               jefeArea.idArea,
               null,
@@ -164,9 +225,18 @@ export const getBallotSearch = async (req, res) => {
               date
             );
           }
+          if (!username && date) {
+            ticketsDB = await VacationTicket.getTicketsSearch(
+              null,
+              jefeArea.idArea,
+              null,
+              null,
+              null
+            );
+          }
         }
       } else {
-        ballotsDB = await Ballot.getBallotsSearch(
+        ticketsDB = await VacationTicket.getTicketsSearch(
           personal.idPersonal,
           null,
           null,
@@ -175,19 +245,22 @@ export const getBallotSearch = async (req, res) => {
         );
       }
     }
-    const ballots = ballotsDB.slice(page * forPage - forPage, page * forPage);
-    res.render("ballot/ballot", {
+    const tickets = ticketsDB.slice(page * forPage - forPage, page * forPage);
+    res.render("vacationTicket/ticket", {
       user,
-      ballots,
+      tickets,
       area,
       areas,
+      person,
+      office,
       personalUE,
       date,
       current: page,
-      pages: Math.ceil(ballotsDB.length / forPage),
+      pages: Math.ceil(ticketsDB.length / forPage),
+      option: "form",
     });
   } catch (error) {
-    res.render("ballot/ballot", { user, personalUE, areas });
+    res.render("vacationTicket/ticket", { user, personalUE, areas });
   }
 };
 
@@ -259,8 +332,16 @@ export const approve = async (req, res) => {
   try {
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
     const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
-    const [ballot] = await Ballot.getBallotById(id);
-    await Ballot.update(id, jefeArea.idArea, ballot.idAreaPersonal);
+    const [ticket] = await VacationTicket.getTicketById(id);
+    if (ticket.idAreaPersonal === jefeArea.idArea) {
+      await VacationTicket.update(id, jefeArea.idArea);
+    } else {
+      // Si el registro falla
+      res.cookie("error", ["¡Personal no es de su oficina!"], {
+        httpOnly: true,
+        maxAge: 6000,
+      }); // 6 segundos
+    }
     res.redirect("/vacationTickets/page1");
   } catch (error) {
     // Si el registro falla
@@ -440,7 +521,6 @@ export const viewTicket = async (req, res) => {
     // Finalizar el documento
     doc.end();
   } catch (error) {
-    console.log(error.message);
     res
       .cookie("error", ["¡Ocurrió un problema!"], {
         httpOnly: true,
@@ -471,7 +551,7 @@ const updateCorrelativo = async () => {
   await Correlative.updateCorrelativeVacation(nuevoCorrelativo);
 };
 
-// calcular días para las papeletas
+// calcular la diferencia de días en un rango de fechas para las papeletas
 const calcularDiasEntreFechas = (fechaInicio, fechaFin) => {
   const inicio = dayjs(fechaInicio);
   const fin = dayjs(fechaFin);

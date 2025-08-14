@@ -34,7 +34,7 @@ router.post(
   "/",
   requireToken,
   authorize(["administrador", "otros"], ["RECURSOS HUMANOS", "AGP", "S/E"]),
-  vacationCtrl.getBallotSearch
+  vacationCtrl.getTicketSearch
 );
 router.post(
   "/create",

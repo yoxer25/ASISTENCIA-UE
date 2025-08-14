@@ -4,7 +4,8 @@
         <div class="form-group label-floating">
             <label class="control-label">Colaborador</label>
             <select class="form-control" id="username" name="username" style="width: 100%;">
-                <option value="" selected></option>
+                <option value="">SELECCIONAR</option>
+                <option value="{{person.idPersonal}}" selected>{{person.nombrePersonal}}</option>
                 {{#each personalUE}}
                 <option value="{{idPersonal}}">{{nombrePersonal}}
                 </option>
@@ -18,7 +19,8 @@
         <div class="form-group label-floating">
             <label class="control-label">Área / Oficina</label>
             <select class="form-control" id="dependency" name="dependency" style="width: 100%;">
-                <option value="" selected></option>
+                <option value="">SELECCIONAR</option>
+                <option value="{{office.idArea}}" selected>{{office.nombreArea}}</option>
                 {{#each areas}}
                 <option value="{{idArea}}">{{nombreArea}}</option>
                 {{/each}}

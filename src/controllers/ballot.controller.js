@@ -54,6 +54,7 @@ export const getBallot = async (req, res) => {
       area,
       current: page,
       pages: Math.ceil(ballotsDB.length / forPage),
+      option: null,
     });
   } catch (error) {
     res.render("ballot/ballot", { user });
@@ -82,26 +83,22 @@ export const getBallotSearch = async (req, res) => {
   const user = req.user;
   const ie = user.name;
   const dni = user.dniUser;
-  const fechaActual = new Date();
-  let year = fechaActual.getFullYear();
-  let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0
-  let day = String(fechaActual.getDate()).padStart(2, "0");
   const personalUE = await Personal.getPersonal(ie);
   const areas = await Area.getAreas();
-
   try {
     let { date, page, username, dependency } = req.body;
-    if (date !== "") {
-      date = date;
+    if (page !== "") {
+      page = page;
     } else {
-      date = `${year}-${month}-${day}`;
+      page = 1;
     }
-    page = page || 1;
     let ballotsDB = [];
     let area = 0;
+    const [person] = await Personal.getPersonalById(username);
+    const [office] = await Area.getAreaById(dependency);
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
     if (Number(dni) === 200006) {
-      if (username) {
+      if (username && date) {
         ballotsDB = await Ballot.getBallotsSearch(
           null,
           null,
@@ -110,7 +107,16 @@ export const getBallotSearch = async (req, res) => {
           date
         );
       }
-      if (dependency) {
+      if (username && !date) {
+        ballotsDB = await Ballot.getBallotsSearch(
+          null,
+          null,
+          username,
+          null,
+          null
+        );
+      }
+      if (dependency && date) {
         ballotsDB = await Ballot.getBallotsSearch(
           null,
           null,
@@ -119,12 +125,24 @@ export const getBallotSearch = async (req, res) => {
           date
         );
       }
+      if (dependency && !date) {
+        ballotsDB = await Ballot.getBallotsSearch(
+          null,
+          null,
+          null,
+          dependency,
+          null
+        );
+      }
+      if (!dependency && !username) {
+        ballotsDB = await Ballot.getBallotsSearch(null, null, null, null, date);
+      }
     } else {
       const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
       if (jefeArea) {
         area = jefeArea.idArea;
         if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
-          if (username) {
+          if (username && date) {
             ballotsDB = await Ballot.getBallotsSearch(
               null,
               null,
@@ -133,7 +151,34 @@ export const getBallotSearch = async (req, res) => {
               date
             );
           }
-          if (dependency) {
+          if (username && !date) {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              null,
+              username,
+              null,
+              null
+            );
+          }
+          if (dependency && date) {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              null,
+              null,
+              dependency,
+              date
+            );
+          }
+          if (dependency && !date) {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              null,
+              null,
+              dependency,
+              null
+            );
+          }
+          if (!dependency && !username) {
             ballotsDB = await Ballot.getBallotsSearch(
               null,
               null,
@@ -143,7 +188,7 @@ export const getBallotSearch = async (req, res) => {
             );
           }
         } else {
-          if (username) {
+          if (username && date) {
             ballotsDB = await Ballot.getBallotsSearch(
               null,
               jefeArea.idArea,
@@ -151,13 +196,32 @@ export const getBallotSearch = async (req, res) => {
               null,
               date
             );
-          } else {
+          }
+          if (username && !date) {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              jefeArea.idArea,
+              username,
+              null,
+              null
+            );
+          }
+          if (!username && date) {
             ballotsDB = await Ballot.getBallotsSearch(
               null,
               jefeArea.idArea,
               null,
               null,
               date
+            );
+          }
+          if (!username && !date) {
+            ballotsDB = await Ballot.getBallotsSearch(
+              null,
+              jefeArea.idArea,
+              null,
+              null,
+              null
             );
           }
         }
@@ -176,9 +240,12 @@ export const getBallotSearch = async (req, res) => {
       user,
       ballots,
       area,
+      person,
+      office,
       areas,
       personalUE,
       date,
+      option: "form",
       current: page,
       pages: Math.ceil(ballotsDB.length / forPage),
     });

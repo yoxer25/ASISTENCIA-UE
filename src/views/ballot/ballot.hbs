@@ -96,8 +96,7 @@
                                     </td>
                                     {{/if}}
                                     <td><a href="#!" class="btn-info-ballot btn btn-info btn-raised btn-xs"
-                                            data-id="{{idPapeleta}}"
-                                            data-dateballot="{{formatDate fechaPapeleta}}"
+                                            data-id="{{idPapeleta}}" data-dateballot="{{formatDate fechaPapeleta}}"
                                             data-ballot="{{numeroPapeleta}}" data-applicant="{{nombrePersonal}}"
                                             data-dependency="{{nombreArea}}"
                                             data-workingcondition="{{condicionLaboral}}" data-reason="{{motivo}}"
@@ -163,6 +162,7 @@
 <script>
     const current = ({{{ convertJson current }}});
     const pages = ({{{ convertJson pages }}});
+    const option = ({{{ convertJson option }}})
     const numPages = (num) => {
         let navPages = '';
 
@@ -181,7 +181,11 @@
                 if (i === Number(current) + 4 && i < num) {
                     fila += `<a href="#">...</a>`;
                 }
-                fila += `<a href="/ballots/page${i}">${i}</a>`;
+                if (option !== null) {
+                    fila += `<a id="enlace href="#" onclick="enviar_formulario(${i}); return false;">${i}</a>`;
+                } else {
+                    fila += `<a href="/ballots/page${i}">${i}</a>`;
+                }
                 fila += "</li></ul>";
                 navPages += fila;
             }
@@ -190,5 +194,11 @@
     }
     document.getElementById("pagination").innerHTML =
         numPages(pages);
+
+    function enviar_formulario(i) {
+        const page = document.getElementById("page")
+        page.value = i;
+        document.getElementById('consultForm').submit();
+    }
 
 </script>

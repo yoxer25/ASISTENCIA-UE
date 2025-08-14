@@ -21,7 +21,7 @@
             <div class="col-lg-8" id="formSearchPersonal">
                 <div class="card">
                     <div class="card-body rounded-bottom bg-white">
-                        <form action="/ballots" method="POST" id="consultForm">
+                        <form action="/vacationTickets" method="POST" id="consultForm">
                             {{>ballot/search}}
                         </form>
                     </div>
@@ -66,17 +66,20 @@
                                     </td>
                                     {{/if}}
                                     <td><a href="#!" class="btn-info-ticket btn btn-info btn-raised btn-xs"
-                                            data-id="{{idPapeletaVacacion}}" data-dateticket="{{formatDate fechaPV}}" data-ticket="{{numeroPV}}" data-applicant="{{nombrePersonal}}"
+                                            data-id="{{idPapeletaVacacion}}" data-dateticket="{{formatDate fechaPV}}"
+                                            data-ticket="{{numeroPV}}" data-applicant="{{nombrePersonal}}"
                                             data-dependency="{{nombreArea}}" data-charge="{{cargo}}"
                                             data-workcenter="{{institucion}}" data-reference="{{referencia}}"
                                             data-period="{{periodo}}" data-observation="{{observacion}}"
                                             data-startDate="{{formatDate desde}}" data-endDate="{{formatDate hasta}}"><i
                                                 class="zmdi zmdi-eye"></i></a></td>
-                                    {{#if (and (or (eq ../area 2) (eq ../area 3) (eq ../area 4) (eq ../area 5) (eq
+                                    {{#if (and (eq ../area dependencia) (or (eq ../area 2) (eq ../area 3) (eq ../area 4)
+                                    (eq ../area 5) (eq
                                     ../area 6)) (not
                                     VBjefe))}}
                                     <td>
-                                        <form action="/vacationTickets/approve/{{idPapeletaVacacion}}?_method=PATCH" method="POST">
+                                        <form action="/vacationTickets/approve/{{idPapeletaVacacion}}?_method=PATCH"
+                                            method="POST">
                                             <input type="hidden" name="_method" value="PATCH">
                                             <button class="btn btn-raised btn-sm" style="background-color: #01579B;">
                                                 <p style="font-size: 15px; margin: auto; color: #fff;"><i
@@ -110,6 +113,7 @@
 <script>
     const current = ({{{ convertJson current }}});
     const pages = ({{{ convertJson pages }}});
+    const option = ({{{ convertJson option }}})
     const numPages = (num) => {
         let navPages = '';
 
@@ -128,7 +132,11 @@
                 if (i === Number(current) + 4 && i < num) {
                     fila += `<a href="#">...</a>`;
                 }
-                fila += `<a href="/ballots/page${i}">${i}</a>`;
+                if (option !== null) {
+                    fila += `<a id="enlace href="#" onclick="enviar_formulario(${i}); return false;">${i}</a>`;
+                } else {
+                    fila += `<a href="/vacationTickets/page${i}">${i}</a>`;
+                }
                 fila += "</li></ul>";
                 navPages += fila;
             }
@@ -137,5 +145,11 @@
     }
     document.getElementById("pagination").innerHTML =
         numPages(pages);
+
+    function enviar_formulario(i) {
+        const page = document.getElementById("page")
+        page.value = i;
+        document.getElementById('consultForm').submit();
+    }
 
 </script>

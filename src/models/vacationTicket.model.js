@@ -65,7 +65,6 @@ export class VacationTicket {
   /* para consultar las papeletas registradas en la base de datos
   por usuario o fecha de ausencia (según usuario) */
   static async getTicketsSearch(applicant, area, username, dependency, date) {
-    console.log(applicant, area, username, dependency, date);
     let ballots = [];
     // cuando el usuario es jefe de RRHH o administración
     if (!applicant && !area) {
@@ -76,7 +75,6 @@ export class VacationTicket {
         );
       }
       if (username && !date) {
-        console.log("solo user");
         [ballots] = await pool.query(
           "SELECT * FROM papeleta_vacacion p INNER JOIN area a ON p.dependencia = a.idArea INNER JOIN personal pe ON pe.idPersonal = p.solicitante WHERE p.solicitante = ? ORDER BY p.numeroPV DESC",
           [username]

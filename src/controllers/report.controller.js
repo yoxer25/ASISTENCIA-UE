@@ -20,12 +20,18 @@ export const getData = async (req, res) => {
   const user = req.user;
   const institution = user.name;
   const [turnoIE] = await Institution.getInstitutionById(institution);
+
   try {
-    const attendanceRecordDB = await AttendanceRecord.getData(institution);
+    const attendanceRecordDBRaw = await AttendanceRecord.getData(institution);
+
+    // Procesar los campos agrupados de papeletas
+    const attendanceRecordDB = procesarPapeletas(attendanceRecordDBRaw);
+
     let attendanceRecord = attendanceRecordDB.slice(
       page * forPage - forPage,
       page * forPage
     );
+
     res.render("report/index", {
       user,
       turno: turnoIE.nombreHorario,
@@ -41,6 +47,7 @@ export const getData = async (req, res) => {
 };
 
 // controla lo que se debe mostrar al momento de visitar la página de asistencia por fechas o usuarios
+// Función para procesar papeletas (declarada fuera para reutilizar)
 export const getReport = async (req, res) => {
   let forPage = 10;
   const user = req.user;
@@ -48,193 +55,106 @@ export const getReport = async (req, res) => {
   const institution = user.name;
   const fechaActual = new Date();
   let year = fechaActual.getFullYear();
-  let month = String(fechaActual.getMonth() + 1).padStart(2, "0"); // Los meses en JavaScript son base 0
+  let month = String(fechaActual.getMonth() + 1).padStart(2, "0");
   let day = String(fechaActual.getDate()).padStart(2, "0");
   let [turnoIE] = await Institution.getInstitutionById(institution);
 
   try {
     let { startDate, endDate, page, option, username, ie } = req.body;
-    if (startDate !== "") {
-      startDate = startDate;
-    } else {
-      startDate = `${year}-${month}-${day}`;
-    }
-    if (endDate !== "") {
-      endDate = endDate;
-    } else {
-      endDate = `${year}-${month}-${day}`;
-    }
-    if (page !== "") {
-      page = page;
-    } else {
-      page = 1;
-    }
+    startDate = startDate !== "" ? startDate : `${year}-${month}-${day}`;
+    endDate = endDate !== "" ? endDate : `${year}-${month}-${day}`;
+    page = page !== "" ? parseInt(page) : 1;
+
+    const renderData = {
+      user,
+      turno: turnoIE.nombreHorario,
+      current: page,
+      startDate,
+      endDate,
+      username,
+      option,
+    };
+
+    let attendanceRecordDB = [];
+    let finalInstitution = institution;
 
     if (username) {
       if (rol === "administrador") {
-        if (ie) {
-          ie = ie;
-        } else {
-          ie = institution;
-        }
+        if (!ie) ie = institution;
         [turnoIE] = await Institution.getInstitutionById(ie);
+        finalInstitution = ie;
+
         if (option === "dni") {
-          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+          attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
             ie,
             startDate,
             endDate,
             undefined,
             username
           );
-          let attendanceRecord = attendanceRecordDB.slice(
-            page * forPage - forPage,
-            page * forPage
-          );
-          res.render("report/index", {
-            user,
-            turno: turnoIE.nombreHorario,
-            attendanceRecord,
-            current: page,
-            pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie,
-            username,
-            option,
-            startDate,
-            endDate,
-          });
-        }
-        if (option === "name") {
-          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+        } else if (option === "name") {
+          attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
             ie,
             startDate,
             endDate,
             username,
             undefined
           );
-          let attendanceRecord = attendanceRecordDB.slice(
-            page * forPage - forPage,
-            page * forPage
-          );
-          res.render("report/index", {
-            user,
-            turno: turnoIE.nombreHorario,
-            attendanceRecord,
-            current: page,
-            pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie,
-            username,
-            option,
-            startDate,
-            endDate,
-          });
         }
       } else {
         if (option === "dni") {
-          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+          attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
             institution,
             startDate,
             endDate,
             undefined,
             username
           );
-          let attendanceRecord = attendanceRecordDB.slice(
-            page * forPage - forPage,
-            page * forPage
-          );
-          res.render("report/index", {
-            user,
-            turno: turnoIE.nombreHorario,
-            attendanceRecord,
-            current: page,
-            pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: institution,
-            username,
-            option,
-            startDate,
-            endDate,
-          });
-        }
-        if (option === "name") {
-          const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+        } else if (option === "name") {
+          attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
             institution,
             startDate,
             endDate,
             username,
             undefined
           );
-          let attendanceRecord = attendanceRecordDB.slice(
-            page * forPage - forPage,
-            page * forPage
-          );
-          res.render("report/index", {
-            user,
-            turno: turnoIE.nombreHorario,
-            attendanceRecord,
-            current: page,
-            pages: Math.ceil(attendanceRecordDB.length / forPage),
-            ie: institution,
-            username,
-            option,
-            startDate,
-            endDate,
-          });
         }
       }
     } else {
       if (rol === "administrador") {
-        if (ie) {
-          ie = ie;
-        } else {
-          ie = institution;
-        }
+        if (!ie) ie = institution;
         [turnoIE] = await Institution.getInstitutionById(ie);
-        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+        finalInstitution = ie;
+
+        attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
           ie,
           startDate,
           endDate
         );
-        let attendanceRecord = attendanceRecordDB.slice(
-          page * forPage - forPage,
-          page * forPage
-        );
-        res.render("report/index", {
-          user,
-          turno: turnoIE.nombreHorario,
-          attendanceRecord,
-          current: page,
-          pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie,
-          username,
-          option,
-          startDate,
-          endDate,
-        });
       } else {
-        const attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
+        attendanceRecordDB = await AttendanceRecord.getAttendanceRecord(
           institution,
           startDate,
           endDate
         );
-        let attendanceRecord = attendanceRecordDB.slice(
-          page * forPage - forPage,
-          page * forPage
-        );
-        res.render("report/index", {
-          user,
-          turno: turnoIE.nombreHorario,
-          attendanceRecord,
-          current: page,
-          pages: Math.ceil(attendanceRecordDB.length / forPage),
-          ie: institution,
-          username,
-          option,
-          startDate,
-          endDate,
-        });
       }
     }
+
+    const attendanceRecord = procesarPapeletas(
+      attendanceRecordDB.slice(page * forPage - forPage, page * forPage)
+    );
+    res.render("report/index", {
+      ...renderData,
+      turno: turnoIE.nombreHorario,
+      attendanceRecord,
+      pages: Math.ceil(attendanceRecordDB.length / forPage),
+      ie: finalInstitution,
+    });
   } catch (error) {
-    res.render("report/index", { user, turno: turnoIE.nombreHorario });
+    res.render("report/index", {
+      user,
+      turno: turnoIE.nombreHorario,
+    });
   }
 };
 
@@ -325,7 +245,6 @@ export const generateExcel = async (req, res, next) => {
         sheet.cell("B" + filaExcel).value(trabajador.nombrePersonal);
         sheet.cell("C" + filaExcel).value(trabajador.idReloj);
         sheet.cell("D" + filaExcel).value(fecha);
-
         if (!element) {
           // Buscar si hay una papeleta en el mismo día
           const papeleta = reportes.find(
@@ -344,7 +263,7 @@ export const generateExcel = async (req, res, next) => {
             sheet.cell("H" + filaExcel).value("-");
             sheet.cell("I" + filaExcel).value("-");
             sheet.cell("J" + filaExcel).value(numeroPapeleta);
-            sheet.cell("K" + filaExcel).value("Inasistencia");
+            sheet.cell("L" + filaExcel).value("Inasistencia");
           } else {
             sheet.cell("E" + filaExcel).value("-");
             sheet.cell("F" + filaExcel).value("-");
@@ -465,8 +384,8 @@ export const generateExcel = async (req, res, next) => {
                 ? `${hrs}h ${Math.floor(minutosRestantes)} minutos`
                 : `${Math.floor(minutosRestantes)} minutos`
             );
-          sheet.cell("J" + filaExcel).value(element.numeroPapeleta);
-          sheet.cell("K" + filaExcel).value(element.numeroPV);
+          sheet.cell("J" + filaExcel).value(element.numerosPapeletas || "-");
+          sheet.cell("K" + filaExcel).value(element.numeroPV || "-");
           sheet.cell("L" + filaExcel).value(message);
         } else {
           minNoTrabajados = primeraTardanza + primeraFalta;
@@ -558,3 +477,19 @@ const obtenerDiasLaborables = (startDate, endDate) => {
 
   return dias;
 };
+
+// para procesar las papeletas cuando es un arreglo
+const procesarPapeletas = (datos) =>
+  datos.map((dato) => {
+    const ids = dato.idsPapeletas ? dato.idsPapeletas.split(",") : [];
+    const numeros = dato.numerosPapeletas
+      ? dato.numerosPapeletas.split(",")
+      : [];
+
+    const papeletas = ids.map((id, index) => ({
+      id: id.trim(),
+      numero: (numeros[index] || "").trim(),
+    }));
+
+    return { ...dato, papeletas };
+  });

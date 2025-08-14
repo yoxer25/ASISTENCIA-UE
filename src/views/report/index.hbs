@@ -265,8 +265,14 @@
             fila += "</td>";
             if (turno === "ue") {
                 fila += "<td>";
-                if (dato.idPapeleta) {
-                    fila += `<a href="/ballots/${dato.idPapeleta}" target="_blank">${dato.numeroPapeleta}</a>`;
+                if (dato.papeletas && dato.papeletas.length > 0) {
+                    for (let i = 0; i < dato.papeletas.length; i++) {
+                        const papeleta = dato.papeletas[i];
+                        fila += `<a href="/ballots/${papeleta.id}" target="_blank">${papeleta.numero}</a>`;
+                        if (i < dato.papeletas.length - 1) {
+                            fila += ", ";
+                        }
+                    }
                 } else {
                     fila += " ";
                 }

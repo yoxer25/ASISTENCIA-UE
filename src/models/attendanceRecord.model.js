@@ -54,21 +54,20 @@ export class AttendanceRecord {
       r.segundaEntrada,
       r.segundaSalida,
 
-      -- Datos de papeleta normal
-      pap.idPapeleta,
-      pap.numeroPapeleta,
-      pap.fechaPapeleta,
+      -- Agrupar papeletas normales
+      GROUP_CONCAT(DISTINCT pap.idPapeleta) AS idsPapeletas,
+      GROUP_CONCAT(DISTINCT pap.numeroPapeleta) AS numerosPapeletas,
 
-      -- Datos de papeleta de vacación
+      -- Papeleta de vacación (solo una por día)
       pv.idPapeletaVacacion,
       pv.numeroPV AS numeroPV,
       pv.desde AS desdeVacacion,
       pv.hasta AS hastaVacacion,
 
-      -- Tipo de papeleta (prioridad: VACACION > PAPELETA)
+      -- Tipo de papeleta
       CASE 
         WHEN pv.idPapeletaVacacion IS NOT NULL THEN 'VACACION'
-        WHEN pap.idPapeleta IS NOT NULL THEN 'PAPELETA'
+        WHEN COUNT(DISTINCT pap.idPapeleta) > 0 THEN 'PAPELETA'
         ELSE NULL
       END AS tipoPapeleta
 
@@ -84,7 +83,15 @@ export class AttendanceRecord {
 
     LEFT JOIN papeleta pap 
       ON pap.solicitante = p.idPersonal 
-      AND DATE(pap.fechaPapeleta) = f.fecha
+      AND (
+        (pap.desdeDia IS NOT NULL AND f.fecha BETWEEN pap.desdeDia AND pap.hastaDia)
+        OR
+        (pap.desdeHora IS NOT NULL AND (
+          (pap.desdeHora = '08:00:00' AND f.fecha = DATE_ADD(DATE(pap.fechaPapeleta), INTERVAL 1 DAY))
+          OR
+          (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
+        ))
+      )
 
     LEFT JOIN papeleta_vacacion pv 
       ON pv.solicitante = p.idPersonal 
@@ -93,6 +100,25 @@ export class AttendanceRecord {
     WHERE 
       p.idInstitucion = ?
       AND p.estado = 1
+
+    GROUP BY 
+      f.fecha,
+      p.idPersonal,
+      p.nombrePersonal,
+      p.dniPersonal,
+      p.idReloj,
+      t.nombreTurno,
+      r.idRegistroAsistencia,
+      r.idInstitucion,
+      r.fechaCreado,
+      r.primeraEntrada,
+      r.primeraSalida,
+      r.segundaEntrada,
+      r.segundaSalida,
+      pv.idPapeletaVacacion,
+      pv.numeroPV,
+      pv.desde,
+      pv.hasta
 
     ORDER BY p.idReloj, f.fecha
     `,
@@ -146,32 +172,30 @@ export class AttendanceRecord {
       p.dniPersonal,
       p.idReloj,
       t.nombreTurno,
-      r.idRegistroAsistencia,
-      r.primeraEntrada,
-      r.primeraSalida,
-      r.segundaEntrada,
-      r.segundaSalida,
-      r.fechaCreado,
 
-      pap.idPapeleta,
-      pap.numeroPapeleta,
-      pap.fechaPapeleta,
+      -- Agregado con funciones agregadas
+      MAX(r.idRegistroAsistencia) AS idRegistroAsistencia,
+      MAX(r.primeraEntrada) AS primeraEntrada,
+      MAX(r.primeraSalida) AS primeraSalida,
+      MAX(r.segundaEntrada) AS segundaEntrada,
+      MAX(r.segundaSalida) AS segundaSalida,
+      MAX(r.fechaCreado) AS fechaCreado,
 
-      pv.idPapeletaVacacion,
-      pv.numeroPV AS numeroPV,
-      pv.desde AS desdeVacacion,
-      pv.hasta AS hastaVacacion,
+      -- Consolidar múltiples papeletas
+      GROUP_CONCAT(DISTINCT pap.numeroPapeleta SEPARATOR ', ') AS numerosPapeletas,
+      GROUP_CONCAT(DISTINCT pap.idPapeleta SEPARATOR ', ') AS idsPapeletas,
+      GROUP_CONCAT(DISTINCT pap.fechaPapeleta SEPARATOR ', ') AS fechasPapeletas,
 
+      -- Vacaciones
+      MAX(pv.idPapeletaVacacion) AS idPapeletaVacacion,
+      MAX(pv.numeroPV) AS numeroPV,
+      MAX(pv.desde) AS desdeVacacion,
+      MAX(pv.hasta) AS hastaVacacion,
+
+      -- Tipo de papeleta
       CASE 
-        WHEN pap.desdeDia IS NOT NULL AND f.fecha BETWEEN pap.desdeDia AND pap.hastaDia THEN 'PAPELETA_FECHAS'
-        WHEN pap.desdeHora IS NOT NULL 
-             AND (
-               (pap.desdeHora = '08:00:00' AND f.fecha = DATE_ADD(DATE(pap.fechaPapeleta), INTERVAL 1 DAY))
-               OR
-               (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
-             )
-          THEN 'PAPELETA_HORAS'
-        WHEN pv.idPapeletaVacacion IS NOT NULL THEN 'VACACION'
+        WHEN COUNT(DISTINCT pap.idPapeleta) > 0 THEN 'PAPELETA'
+        WHEN MAX(pv.idPapeletaVacacion) IS NOT NULL THEN 'VACACION'
         ELSE NULL
       END AS tipoPapeleta
 
@@ -203,6 +227,7 @@ export class AttendanceRecord {
       p.idInstitucion = ?
       AND p.estado = 1
       ${filterQuery}
+    GROUP BY f.fecha, p.idPersonal
     ORDER BY p.idReloj, f.fecha
     `,
       [startDate, endDate, institution, institution, ...filterParams]

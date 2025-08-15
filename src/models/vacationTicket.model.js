@@ -149,7 +149,7 @@ export class VacationTicket {
   // para consultar datos de una papeleta por id
   static async getTicketById(id) {
     const [ticket] = await pool.query(
-      "SELECT pa.numeroPV, pa.fechaPV, pa.cargo, pa.desde, pa.hasta, pa.institucion, pa.referencia, pa.periodo, pa.observacion, pa.VBjefe, p.nombrePersonal, p.dniPersonal, p.idAreaPersonal, a.nombreArea FROM papeleta_vacacion pa INNER JOIN personal p ON p.idPersonal = pa.solicitante INNER JOIN area a ON pa.dependencia = a.idArea WHERE pa.idPapeletaVacacion = ?",
+      "SELECT pa.numeroPV, pa.fechaPV, pa.cargo, pa.desde, pa.hasta, pa.institucion, pa.referencia, pa.periodo, pa.observacion, pa.VBjefe, pa.aprobadorJefe, p.nombrePersonal, p.dniPersonal, p.idAreaPersonal, a.nombreArea FROM papeleta_vacacion pa INNER JOIN personal p ON p.idPersonal = pa.solicitante INNER JOIN area a ON pa.dependencia = a.idArea WHERE pa.idPapeletaVacacion = ?",
       [id]
     );
     return ticket;
@@ -188,11 +188,11 @@ export class VacationTicket {
   }
 
   // para aprobar una papeleta
-  static async update(id, dependency) {
+  static async update(id, dependency, approverJefe) {
     if (dependency !== 1) {
       return await pool.query(
-        "UPDATE papeleta_vacacion p SET p.VBjefe = 1 WHERE p.idPapeletaVacacion = ?",
-        [id]
+        "UPDATE papeleta_vacacion p SET p.VBjefe = 1, p.aprobadorJefe = ? WHERE p.idPapeletaVacacion = ?",
+        [approverJefe, id]
       );
     }
   }

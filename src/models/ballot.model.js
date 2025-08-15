@@ -148,7 +148,7 @@ export class Ballot {
   // para consultar datos de una papeleta por id
   static async getBallotById(id) {
     const [ballots] = await pool.query(
-      "SELECT pa.numeroPapeleta, pa.fechaPapeleta, pa.condicionLaboral, pa.desdeDia, pa.hastaDia, pa.desdeHora, pa.hastaHora, pa.motivo, pa.fundamento, pa.VBjefe, pa.VBrrhh, pa.VBadministracion, p.nombrePersonal, p.dniPersonal, p.idAreaPersonal, a.nombreArea FROM papeleta pa INNER JOIN personal p ON p.idPersonal = pa.solicitante INNER JOIN area a ON pa.dependencia = a.idArea WHERE pa.idPapeleta = ?",
+      "SELECT pa.numeroPapeleta, pa.fechaPapeleta, pa.condicionLaboral, pa.desdeDia, pa.hastaDia, pa.desdeHora, pa.hastaHora, pa.motivo, pa.fundamento, pa.VBjefe, pa.aprobadorJefe, pa.VBrrhh, pa.aprobadorRRHH, pa.VBadministracion, pa.aprobadorADM, p.nombrePersonal, p.dniPersonal, p.idAreaPersonal, a.nombreArea FROM papeleta pa INNER JOIN personal p ON p.idPersonal = pa.solicitante INNER JOIN area a ON pa.dependencia = a.idArea WHERE pa.idPapeleta = ?",
       [id]
     );
     return ballots;
@@ -185,36 +185,36 @@ export class Ballot {
   }
 
   // para aprobar una papeleta
-  static async update(id, dependency, areaPersonal) {
+  static async update(id, dependency, areaPersonal, approver) {
     if (dependency === 3 || dependency === 4 || dependency === 5) {
       return await pool.query(
-        "UPDATE papeleta p SET p.VBjefe = 1 WHERE p.idPapeleta = ?",
-        [id]
+        "UPDATE papeleta p SET p.VBjefe = 1, p.aprobadorJefe = ? WHERE p.idPapeleta = ?",
+        [approver, id]
       );
     }
     if (dependency === 2) {
       if (areaPersonal === 2) {
         return await pool.query(
-          "UPDATE papeleta p SET p.VBjefe = 1, p.VBadministracion = 1 WHERE p.idPapeleta = ?",
-          [id]
+          "UPDATE papeleta p SET p.VBjefe = 1, p.aprobadorJefe = ?, p.VBadministracion = 1, p.aprobadorADM = ? WHERE p.idPapeleta = ?",
+          [approver, approver, id]
         );
       } else {
         return await pool.query(
-          "UPDATE papeleta p SET p.VBadministracion = 1 WHERE p.idPapeleta = ?",
-          [id]
+          "UPDATE papeleta p SET p.VBadministracion = 1, p.aprobadorADM = ? WHERE p.idPapeleta = ?",
+          [approver, id]
         );
       }
     }
     if (dependency === 6) {
       if (areaPersonal === 6) {
         return await pool.query(
-          "UPDATE papeleta p SET p.VBjefe = 1, p.VBrrhh = 1 WHERE p.idPapeleta = ?",
-          [id]
+          "UPDATE papeleta p SET p.VBjefe = 1, p.aprobadorJefe = ?, p.VBrrhh = 1, p.aprobadorRRHH = ? WHERE p.idPapeleta = ?",
+          [approver, approver, id]
         );
       } else {
         return await pool.query(
-          "UPDATE papeleta p SET p.VBrrhh = 1 WHERE p.idPapeleta = ?",
-          [id]
+          "UPDATE papeleta p SET p.VBrrhh = 1, p.aprobadorRRHH = ? WHERE p.idPapeleta = ?",
+          [approver, id]
         );
       }
     }

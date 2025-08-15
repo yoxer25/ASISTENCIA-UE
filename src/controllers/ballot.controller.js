@@ -348,9 +348,15 @@ export const approve = async (req, res) => {
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
     const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
     const [ballot] = await Ballot.getBallotById(id);
-    await Ballot.update(id, jefeArea.idArea, ballot.idAreaPersonal);
+    await Ballot.update(
+      id,
+      jefeArea.idArea,
+      ballot.idAreaPersonal,
+      personal.idPersonal
+    );
     res.redirect("/ballots/page1");
   } catch (error) {
+    console.log(error.message);
     // Si el registro falla
     res.cookie("error", ["¡Error al aprobar papeleta!"], {
       httpOnly: true,
@@ -365,9 +371,9 @@ export const viewBallot = async (req, res) => {
   const { id } = req.params;
   try {
     const [ballot] = await Ballot.getBallotById(id);
-    const [jefe] = await Area.getAreaById(ballot.idAreaPersonal);
-    const [rrhh] = await Area.getAreaById(6);
-    const [adm] = await Area.getAreaById(2);
+    const [jefe] = await Personal.getPersonalById(ballot.aprobadorJefe);
+    const [rrhh] = await Personal.getPersonalById(ballot.aprobadorRRHH);
+    const [adm] = await Personal.getPersonalById(ballot.aprobadorADM);
     const dateBallot = helpers.formatDate(ballot.fechaPapeleta);
     const dateStart = helpers.formatDate(ballot.desdeDia);
     const dateEnd = helpers.formatDate(ballot.hastaDia);

@@ -363,7 +363,7 @@ export const approve = async (req, res) => {
     const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
     const [ticket] = await VacationTicket.getTicketById(id);
     if (ticket.idAreaPersonal === jefeArea.idArea) {
-      await VacationTicket.update(id, jefeArea.idArea);
+      await VacationTicket.update(id, jefeArea.idArea, personal.idPersonal);
     } else {
       // Si el registro falla
       res.cookie("error", ["¡Personal no es de su oficina!"], {
@@ -387,7 +387,7 @@ export const viewTicket = async (req, res) => {
   const { id } = req.params;
   try {
     const [ticket] = await VacationTicket.getTicketById(id);
-    const [jefe] = await Area.getAreaById(ticket.idAreaPersonal);
+    const [jefe] = await Personal.getPersonalById(ticket.aprobadorJefe);
     const dateTicket = helpers.formatDate(ticket.fechaPV);
     const dateStart = helpers.formatDate(ticket.desde);
     const dateEnd = helpers.formatDate(ticket.hasta);

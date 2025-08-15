@@ -125,7 +125,7 @@
                                             </button>
                                         </form>
                                     </td>
-                                    {{else if (and (or (eq ../area 1) (eq ../area 3) (eq ../area 4) (eq ../area 5)) (not
+                                    {{else if (and (eq ../area dependencia) (or (eq ../area 1) (eq ../area 3) (eq ../area 4) (eq ../area 5)) (not
                                     VBjefe))}}
                                     <td>
                                         <form action="/ballots/approve/{{idPapeleta}}?_method=PATCH" method="POST">

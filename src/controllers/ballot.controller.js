@@ -13,6 +13,7 @@ import { Area } from "../models/area.model.js";
 import { Ballot } from "../models/ballot.model.js";
 import { Correlative } from "../models/correlative.model.js";
 import { Personal } from "../models/personal.model.js";
+import { Specialist } from "../models/specialist.model.js";
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
 
@@ -29,6 +30,18 @@ export const getBallot = async (req, res) => {
     let area = 0;
     const personalUE = await Personal.getPersonal(ie);
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
+    // para los usuarios de directores de ugel
+    let specialist, director;
+    if (personal) {
+      [specialist] = await Specialist.getSpecialistByPersonal(
+        personal.idPersonal
+      );
+      if (specialist) {
+        director = specialist.especialidad;
+      } else {
+        director = null;
+      }
+    }
     const areas = await Area.getAreas();
     if (Number(dni) === 200006) {
       ballotsDB = await Ballot.getBallots();
@@ -36,7 +49,11 @@ export const getBallot = async (req, res) => {
       const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
       if (jefeArea) {
         area = jefeArea.idArea;
-        if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
+        if (
+          jefeArea.idArea === 2 ||
+          jefeArea.idArea === 6 ||
+          director === "RECURSOS HUMANOS"
+        ) {
           ballotsDB = await Ballot.getBallots();
         } else {
           ballotsDB = await Ballot.getBallots(null, jefeArea.idArea);
@@ -97,6 +114,18 @@ export const getBallotSearch = async (req, res) => {
     const [person] = await Personal.getPersonalById(username);
     const [office] = await Area.getAreaById(dependency);
     const [personal] = await Personal.getPersonalByDNI(dni); // datos de quien ha iniciado sesión
+    // para los usuarios de directores de ugel
+    let specialist, director;
+    if (personal) {
+      [specialist] = await Specialist.getSpecialistByPersonal(
+        personal.idPersonal
+      );
+      if (specialist) {
+        director = specialist.especialidad;
+      } else {
+        director = null;
+      }
+    }
     if (Number(dni) === 200006) {
       if (username && date) {
         ballotsDB = await Ballot.getBallotsSearch(
@@ -141,7 +170,11 @@ export const getBallotSearch = async (req, res) => {
       const [jefeArea] = await Area.getAreaByResponsable(personal.idPersonal);
       if (jefeArea) {
         area = jefeArea.idArea;
-        if (jefeArea.idArea === 2 || jefeArea.idArea === 6) {
+        if (
+          jefeArea.idArea === 2 ||
+          jefeArea.idArea === 6 ||
+          director === "RECURSOS HUMANOS"
+        ) {
           if (username && date) {
             ballotsDB = await Ballot.getBallotsSearch(
               null,

@@ -37,6 +37,18 @@ export class AttendanceRecord {
       SELECT DATE_ADD(fecha, INTERVAL 1 DAY)
       FROM fechas
       WHERE fecha < CURDATE()
+    ),
+    vacaciones_agrupadas AS (
+      SELECT 
+        pv.solicitante AS idPersonal,
+        pv.idPapeletaVacacion,
+        pv.numeroPV,
+        pv.desde,
+        pv.hasta,
+        d.fecha
+      FROM papeleta_vacacion pv
+      JOIN fechas d 
+        ON d.fecha BETWEEN pv.desde AND pv.hasta
     )
     SELECT 
       f.fecha AS fechaRegistro,
@@ -47,31 +59,46 @@ export class AttendanceRecord {
       t.nombreTurno,
 
       r.idRegistroAsistencia,
-      r.idInstitucion,
       r.fechaCreado,
       r.primeraEntrada,
       r.primeraSalida,
       r.segundaEntrada,
       r.segundaSalida,
 
-      -- Agrupar papeletas normales
       GROUP_CONCAT(DISTINCT pap.idPapeleta) AS idsPapeletas,
       GROUP_CONCAT(DISTINCT pap.numeroPapeleta) AS numerosPapeletas,
 
-      -- Papeleta de vacación (solo una por día)
-      pv.idPapeletaVacacion,
-      pv.numeroPV AS numeroPV,
-      pv.desde AS desdeVacacion,
-      pv.hasta AS hastaVacacion,
-
-      -- Tipo de papeleta
+      -- Anular datos de vacaciones si hay marcas o papeletas normales
       CASE 
-        WHEN pv.idPapeletaVacacion IS NOT NULL THEN 'VACACION'
+        WHEN r.idRegistroAsistencia IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 THEN v.idPapeletaVacacion
+        ELSE NULL
+      END AS idPapeletaVacacion,
+
+      CASE 
+        WHEN r.idRegistroAsistencia IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 THEN v.numeroPV
+        ELSE NULL
+      END AS numeroPV,
+
+      CASE 
+        WHEN r.idRegistroAsistencia IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 THEN v.desde
+        ELSE NULL
+      END AS desdeVacacion,
+
+      CASE 
+        WHEN r.idRegistroAsistencia IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 THEN v.hasta
+        ELSE NULL
+      END AS hastaVacacion,
+
+      -- Tipo de papeleta final
+      CASE 
         WHEN COUNT(DISTINCT pap.idPapeleta) > 0 THEN 'PAPELETA'
+        WHEN r.idRegistroAsistencia IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 AND v.idPapeletaVacacion IS NOT NULL THEN 'VACACION'
         ELSE NULL
       END AS tipoPapeleta
 
-    FROM fechas f
+    FROM (
+      SELECT * FROM fechas WHERE DAYOFWEEK(fecha) BETWEEN 2 AND 6
+    ) AS f
     CROSS JOIN personal p
     INNER JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal
 
@@ -87,15 +114,20 @@ export class AttendanceRecord {
         (pap.desdeDia IS NOT NULL AND f.fecha BETWEEN pap.desdeDia AND pap.hastaDia)
         OR
         (pap.desdeHora IS NOT NULL AND (
-          (pap.desdeHora = '08:00:00' AND f.fecha = DATE_ADD(DATE(pap.fechaPapeleta), INTERVAL 1 DAY))
-          OR
-          (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
+          (pap.desdeHora = '08:00:00' AND f.fecha = 
+            CASE 
+              WHEN WEEKDAY(pap.fechaPapeleta) = 4 THEN DATE_ADD(pap.fechaPapeleta, INTERVAL 3 DAY)
+              WHEN WEEKDAY(pap.fechaPapeleta) = 5 THEN DATE_ADD(pap.fechaPapeleta, INTERVAL 2 DAY)
+              WHEN WEEKDAY(pap.fechaPapeleta) = 6 THEN DATE_ADD(pap.fechaPapeleta, INTERVAL 1 DAY)
+              ELSE DATE_ADD(pap.fechaPapeleta, INTERVAL 1 DAY)
+            END
+          )
+          OR (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
         ))
       )
 
-    LEFT JOIN papeleta_vacacion pv 
-      ON pv.solicitante = p.idPersonal 
-      AND f.fecha BETWEEN pv.desde AND pv.hasta
+    LEFT JOIN vacaciones_agrupadas v 
+      ON v.idPersonal = p.idPersonal AND v.fecha = f.fecha
 
     WHERE 
       p.idInstitucion = ?
@@ -109,16 +141,15 @@ export class AttendanceRecord {
       p.idReloj,
       t.nombreTurno,
       r.idRegistroAsistencia,
-      r.idInstitucion,
       r.fechaCreado,
       r.primeraEntrada,
       r.primeraSalida,
       r.segundaEntrada,
       r.segundaSalida,
-      pv.idPapeletaVacacion,
-      pv.numeroPV,
-      pv.desde,
-      pv.hasta
+      v.idPapeletaVacacion,
+      v.numeroPV,
+      v.desde,
+      v.hasta
 
     ORDER BY p.idReloj, f.fecha
     `,
@@ -164,6 +195,18 @@ export class AttendanceRecord {
       SELECT DATE_ADD(fecha, INTERVAL 1 DAY)
       FROM fechas
       WHERE fecha < DATE(?)
+    ),
+    vacaciones_agrupadas AS (
+      SELECT 
+        pv.solicitante AS idPersonal,
+        pv.idPapeletaVacacion,
+        pv.numeroPV,
+        pv.desde,
+        pv.hasta,
+        d.fecha
+      FROM papeleta_vacacion pv
+      JOIN fechas d 
+        ON d.fecha BETWEEN pv.desde AND pv.hasta
     )
     SELECT 
       f.fecha AS fechaRegistro,
@@ -173,7 +216,6 @@ export class AttendanceRecord {
       p.idReloj,
       t.nombreTurno,
 
-      -- Agregado con funciones agregadas
       MAX(r.idRegistroAsistencia) AS idRegistroAsistencia,
       MAX(r.primeraEntrada) AS primeraEntrada,
       MAX(r.primeraSalida) AS primeraSalida,
@@ -181,21 +223,35 @@ export class AttendanceRecord {
       MAX(r.segundaSalida) AS segundaSalida,
       MAX(r.fechaCreado) AS fechaCreado,
 
-      -- Consolidar múltiples papeletas
-      GROUP_CONCAT(DISTINCT pap.numeroPapeleta SEPARATOR ', ') AS numerosPapeletas,
-      GROUP_CONCAT(DISTINCT pap.idPapeleta SEPARATOR ', ') AS idsPapeletas,
-      GROUP_CONCAT(DISTINCT pap.fechaPapeleta SEPARATOR ', ') AS fechasPapeletas,
+      GROUP_CONCAT(DISTINCT pap.idPapeleta) AS idsPapeletas,
+      GROUP_CONCAT(DISTINCT pap.numeroPapeleta) AS numerosPapeletas,
+      GROUP_CONCAT(DISTINCT DATE(pap.fechaPapeleta)) AS fechasPapeletas,
 
-      -- Vacaciones
-      MAX(pv.idPapeletaVacacion) AS idPapeletaVacacion,
-      MAX(pv.numeroPV) AS numeroPV,
-      MAX(pv.desde) AS desdeVacacion,
-      MAX(pv.hasta) AS hastaVacacion,
+      -- Vacaciones (anuladas si hay marcas o papeleta)
+      CASE 
+        WHEN MAX(r.idRegistroAsistencia) IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 THEN MAX(v.idPapeletaVacacion)
+        ELSE NULL
+      END AS idPapeletaVacacion,
+
+      CASE 
+        WHEN MAX(r.idRegistroAsistencia) IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 THEN MAX(v.numeroPV)
+        ELSE NULL
+      END AS numeroPV,
+
+      CASE 
+        WHEN MAX(r.idRegistroAsistencia) IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 THEN MAX(v.desde)
+        ELSE NULL
+      END AS desdeVacacion,
+
+      CASE 
+        WHEN MAX(r.idRegistroAsistencia) IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 THEN MAX(v.hasta)
+        ELSE NULL
+      END AS hastaVacacion,
 
       -- Tipo de papeleta
       CASE 
         WHEN COUNT(DISTINCT pap.idPapeleta) > 0 THEN 'PAPELETA'
-        WHEN MAX(pv.idPapeletaVacacion) IS NOT NULL THEN 'VACACION'
+        WHEN MAX(r.idRegistroAsistencia) IS NULL AND COUNT(DISTINCT pap.idPapeleta) = 0 AND MAX(v.idPapeletaVacacion) IS NOT NULL THEN 'VACACION'
         ELSE NULL
       END AS tipoPapeleta
 
@@ -204,30 +260,47 @@ export class AttendanceRecord {
     ) AS f
     CROSS JOIN personal p
     LEFT JOIN turno_personal t ON p.idTurnoPersonal = t.idTurnoPersonal
+
     LEFT JOIN registro_asistencia r 
       ON r.idPersonal = p.idPersonal 
       AND r.fechaRegistro = f.fecha
       AND r.idInstitucion = ?
       AND r.estado != 0
+
     LEFT JOIN papeleta pap 
       ON pap.solicitante = p.idPersonal 
       AND (
         (pap.desdeDia IS NOT NULL AND f.fecha BETWEEN pap.desdeDia AND pap.hastaDia)
         OR 
         (pap.desdeHora IS NOT NULL AND (
-          (pap.desdeHora = '08:00:00' AND f.fecha = DATE_ADD(DATE(pap.fechaPapeleta), INTERVAL 1 DAY))
-          OR
-          (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
+          (pap.desdeHora = '08:00:00' AND f.fecha = 
+            CASE 
+              WHEN WEEKDAY(pap.fechaPapeleta) = 4 THEN DATE_ADD(pap.fechaPapeleta, INTERVAL 3 DAY)
+              WHEN WEEKDAY(pap.fechaPapeleta) = 5 THEN DATE_ADD(pap.fechaPapeleta, INTERVAL 2 DAY)
+              WHEN WEEKDAY(pap.fechaPapeleta) = 6 THEN DATE_ADD(pap.fechaPapeleta, INTERVAL 1 DAY)
+              ELSE DATE_ADD(pap.fechaPapeleta, INTERVAL 1 DAY)
+            END
+          )
+          OR (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
         ))
       )
-    LEFT JOIN papeleta_vacacion pv
-      ON pv.solicitante = p.idPersonal
-      AND f.fecha BETWEEN pv.desde AND pv.hasta
+
+    LEFT JOIN vacaciones_agrupadas v
+      ON v.idPersonal = p.idPersonal AND v.fecha = f.fecha
+
     WHERE 
       p.idInstitucion = ?
       AND p.estado = 1
       ${filterQuery}
-    GROUP BY f.fecha, p.idPersonal
+
+    GROUP BY 
+      f.fecha,
+      p.idPersonal,
+      p.nombrePersonal,
+      p.dniPersonal,
+      p.idReloj,
+      t.nombreTurno
+
     ORDER BY p.idReloj, f.fecha
     `,
       [startDate, endDate, institution, institution, ...filterParams]

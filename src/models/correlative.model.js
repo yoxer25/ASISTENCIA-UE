@@ -5,40 +5,35 @@ import pool from "../database/connection.js";
 para poder utilizar sus métodos en otros
 archivos del proyecto. Esta clase hace referencia
 a la tabla "correlativo_papeleta" de la base de datos */
+
 export class Correlative {
-  /* para obtener el último correlativo de las papeletas de comisión
-  de servicios y/o permisos */
-  static async getCorrelative() {
-    const [receipt] = await pool.query(
-      "SELECT ultimaPapeleta FROM correlativo_papeleta WHERE idCorrelativo = 1"
-    );
-    return receipt;
-  }
+  // Método encapsulado para papeleta normal (sin reset anual)
+  static async generateBallotCorrelative() {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
 
-  /* para actualizar el último correlativo de las papeletas de
-  comisión de servicios y/o permisos */
-  static async updateCorrelative(lastCorrelative) {
-    const [receipt] = await pool.query(
-      "UPDATE correlativo_papeleta SET ultimaPapeleta = ? WHERE idCorrelativo = 1",
-      [lastCorrelative]
-    );
-    return receipt;
-  }
+      // Bloqueamos la fila para evitar condiciones de carrera
+      const [rows] = await connection.query(
+        "SELECT ultimaPapeleta FROM correlativo_papeleta WHERE idCorrelativo = 1 FOR UPDATE"
+      );
 
-  /* para obtener el último correlativo de las papeletas de vacaciones */
-  static async getCorrelativeVacation() {
-    const [receipt] = await pool.query(
-      "SELECT ultimaPapeleta FROM correlativo_papeleta WHERE idCorrelativo = 2"
-    );
-    return receipt;
-  }
+      let nuevoCorrelativo = rows[0].ultimaPapeleta + 1;
 
-  /* para actualizar el último correlativo de las papeletas de vacaciones */
-  static async updateCorrelativeVacation(lastCorrelative) {
-    const [receipt] = await pool.query(
-      "UPDATE correlativo_papeleta SET ultimaPapeleta = ? WHERE idCorrelativo = 2",
-      [lastCorrelative]
-    );
-    return receipt;
+      await connection.query(
+        "UPDATE correlativo_papeleta SET ultimaPapeleta = ? WHERE idCorrelativo = 1",
+        [nuevoCorrelativo]
+      );
+
+      await connection.commit();
+      connection.release();
+
+      const correlativoStr = String(nuevoCorrelativo).padStart(6, "0");
+      return correlativoStr;
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
   }
 }

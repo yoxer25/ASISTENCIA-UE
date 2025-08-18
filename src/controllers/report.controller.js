@@ -31,7 +31,6 @@ export const getData = async (req, res) => {
       page * forPage - forPage,
       page * forPage
     );
-    console.log(attendanceRecord);
     res.render("report/index", {
       user,
       turno: turnoIE.nombreHorario,
@@ -42,7 +41,6 @@ export const getData = async (req, res) => {
       option: null,
     });
   } catch (error) {
-    console.log(error.message);
     res.render("report/index", { user, turno: turnoIE.nombreHorario });
   }
 };

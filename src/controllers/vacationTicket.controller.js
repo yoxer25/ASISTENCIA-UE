@@ -13,10 +13,10 @@ import { helpers } from "../helpers/helper.js";
 
 // models
 import { Area } from "../models/area.model.js";
-import { Correlative } from "../models/correlative.model.js";
 import { Personal } from "../models/personal.model.js";
 import { VacationTicket } from "../models/vacationTicket.model.js";
 import { Specialist } from "../models/specialist.model.js";
+import { CorrelativeVacation } from "../models/correlativeVacation.model.js";
 /* exportamos todas las funciones para poder llamarlas desde
 la carpeta "routes" que tienen todas las rutas de la web */
 
@@ -319,7 +319,7 @@ export const createTicket = async (req, res) => {
       endDate,
       res
     );
-    const correlative = await generateCorrelativo();
+    const correlative = await CorrelativeVacation.generateCorrelativo();
     const resDB = await VacationTicket.create(
       correlative,
       applicant,
@@ -333,7 +333,6 @@ export const createTicket = async (req, res) => {
       endDate
     );
     if (resDB.affectedRows > 0) {
-      await updateCorrelativo();
       // Si el registro es exitoso
       res.cookie("success", ["¡Registro exitoso!"], {
         httpOnly: true,
@@ -557,27 +556,6 @@ export const viewTicket = async (req, res) => {
       })
       .redirect("/vacationTickets/page1");
   }
-};
-
-// Función para obtener y generar el número de las papeletas
-const generateCorrelativo = async () => {
-  // Primero obtenemos el último correlativo
-  const [results] = await Correlative.getCorrelativeVacation();
-  let nuevoCorrelativo = results.ultimaPapeleta + 1; // Incrementamos el correlativo
-
-  // Formateamos el correlativo con ceros a la izquierda
-  const formattedCorrelativo = `${String(nuevoCorrelativo).padStart(6, "0")}`;
-
-  return formattedCorrelativo; // Devolvemos el correlativo formateado
-};
-
-// Función para obtener y actualizar el correlativo en la tabla "correlativo"
-const updateCorrelativo = async () => {
-  // Primero obtenemos el último correlativo
-  const [results] = await Correlative.getCorrelativeVacation();
-  let nuevoCorrelativo = results.ultimaPapeleta + 1; // Incrementamos el correlativo
-  // Actualizamos el correlativo en la base de datos
-  await Correlative.updateCorrelativeVacation(nuevoCorrelativo);
 };
 
 // calcular la diferencia de días en un rango de fechas para las papeletas

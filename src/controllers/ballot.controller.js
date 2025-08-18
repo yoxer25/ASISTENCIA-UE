@@ -305,7 +305,7 @@ export const createBallot = async (req, res) => {
       foundation,
       res
     );
-    const correlative = await generateCorrelativo();
+    const correlative = await Correlative.generateBallotCorrelative();
     const resDB = await Ballot.create(
       correlative,
       applicant,
@@ -319,7 +319,6 @@ export const createBallot = async (req, res) => {
       endTime
     );
     if (resDB.affectedRows > 0) {
-      await updateCorrelativo();
       // Si el registro es exitoso
       res.cookie("success", ["¡Registro exitoso!"], {
         httpOnly: true,
@@ -356,7 +355,6 @@ export const approve = async (req, res) => {
     );
     res.redirect("/ballots/page1");
   } catch (error) {
-    console.log(error.message);
     // Si el registro falla
     res.cookie("error", ["¡Error al aprobar papeleta!"], {
       httpOnly: true,
@@ -535,27 +533,6 @@ export const viewBallot = async (req, res) => {
       })
       .redirect("/ballots/page1");
   }
-};
-
-// Función para obtener y generar el número de las papeletas
-const generateCorrelativo = async () => {
-  // Primero obtenemos el último correlativo
-  const [results] = await Correlative.getCorrelative();
-  let nuevoCorrelativo = results.ultimaPapeleta + 1; // Incrementamos el correlativo
-
-  // Formateamos el correlativo con ceros a la izquierda
-  const formattedCorrelativo = `${String(nuevoCorrelativo).padStart(6, "0")}`;
-
-  return formattedCorrelativo; // Devolvemos el correlativo formateado
-};
-
-// Función para obtener y actualizar el correlativo en la tabla "correlativo"
-const updateCorrelativo = async () => {
-  // Primero obtenemos el último correlativo
-  const [results] = await Correlative.getCorrelative();
-  let nuevoCorrelativo = results.ultimaPapeleta + 1; // Incrementamos el correlativo
-  // Actualizamos el correlativo en la base de datos
-  await Correlative.updateCorrelative(nuevoCorrelativo);
 };
 
 // función para validar que el usuario llene completamente el formulario de crear papeleta de salida

@@ -61,7 +61,7 @@ export class Personal {
     if (id != "") {
       return id;
     } else {
-      throw new Error("Datos no encontrados");
+      throw new Error("Personal no encontrado");
     }
   }
 

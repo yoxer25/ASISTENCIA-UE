@@ -348,7 +348,21 @@ export class AttendanceRecord {
       secondDepartureTime
     );
     newRegister.fechaCreado = await helpers.formatDateTime();
-    await pool.query("INSERT INTO registro_asistencia SET ?", [newRegister]);
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      await connection.query("INSERT INTO registro_asistencia SET ?", [
+        newRegister,
+      ]);
+
+      await connection.commit();
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
   }
 
   // para elimiunar un registro de asistencia

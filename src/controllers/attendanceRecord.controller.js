@@ -429,6 +429,11 @@ export const importData = async (req, res) => {
       throw new Error("Seleccione un archivo .xlsx");
     }
   } catch (error) {
+    // Si el registro falla
+    res.cookie("error", [error.message], {
+      httpOnly: true,
+      maxAge: 6000,
+    }); // 6 segundos
     res.redirect("/attendanceRecords/importData");
   }
 };

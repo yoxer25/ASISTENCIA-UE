@@ -60,7 +60,7 @@
                         class="zmdi zmdi-caret-down pull-right"></i>
                 </a>
                 <ul class="list-unstyled full-box">
-                    <li><a href="/ballots/page1"><i class="zmdi zmdi-bike zmdi-hc-fw"></i> Salida</a>
+                    <li><a href="/ballots/page1"><i class="zmdi zmdi-car zmdi-hc-fw"></i> Salida</a>
                     </li>
                     <li><a href="/vacationTickets/page1"><i class="zmdi zmdi-hotel zmdi-hc-fw"></i> Vacaciones</a></li>
                 </ul>
@@ -128,7 +128,7 @@
                         class="zmdi zmdi-caret-down pull-right"></i>
                 </a>
                 <ul class="list-unstyled full-box">
-                    <li><a href="/ballots/page1"><i class="zmdi zmdi-bike zmdi-hc-fw"></i> Salida</a>
+                    <li><a href="/ballots/page1"><i class="zmdi zmdi-car zmdi-hc-fw"></i> Salida</a>
                     </li>
                     <li><a href="/vacationTickets/page1"><i class="zmdi zmdi-hotel zmdi-hc-fw"></i> Vacaciones</a></li>
                 </ul>
@@ -138,9 +138,15 @@
             {{else if (and (eq user.rol "otros") (eq user.especialista "AGP"))}}
             <li><a href="/documents"><i class="zmdi zmdi-collection-pdf zmdi-hc-fw"></i> Documentos de Gestión</a></li>
             <li>
-                <a href="/ballots/page1">
-                    <i class="zmdi zmdi-collection-text zmdi-hc-fw"></i> Papeletas
+                <a href="#!" class="btn-sideBar-SubMenu">
+                    <i class="zmdi zmdi-collection-text zmdi-hc-fw"></i> Papeletas <i
+                        class="zmdi zmdi-caret-down pull-right"></i>
                 </a>
+                <ul class="list-unstyled full-box">
+                    <li><a href="/ballots/page1"><i class="zmdi zmdi-car zmdi-hc-fw"></i> Salida</a>
+                    </li>
+                    <li><a href="/vacationTickets/page1"><i class="zmdi zmdi-hotel zmdi-hc-fw"></i> Vacaciones</a></li>
+                </ul>
             </li>
 
             {{!-- OTROS + S/E --}}
@@ -151,7 +157,7 @@
                         class="zmdi zmdi-caret-down pull-right"></i>
                 </a>
                 <ul class="list-unstyled full-box">
-                    <li><a href="/ballots/page1"><i class="zmdi zmdi-bike zmdi-hc-fw"></i> Salida</a>
+                    <li><a href="/ballots/page1"><i class="zmdi zmdi-car zmdi-hc-fw"></i> Salida</a>
                     </li>
                     <li><a href="/vacationTickets/page1"><i class="zmdi zmdi-hotel zmdi-hc-fw"></i> Vacaciones</a></li>
                 </ul>

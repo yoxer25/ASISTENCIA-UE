@@ -49,6 +49,7 @@ export class AttendanceRecord {
       FROM papeleta_vacacion pv
       JOIN fechas d 
         ON d.fecha BETWEEN pv.desde AND pv.hasta
+        WHERE pv.VBjefe = 1
     )
     SELECT 
       f.fecha AS fechaRegistro,
@@ -125,6 +126,7 @@ export class AttendanceRecord {
           OR (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
         ))
       )
+      AND pap.VBjefe = 1 AND pap.VBrrhh = 1 AND pap.VBadministracion = 1
 
     LEFT JOIN vacaciones_agrupadas v 
       ON v.idPersonal = p.idPersonal AND v.fecha = f.fecha
@@ -207,6 +209,7 @@ export class AttendanceRecord {
       FROM papeleta_vacacion pv
       JOIN fechas d 
         ON d.fecha BETWEEN pv.desde AND pv.hasta
+        WHERE pv.VBjefe = 1
     )
     SELECT 
       f.fecha AS fechaRegistro,
@@ -284,6 +287,7 @@ export class AttendanceRecord {
           OR (pap.desdeHora != '08:00:00' AND DATE(pap.fechaPapeleta) = f.fecha)
         ))
       )
+      AND pap.VBjefe = 1 AND pap.VBrrhh = 1 AND pap.VBadministracion = 1
 
     LEFT JOIN vacaciones_agrupadas v
       ON v.idPersonal = p.idPersonal AND v.fecha = f.fecha
